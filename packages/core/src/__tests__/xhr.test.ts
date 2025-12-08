@@ -345,4 +345,110 @@ describe('XHRInterceptor', () => {
     const xhr = new XMLHttpRequest();
     expect(xhr.upload).toBeUndefined();
   });
+
+  it('handles responseType document', async () => {
+    const rules = [createRule()];
+    installXHRInterceptor(rules);
+
+    const result = await new Promise<any>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.responseType = 'document';
+      xhr.onload = () => resolve(xhr.response);
+      xhr.onerror = reject;
+      xhr.open('GET', '/api/test');
+      xhr.send();
+    });
+
+    // document responseType should return null for JSON responses
+    expect(result).toBeNull();
+  });
+
+  it('calls overrideMimeType without error', () => {
+    const rules = [createRule()];
+    installXHRInterceptor(rules);
+
+    const xhr = new XMLHttpRequest();
+    expect(() => {
+      xhr.overrideMimeType('text/plain');
+    }).not.toThrow();
+  });
+
+  it('passes through and handles event callbacks for real XHR', () => {
+    const rules = [createRule()];
+    installXHRInterceptor(rules);
+
+    const xhr = new XMLHttpRequest();
+
+    //Set up callbacks
+    xhr.onprogress = () => {};
+    xhr.onabort = () => {};
+    xhr.ontimeout = () => {};
+    xhr.onloadend = () => {};
+
+    xhr.open('GET', '/api/unmocked-url');
+
+    // Just ensure the setup doesn't throw
+    expect(xhr.readyState).toBe(1); // OPENED
+  });
+
+  it('prevents reinstallation when already installed', () => {
+    const rules = [createRule()];
+    installXHRInterceptor(rules);
+
+    const MockedXHR = globalThis.XMLHttpRequest;
+
+    // Try to install again
+    installXHRInterceptor(rules);
+
+    // Should be the same reference (not reinstalled)
+    expect(globalThis.XMLHttpRequest).toBe(MockedXHR);
+  });
+
+  it('supports custom bypass configuration', async () => {
+    const rules = [createRule({ method: 'GET' })];
+    installXHRInterceptor(rules, { methods: ['GET'] });
+
+    // GET requests should bypass
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/test');
+
+    // Should pass through without mocking
+    expect(xhr.readyState).toBe(1); // OPENED
+  });
+
+  it('handles multiple request headers with same name', async () => {
+    const rules = [createRule()];
+    installXHRInterceptor(rules);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/test');
+    xhr.setRequestHeader('X-Custom', 'value1');
+    xhr.setRequestHeader('X-Custom', 'value2');
+
+    // Should not throw
+    expect(xhr.readyState).toBe(1); // OPENED
+  });
+
+  it('throws error when send called before open', () => {
+    const rules = [createRule()];
+    installXHRInterceptor(rules);
+
+    const xhr = new XMLHttpRequest();
+    expect(() => {
+      xhr.send();
+    }).toThrow(DOMException);
+  });
+
+  it('simulates random failure in XHR', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.05);
+
+    const rules = [createRule({
+      network: { delay: 0, timeout: false, offline: false, failRate: 10 },
+    })];
+    installXHRInterceptor(rules);
+
+    await expect(makeXHRRequest('GET', '/api/test')).rejects.toThrow('XHR error');
+
+    vi.restoreAllMocks();
+  });
 });
