@@ -166,4 +166,17 @@ describe('FetchInterceptor', () => {
     // Should pass through to real fetch
     expect(data.real).toBe(true);
   });
+
+  it('simulates random failure based on failRate', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.05);
+
+    const rules = [createRule({
+      network: { delay: 0, timeout: false, offline: false, failRate: 10 },
+    })];
+    installFetchInterceptor(rules);
+
+    await expect(fetch('/api/test')).rejects.toThrow(TypeError);
+
+    vi.restoreAllMocks();
+  });
 });

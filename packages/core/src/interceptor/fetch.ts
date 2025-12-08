@@ -132,8 +132,11 @@ function shouldBypass(url: string, method: string): boolean {
 function delay(ms: number, signals: AbortSignal[]): Promise<void> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(resolve, ms);
+    let rejected = false;
 
     const abortHandler = () => {
+      if (rejected) return;
+      rejected = true;
       clearTimeout(timer);
       reject(new DOMException('Aborted', 'AbortError'));
     };
