@@ -138,23 +138,34 @@ function shouldBypass(url: string, method: string): boolean {
  */
 function delay(ms: number, signals: AbortSignal[]): Promise<void> {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(resolve, ms);
-    let rejected = false;
+    const handlers: Array<{ signal: AbortSignal; handler: () => void }> = [];
+
+    const cleanup = () => {
+      handlers.forEach(({ signal, handler }) => {
+        signal.removeEventListener('abort', handler);
+      });
+    };
+
+    const timer = setTimeout(() => {
+      cleanup();
+      resolve();
+    }, ms);
 
     const abortHandler = () => {
-      if (rejected) return;
-      rejected = true;
+      cleanup();
       clearTimeout(timer);
       reject(new DOMException('Aborted', 'AbortError'));
     };
 
     for (const signal of signals) {
       if (signal.aborted) {
+        cleanup();
         clearTimeout(timer);
         reject(new DOMException('Aborted', 'AbortError'));
         return;
       }
       signal.addEventListener('abort', abortHandler, { once: true });
+      handlers.push({ signal, handler: abortHandler });
     }
   });
 }
@@ -189,6 +200,11 @@ async function handleMock(rule: MockRule, signals: AbortSignal[]): Promise<Respo
 
   // Random failure
   if (network.failRate > 0 && Math.random() * 100 < network.failRate) {
+    throw new TypeError('Failed to fetch');
+  }
+
+  // Handle networkError mockType - always fail with network error
+  if (mockType === 'networkError') {
     throw new TypeError('Failed to fetch');
   }
 

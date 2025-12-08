@@ -484,4 +484,23 @@ describe('XHRInterceptor', () => {
     // Should pass through without mocking
     expect(xhr.readyState).toBe(1);
   });
+
+  it('triggers onerror for mockType: networkError', async () => {
+    const rules = [createRule({
+      mockType: 'networkError',
+    })];
+    installXHRInterceptor(rules);
+
+    await expect(makeXHRRequest('GET', '/api/test')).rejects.toThrow('XHR error');
+  });
+
+  it('mockType: networkError always fails regardless of network settings', async () => {
+    const rules = [createRule({
+      mockType: 'networkError',
+      network: { delay: 0, timeout: false, offline: false, failRate: 0 },
+    })];
+    installXHRInterceptor(rules);
+
+    await expect(makeXHRRequest('GET', '/api/test')).rejects.toThrow('XHR error');
+  });
 });

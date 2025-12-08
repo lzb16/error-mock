@@ -192,7 +192,7 @@ class MockXMLHttpRequest {
     const execute = () => {
       if (this._aborted) return;
 
-      const { network } = rule;
+      const { network, mockType } = rule;
 
       // Timeout check
       if (network.timeout) {
@@ -208,6 +208,12 @@ class MockXMLHttpRequest {
 
       // Random failure
       if (network.failRate > 0 && Math.random() * 100 < network.failRate) {
+        this._handleError();
+        return;
+      }
+
+      // Handle networkError mockType - always fail with network error
+      if (mockType === 'networkError') {
         this._handleError();
         return;
       }

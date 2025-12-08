@@ -283,4 +283,72 @@ describe('omitFields - random mode', () => {
     omitFields(data, config);
     expect(data).toEqual(original);
   });
+
+  it('produces consistent shuffle with Fisher-Yates algorithm', () => {
+    // Test that the Fisher-Yates shuffle produces deterministic results
+    const data = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 };
+    const config = createConfig({
+      mode: 'random',
+      random: {
+        probability: 100,
+        maxOmitCount: 3,
+        excludeFields: [],
+        depthLimit: 5,
+        omitMode: 'delete',
+        seed: 999,
+      },
+    });
+
+    // Run the same operation multiple times with the same seed
+    const result1 = omitFields(structuredClone(data), config);
+    const result2 = omitFields(structuredClone(data), config);
+    const result3 = omitFields(structuredClone(data), config);
+
+    // All results should be identical
+    expect(result1).toEqual(result2);
+    expect(result2).toEqual(result3);
+
+    // The number of remaining fields should be consistent
+    const remainingKeys1 = Object.keys(result1);
+    const remainingKeys2 = Object.keys(result2);
+    const remainingKeys3 = Object.keys(result3);
+
+    expect(remainingKeys1).toEqual(remainingKeys2);
+    expect(remainingKeys2).toEqual(remainingKeys3);
+  });
+
+  it('produces different results with different seeds', () => {
+    const data = { a: 1, b: 2, c: 3, d: 4, e: 5 };
+
+    const config1 = createConfig({
+      mode: 'random',
+      random: {
+        probability: 100,
+        maxOmitCount: 2,
+        excludeFields: [],
+        depthLimit: 5,
+        omitMode: 'delete',
+        seed: 111,
+      },
+    });
+
+    const config2 = createConfig({
+      mode: 'random',
+      random: {
+        probability: 100,
+        maxOmitCount: 2,
+        excludeFields: [],
+        depthLimit: 5,
+        omitMode: 'delete',
+        seed: 222,
+      },
+    });
+
+    const result1 = omitFields(structuredClone(data), config1);
+    const result2 = omitFields(structuredClone(data), config2);
+
+    // Different seeds should likely produce different results
+    // (there's a small chance they could be the same, but very unlikely)
+    expect(Object.keys(result1).sort()).not.toEqual(Object.keys(result2).sort());
+  });
 });

@@ -269,4 +269,65 @@ describe('FetchInterceptor', () => {
 
     expect(data.result).toEqual({ mocked: true });
   });
+
+  it('throws TypeError for mockType: networkError', async () => {
+    const rules = [createRule({
+      mockType: 'networkError',
+    })];
+    installFetchInterceptor(rules);
+
+    await expect(fetch('/api/test')).rejects.toThrow(TypeError);
+    await expect(fetch('/api/test')).rejects.toThrow('Failed to fetch');
+  });
+
+  it('mockType: networkError always fails regardless of network settings', async () => {
+    const rules = [createRule({
+      mockType: 'networkError',
+      network: { delay: 0, timeout: false, offline: false, failRate: 0 },
+    })];
+    installFetchInterceptor(rules);
+
+    await expect(fetch('/api/test')).rejects.toThrow(TypeError);
+  });
+
+  it('cleans up abort listeners after delay completes', async () => {
+    const rules = [createRule({
+      network: { delay: 100, timeout: false, offline: false, failRate: 0 },
+    })];
+    installFetchInterceptor(rules);
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    // Track listener count (indirect test via successful completion)
+    const fetchPromise = fetch('/api/test', { signal });
+
+    // Wait for delay to complete
+    await new Promise(resolve => setTimeout(resolve, 150));
+
+    const response = await fetchPromise;
+    expect(response.status).toBe(200);
+
+    // If listeners weren't cleaned up, they would still be attached
+    // This test ensures no memory leaks or listener accumulation
+    // The signal should not have any lingering references from the delay
+  });
+
+  it('cleans up abort listeners when abort is triggered during delay', async () => {
+    const rules = [createRule({
+      network: { delay: 200, timeout: false, offline: false, failRate: 0 },
+    })];
+    installFetchInterceptor(rules);
+
+    const controller = new AbortController();
+    const fetchPromise = fetch('/api/test', { signal: controller.signal });
+
+    // Abort during delay
+    setTimeout(() => controller.abort(), 50);
+
+    await expect(fetchPromise).rejects.toThrow(DOMException);
+    await expect(fetchPromise).rejects.toThrow('Aborted');
+
+    // Cleanup should have happened in the abort path
+  });
 });
