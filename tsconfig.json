@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@error-mock/core": ["packages/core/src"],
+      "@error-mock/parser": ["packages/parser/src"],
+      "@error-mock/ui": ["packages/ui/src"]
+    }
+  },
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/parser" },
+    { "path": "packages/ui" },
+    { "path": "packages/webpack-plugin" },
+    { "path": "packages/vite-plugin" }
+  ]
+}
