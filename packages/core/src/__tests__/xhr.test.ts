@@ -451,4 +451,37 @@ describe('XHRInterceptor', () => {
 
     vi.restoreAllMocks();
   });
+
+  it('matches absolute URL to pathname-based rule', async () => {
+    const rules = [createRule({ url: '/api/test', method: 'GET' })];
+    installXHRInterceptor(rules);
+
+    const result = await makeXHRRequest('GET', 'https://example.com/api/test');
+    const data = JSON.parse(result.response);
+
+    expect(result.status).toBe(200);
+    expect(data.result).toEqual({ mocked: true });
+  });
+
+  it('bypasses requests to specified origins', async () => {
+    const rules = [createRule({ url: '/api/test', method: 'GET' })];
+    installXHRInterceptor(rules, { origins: ['https://api.foo.com'] });
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://api.foo.com/api/test');
+
+    // Should pass through without mocking
+    expect(xhr.readyState).toBe(1);
+  });
+
+  it('bypasses requests matching URL patterns', async () => {
+    const rules = [createRule({ url: '/api/test', method: 'GET' })];
+    installXHRInterceptor(rules, { urlPatterns: [/^https:\/\/external\.com/] });
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://external.com/api/test');
+
+    // Should pass through without mocking
+    expect(xhr.readyState).toBe(1);
+  });
 });

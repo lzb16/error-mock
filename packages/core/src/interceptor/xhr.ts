@@ -6,12 +6,13 @@ import { omitFields } from '../engine/field-omit';
 
 let OriginalXHR: typeof XMLHttpRequest | null = null;
 let currentRules: MockRule[] = [];
-let bypassConfig: BypassConfig = {
+const defaultBypassConfig: BypassConfig = {
   origins: [],
   methods: ['OPTIONS'],
   contentTypes: [],
   urlPatterns: [],
 };
+let bypassConfig: BypassConfig = { ...defaultBypassConfig };
 
 export function installXHRInterceptor(
   rules: MockRule[],
@@ -21,9 +22,8 @@ export function installXHRInterceptor(
 
   OriginalXHR = globalThis.XMLHttpRequest;
   currentRules = rules;
-  if (bypass) {
-    bypassConfig = { ...bypassConfig, ...bypass };
-  }
+  // Reset bypass config each install to avoid leaking state across re-installs/tests
+  bypassConfig = { ...defaultBypassConfig, ...(bypass || {}) };
 
   // @ts-expect-error - We're replacing XMLHttpRequest
   globalThis.XMLHttpRequest = MockXMLHttpRequest;
@@ -34,6 +34,7 @@ export function uninstallXHRInterceptor(): void {
     globalThis.XMLHttpRequest = OriginalXHR;
     OriginalXHR = null;
     currentRules = [];
+    bypassConfig = { ...defaultBypassConfig };
   }
 }
 
@@ -42,7 +43,28 @@ export function updateRules(rules: MockRule[]): void {
 }
 
 function shouldBypass(url: string, method: string): boolean {
-  if (bypassConfig.methods.includes(method.toUpperCase())) return true;
+  // Bypass specified methods (e.g., OPTIONS for CORS)
+  if (bypassConfig.methods.includes(method.toUpperCase())) {
+    return true;
+  }
+
+  // Bypass specified origins
+  try {
+    const urlObj = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+    if (bypassConfig.origins.includes(urlObj.origin)) {
+      return true;
+    }
+  } catch {
+    // Invalid URL, don't bypass
+  }
+
+  // Bypass matching patterns
+  for (const pattern of bypassConfig.urlPatterns) {
+    if (pattern.test(url)) {
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -149,7 +171,18 @@ class MockXMLHttpRequest {
 
     this._dispatchEvent('loadstart');
 
-    const rule = matchRule(currentRules, this._url, this._method);
+    // Extract pathname from absolute URLs for matching
+    let urlForMatching = this._url;
+    if (this._url.startsWith('http')) {
+      try {
+        const urlObj = new URL(this._url);
+        urlForMatching = urlObj.pathname + urlObj.search;
+      } catch {
+        // Keep original if URL parsing fails
+      }
+    }
+
+    const rule = matchRule(currentRules, urlForMatching, this._method);
 
     if (!rule || rule.mockType === 'none' || shouldBypass(this._url, this._method)) {
       this._passthrough(body);

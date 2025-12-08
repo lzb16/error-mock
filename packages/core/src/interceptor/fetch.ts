@@ -6,12 +6,13 @@ import { omitFields } from '../engine/field-omit';
 
 let originalFetch: typeof fetch | null = null;
 let currentRules: MockRule[] = [];
-let bypassConfig: BypassConfig = {
+const defaultBypassConfig: BypassConfig = {
   origins: [],
   methods: ['OPTIONS'],
   contentTypes: [],
   urlPatterns: [],
 };
+let bypassConfig: BypassConfig = { ...defaultBypassConfig };
 
 /**
  * Install the fetch interceptor
@@ -24,9 +25,8 @@ export function installFetchInterceptor(
 
   originalFetch = globalThis.fetch;
   currentRules = rules;
-  if (bypass) {
-    bypassConfig = { ...bypassConfig, ...bypass };
-  }
+  // Reset bypass config each install to avoid leaking state across re-installs/tests
+  bypassConfig = { ...defaultBypassConfig, ...(bypass || {}) };
 
   globalThis.fetch = async function(
     input: RequestInfo | URL,
@@ -47,10 +47,16 @@ export function installFetchInterceptor(
 
     // For relative URLs in non-browser environments, we need to create a full URL
     // but we'll use the path for matching
-    const urlForMatching = url.startsWith('http') ? new URL(url).pathname : url;
+    let urlForMatching: string;
+    if (url.startsWith('http')) {
+      const urlObj = new URL(url);
+      urlForMatching = urlObj.pathname + urlObj.search;
+    } else {
+      urlForMatching = url;
+    }
 
-    // Check bypass
-    if (shouldBypass(urlForMatching, method)) {
+    // Check bypass (pass full URL for origin-based bypass rules)
+    if (shouldBypass(url, method)) {
       return originalFetch!.call(globalThis, input, init);
     }
 
@@ -87,6 +93,7 @@ export function uninstallFetchInterceptor(): void {
     globalThis.fetch = originalFetch;
     originalFetch = null;
     currentRules = [];
+    bypassConfig = { ...defaultBypassConfig };
   }
 }
 

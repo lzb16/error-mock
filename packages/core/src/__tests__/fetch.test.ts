@@ -238,4 +238,35 @@ describe('FetchInterceptor', () => {
     // Should bypass and use real fetch
     expect(data.real).toBe(true);
   });
+
+  it('matches absolute URL to pathname-based rule', async () => {
+    const rules = [createRule({ url: '/api/test', method: 'GET' })];
+    installFetchInterceptor(rules);
+
+    const response = await fetch('https://example.com/api/test');
+    const data = await response.json();
+
+    expect(data.result).toEqual({ mocked: true });
+  });
+
+  it('bypasses requests to specified origins', async () => {
+    const rules = [createRule({ url: '/api/test', method: 'GET' })];
+    installFetchInterceptor(rules, { origins: ['https://api.foo.com'] });
+
+    const response = await fetch('https://api.foo.com/api/test');
+    const data = await response.json();
+
+    // Should bypass and use real fetch
+    expect(data.real).toBe(true);
+  });
+
+  it('matches absolute URL with query parameters', async () => {
+    const rules = [createRule({ url: '/search', method: 'GET' })];
+    installFetchInterceptor(rules);
+
+    const response = await fetch('https://example.com/search?q=1');
+    const data = await response.json();
+
+    expect(data.result).toEqual({ mocked: true });
+  });
 });
