@@ -307,4 +307,42 @@ describe('XHRInterceptor', () => {
 
     vi.useRealTimers();
   });
+
+  it('throws NotImplementedError for addEventListener', async () => {
+    const rules = [createRule()];
+    installXHRInterceptor(rules);
+
+    const xhr = new XMLHttpRequest();
+    expect(() => {
+      xhr.addEventListener('load', () => {});
+    }).toThrow(new Error('addEventListener is not implemented on MockXMLHttpRequest. Use on* event handler properties instead.'));
+  });
+
+  it('throws NotImplementedError for removeEventListener', async () => {
+    const rules = [createRule()];
+    installXHRInterceptor(rules);
+
+    const xhr = new XMLHttpRequest();
+    expect(() => {
+      xhr.removeEventListener('load', () => {});
+    }).toThrow(new Error('removeEventListener is not implemented on MockXMLHttpRequest. Use on* event handler properties instead.'));
+  });
+
+  it('throws NotImplementedError for dispatchEvent', async () => {
+    const rules = [createRule()];
+    installXHRInterceptor(rules);
+
+    const xhr = new XMLHttpRequest();
+    expect(() => {
+      xhr.dispatchEvent(new Event('custom'));
+    }).toThrow(new Error('dispatchEvent is not implemented on MockXMLHttpRequest. Use on* event handler properties instead.'));
+  });
+
+  it('does not have upload property stub', async () => {
+    const rules = [createRule()];
+    installXHRInterceptor(rules);
+
+    const xhr = new XMLHttpRequest();
+    expect(xhr.upload).toBeUndefined();
+  });
 });

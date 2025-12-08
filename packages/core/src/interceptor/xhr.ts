@@ -46,6 +46,13 @@ function shouldBypass(url: string, method: string): boolean {
   return false;
 }
 
+class NotImplementedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotImplementedError';
+  }
+}
+
 class MockXMLHttpRequest {
   // Static constants
   static readonly UNSENT = 0;
@@ -203,6 +210,21 @@ class MockXMLHttpRequest {
         if (this.responseType === '' || this.responseType === 'text') {
           this.responseText = this._realXHR!.responseText;
         }
+        const rawHeaders = this._realXHR!.getAllResponseHeaders();
+        this._responseHeaders = {};
+        if (rawHeaders) {
+          rawHeaders
+            .trim()
+            .split(/[\r\n]+/)
+            .forEach((line) => {
+              const separatorIndex = line.indexOf(':');
+              if (separatorIndex <= 0) return;
+              const key = line.slice(0, separatorIndex).trim().toLowerCase();
+              if (!key) return;
+              const value = line.slice(separatorIndex + 1).trim();
+              this._responseHeaders[key] = value;
+            });
+        }
       }
       this.onreadystatechange?.call(this as any, new Event('readystatechange'));
     };
@@ -305,24 +327,14 @@ class MockXMLHttpRequest {
 
   // EventTarget methods (minimal implementation)
   addEventListener(_type: string, _listener: EventListenerOrEventListenerObject) {
-    // TODO: Implement if needed
+    throw new NotImplementedError('addEventListener is not implemented on MockXMLHttpRequest. Use on* event handler properties instead.');
   }
 
   removeEventListener(_type: string, _listener: EventListenerOrEventListenerObject) {
-    // TODO: Implement if needed
+    throw new NotImplementedError('removeEventListener is not implemented on MockXMLHttpRequest. Use on* event handler properties instead.');
   }
 
   dispatchEvent(_event: Event): boolean {
-    return true;
-  }
-
-  // Upload property (for compatibility)
-  get upload(): XMLHttpRequestUpload {
-    // Return a minimal mock for the upload property
-    return {
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      dispatchEvent: () => true,
-    } as any;
+    throw new NotImplementedError('dispatchEvent is not implemented on MockXMLHttpRequest. Use on* event handler properties instead.');
   }
 }
