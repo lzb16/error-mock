@@ -16,7 +16,7 @@ function getMatcher(pattern: string): MatchFunction<Record<string, string>> {
     } catch {
       // Invalid pattern, create a simple exact matcher
       matcherCache.set(pattern, (path: string) =>
-        path === pattern ? { path, params: {} } : false
+        path === pattern ? { path, index: 0, params: {} } : false
       );
     }
   }
