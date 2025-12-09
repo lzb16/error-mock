@@ -5,8 +5,9 @@
   import { isModalOpen, globalConfig } from '../stores/config';
 
   // Spring animation for smooth drag movement
+  // Default to bottom-right (will be overridden by loadSavedPosition)
   let coords = spring(
-    { x: 0, y: 0 },
+    { x: typeof window !== 'undefined' ? window.innerWidth - 76 : 0, y: typeof window !== 'undefined' ? window.innerHeight - 76 : 0 },
     {
       stiffness: 0.1,
       damping: 0.25,
@@ -123,7 +124,7 @@
 </script>
 
 <div
-  class="em-fixed em-z-[9999] em-touch-none"
+  class="em-fixed em-z-[9999] em-touch-none em-top-0 em-left-0"
   style="transform: translate({$coords.x}px, {$coords.y}px); will-change: transform;"
 >
   <button
