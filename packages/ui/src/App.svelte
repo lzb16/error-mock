@@ -56,8 +56,14 @@
     } catch (e) {
       console.warn('[ErrorMock] structuredClone failed, using JSON fallback:', e);
     }
-    // Fallback for older environments
-    return JSON.parse(JSON.stringify(obj));
+
+    try {
+      // Fallback for older environments
+      return JSON.parse(JSON.stringify(obj));
+    } catch (e) {
+      console.warn('[ErrorMock] JSON clone failed, returning original (may cause mutation):', e);
+      return obj; // Last resort
+    }
   }
 
   function getCurrentRule(
@@ -125,6 +131,11 @@
 
     mockRules.update((rules) => {
       const newRules = new Map(rules);
+
+      // Batch mode with zero edits - do nothing
+      if (isBatch && editedFields.size === 0) {
+        return rules;
+      }
 
       // Apply to all selected rules
       for (const id of $selectedIds) {

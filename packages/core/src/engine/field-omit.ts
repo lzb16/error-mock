@@ -19,11 +19,21 @@ function mulberry32(seed: number): () => number {
  * Deep clone with structuredClone fallback for older environments
  */
 function deepClone<T>(obj: T): T {
-  if (typeof structuredClone === 'function') {
-    return structuredClone(obj);
+  try {
+    if (typeof structuredClone === 'function') {
+      return structuredClone(obj);
+    }
+  } catch (e) {
+    console.warn('[ErrorMock] structuredClone failed, using JSON fallback:', e);
   }
-  // Fallback for environments without structuredClone
-  return JSON.parse(JSON.stringify(obj));
+
+  try {
+    // Fallback for environments without structuredClone
+    return JSON.parse(JSON.stringify(obj));
+  } catch (e) {
+    console.warn('[ErrorMock] JSON clone failed, returning original (may cause mutation):', e);
+    return obj; // Last resort
+  }
 }
 
 /**
