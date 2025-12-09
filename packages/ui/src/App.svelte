@@ -16,20 +16,47 @@
   } from './stores/rules';
   import { isModalOpen, toasts } from './stores/config';
   import type { ApiMeta, MockRule } from '@error-mock/core';
+  import { RuleStorage, install, updateRules } from '@error-mock/core';
+
+  // Initialize storage
+  const storage = new RuleStorage();
 
   // Props
   export let metas: ApiMeta[] = [];
 
-  // Initialize API metas
+  // Reactively update API metas when props change
+  $: if (metas.length > 0) {
+    apiMetas.set(metas);
+  }
+
+  // Initialize storage and load saved rules
   onMount(() => {
-    if (metas.length > 0) {
-      apiMetas.set(metas);
+    // Load saved rules from localStorage
+    const savedRules = storage.getRules();
+    if (savedRules.length > 0) {
+      const rulesMap = new Map<string, MockRule>();
+      savedRules.forEach((rule) => {
+        rulesMap.set(rule.id, rule);
+      });
+      mockRules.set(rulesMap);
     }
+
+    // Install interceptor with current rules
+    install(savedRules);
   });
 
   // Reactive editing state - always deep clone to prevent direct mutation
   $: currentRule = getCurrentRule($selectedIds, $apiMetas, $mockRules);
   $: isBatch = $selectedIds.size > 1;
+
+  // Helper to deep clone objects (preserves all data)
+  function deepClone<T>(obj: T): T {
+    if (typeof structuredClone === 'function') {
+      return structuredClone(obj);
+    }
+    // Fallback for older environments
+    return JSON.parse(JSON.stringify(obj));
+  }
 
   function getCurrentRule(
     selected: Set<string>,
@@ -46,7 +73,7 @@
 
       const existingRule = getRuleForApi(meta, rules);
       // Deep clone to prevent direct mutation of store
-      return JSON.parse(JSON.stringify(existingRule));
+      return deepClone(existingRule);
     }
 
     // Batch selection - merge rules or create default
@@ -68,7 +95,7 @@
 
     // For batch mode, return first rule as template (cloned)
     // User will edit and apply to all
-    return JSON.parse(JSON.stringify(selectedRules[0]));
+    return deepClone(selectedRules[0]);
   }
 
   function handleSelect(event: CustomEvent<string>) {
@@ -112,11 +139,17 @@
           // Create new rule
           const meta = $apiMetas.find((m) => `${m.module}-${m.name}` === id);
           if (meta) {
+            // Validate and normalize HTTP method
+            const validMethods: MockRule['method'][] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+            const method = validMethods.includes(meta.method.toUpperCase() as MockRule['method'])
+              ? (meta.method.toUpperCase() as MockRule['method'])
+              : 'GET';
+
             newRules.set(id, {
               ...rule,
               id,
               url: meta.url,
-              method: meta.method as MockRule['method'],
+              method,
             });
           }
         }
@@ -124,6 +157,13 @@
 
       return newRules;
     });
+
+    // Save to localStorage
+    const allRules = Array.from($mockRules.values());
+    storage.saveRules(allRules);
+
+    // Update interceptor
+    updateRules(allRules);
 
     // Show success toast
     const count = $selectedIds.size;

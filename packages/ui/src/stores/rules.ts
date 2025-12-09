@@ -128,10 +128,17 @@ export function getRuleForApi(meta: ApiMeta, $rules: Map<string, MockRule>): Moc
 // Helper: Create a default rule for an API
 export function createDefaultRule(meta: ApiMeta): MockRule {
   const id = `${meta.module}-${meta.name}`;
+
+  // Validate and normalize HTTP method
+  const validMethods: MockRule['method'][] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+  const method = validMethods.includes(meta.method.toUpperCase() as MockRule['method'])
+    ? (meta.method.toUpperCase() as MockRule['method'])
+    : 'GET';
+
   return {
     id,
     url: meta.url,
-    method: meta.method as MockRule['method'],
+    method,
     enabled: false,
     mockType: 'none',
     network: {
