@@ -31,8 +31,20 @@ export class ErrorMockWebpackPlugin {
   }
 
   apply(compiler: Compiler): void {
-    // Only apply in development mode
-    if (compiler.options.mode !== 'development') {
+    // Only apply in development mode - prioritize explicit mode setting
+    if (compiler.options.mode === 'production') {
+      return;
+    }
+
+    const isDev =
+      compiler.options.mode === 'development' ||
+      process.env.NODE_ENV === 'development' ||
+      !!compiler.options.devServer;
+
+    if (!isDev) {
+      if (compiler.options.mode === undefined) {
+        console.warn('[ErrorMock] Webpack mode is undefined, plugin may not activate. Set mode: "development" in webpack config.');
+      }
       return;
     }
 
@@ -78,11 +90,13 @@ export class ErrorMockWebpackPlugin {
   }
 
   private generateRuntimeCode(apiMetas: ApiMeta[]): string {
+    // Note: This inline module script uses bare imports which may not resolve in all Webpack setups
+    // If imports fail (404), you'll need to configure import maps or use a bundled runtime entry
+    // Vite handles this automatically via its dev server, but Webpack's HtmlWebpackPlugin does not
     return `
 // Error Mock Runtime - Auto-injected by webpack plugin
 (async () => {
   try {
-    const { install, updateRules } = await import('@error-mock/core');
     const { App } = await import('@error-mock/ui');
     await import('@error-mock/ui/dist/style.css');
 
@@ -94,10 +108,7 @@ export class ErrorMockWebpackPlugin {
     container.id = 'error-mock-root';
     document.body.appendChild(container);
 
-    // Install interceptor with empty rules (will load from storage)
-    install([]);
-
-    // Mount Svelte app
+    // Mount Svelte app (it will handle install with saved rules)
     new App({
       target: container,
       props: {

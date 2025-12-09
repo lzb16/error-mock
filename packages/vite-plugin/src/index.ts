@@ -72,7 +72,6 @@ function generateRuntimeCode(apiMetas: ApiMeta[]): string {
 // Error Mock Runtime - Auto-injected by vite plugin
 (async () => {
   try {
-    const { install } = await import('@error-mock/core');
     const { App } = await import('@error-mock/ui');
     await import('@error-mock/ui/dist/style.css');
 
@@ -84,10 +83,7 @@ function generateRuntimeCode(apiMetas: ApiMeta[]): string {
     container.id = 'error-mock-root';
     document.body.appendChild(container);
 
-    // Install interceptor with empty rules (will load from storage)
-    install([]);
-
-    // Mount Svelte app
+    // Mount Svelte app (it will handle install with saved rules)
     new App({
       target: container,
       props: {
