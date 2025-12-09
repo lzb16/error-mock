@@ -1,0 +1,2 @@
+# Development artifacts - do not publish
+dist/.build-complete

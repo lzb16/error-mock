@@ -1,0 +1,39 @@
+{
+  "name": "@error-mock/ui",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && vite build",
+    "dev": "nodemon --watch src --watch tailwind.config.* --watch postcss.config.* --watch tsconfig.* --ext svelte,ts,js,css --exec \"vite build\"",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@error-mock/core": "workspace:*",
+    "svelte": "^4.2.8"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^3.0.1",
+    "@tsconfig/svelte": "^5.0.2",
+    "autoprefixer": "^10.4.16",
+    "nodemon": "^3.1.11",
+    "postcss": "^8.4.32",
+    "svelte-preprocess": "^6.0.3",
+    "tailwindcss": "^3.4.0",
+    "tsup": "^8.0.0",
+    "vite": "^5.0.10",
+    "vite-plugin-dts": "^3.7.0"
+  }
+}
