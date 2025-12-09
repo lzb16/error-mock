@@ -1,4 +1,6 @@
 <script lang="ts">
+  import './styles/main.css';
+
   import { onMount } from 'svelte';
   import FloatButton from './components/FloatButton.svelte';
   import Modal from './components/Modal.svelte';
