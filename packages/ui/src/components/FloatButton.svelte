@@ -4,6 +4,19 @@
   import { activeMockCount } from '../stores/rules';
   import { isModalOpen, globalConfig } from '../stores/config';
 
+  const BUTTON_SIZE = 56;
+  const MARGIN = 20;
+
+  // Clamp position to keep button within viewport
+  function clampPosition({ x, y }: { x: number; y: number }) {
+    const maxX = Math.max(MARGIN, window.innerWidth - BUTTON_SIZE - MARGIN);
+    const maxY = Math.max(MARGIN, window.innerHeight - BUTTON_SIZE - MARGIN);
+    return {
+      x: Math.min(Math.max(MARGIN, x), maxX),
+      y: Math.min(Math.max(MARGIN, y), maxY),
+    };
+  }
+
   // Spring animation for smooth drag movement
   // Default to bottom-right (will be overridden by loadSavedPosition)
   let coords = spring(
@@ -21,7 +34,7 @@
 
   // Initialize position from config or use default
   onMount(() => {
-    const pos = getPositionFromConfig($globalConfig.position);
+    const pos = clampPosition(getPositionFromConfig($globalConfig.position));
     coords.set(pos, { hard: true });
     loadSavedPosition();
   });
@@ -52,7 +65,8 @@
       const saved = localStorage.getItem('error-mock-button-position');
       if (saved) {
         const pos = JSON.parse(saved);
-        coords.set(pos, { hard: true });
+        const clamped = clampPosition(pos);
+        coords.set(clamped, { hard: true });
       }
     } catch (err) {
       console.warn('Failed to load button position:', err);
@@ -61,7 +75,9 @@
 
   function savePosition(x: number, y: number) {
     try {
-      localStorage.setItem('error-mock-button-position', JSON.stringify({ x, y }));
+      const clamped = clampPosition({ x, y });
+      coords.set(clamped, { hard: true });
+      localStorage.setItem('error-mock-button-position', JSON.stringify(clamped));
     } catch (err) {
       console.warn('Failed to save button position:', err);
     }
