@@ -9,9 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@error-mock/core": "workspace:*",
-    "@error-mock/ui": "workspace:*",
-    "@error-mock/vite-plugin": "workspace:*",
+    "@error-mock/core": "file:../../packages/core",
+    "@error-mock/ui": "file:../../packages/ui",
+    "@error-mock/vite-plugin": "file:../../packages/vite-plugin",
     "svelte": "^4.2.8"
   },
   "devDependencies": {

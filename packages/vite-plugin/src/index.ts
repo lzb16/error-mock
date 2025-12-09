@@ -1,6 +1,7 @@
 import type { Plugin, ResolvedConfig } from 'vite';
 import { createDefaultAdapter, type ApiAdapter, type ApiMeta } from '@error-mock/parser';
 import path from 'path';
+import fs from 'fs';
 
 export interface ErrorMockVitePluginOptions {
   /**
@@ -66,8 +67,7 @@ export function errorMockVitePlugin(options: ErrorMockVitePluginOptions = {}): P
     },
 
     transformIndexHtml() {
-      // Inject virtual module as script tag
-      // Use the virtual module ID without the null byte prefix for HTML
+      // Inject runtime script only
       return [
         {
           tag: 'script',
@@ -83,7 +83,6 @@ function generateRuntimeCode(apiMetas: ApiMeta[]): string {
   return `
 // Error Mock Runtime - Auto-injected by vite plugin
 import { App } from '@error-mock/ui';
-import '@error-mock/ui/style.css';
 
 // API metadata from build time
 const apiMetas = ${JSON.stringify(apiMetas, null, 2)};
@@ -95,7 +94,7 @@ function initErrorMock() {
     container.id = 'error-mock-root';
     document.body.appendChild(container);
 
-    // Mount Svelte app (it will handle install with saved rules)
+    // Mount Svelte app (it will handle install with saved rules and CSS)
     new App({
       target: container,
       props: {
