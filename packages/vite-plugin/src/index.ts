@@ -28,6 +28,9 @@ export function errorMockVitePlugin(options: ErrorMockVitePluginOptions = {}): P
   let config: ResolvedConfig;
   let apiMetas: ApiMeta[] = [];
 
+  const VIRTUAL_MODULE_ID = 'virtual:error-mock-runtime';
+  const RESOLVED_VIRTUAL_MODULE_ID = '\0' + VIRTUAL_MODULE_ID;
+
   return {
     name: 'error-mock-plugin',
 
@@ -50,16 +53,25 @@ export function errorMockVitePlugin(options: ErrorMockVitePluginOptions = {}): P
       }
     },
 
-    transformIndexHtml(html) {
-      // Generate runtime code
-      const runtimeCode = generateRuntimeCode(apiMetas);
+    resolveId(id) {
+      if (id === VIRTUAL_MODULE_ID) {
+        return RESOLVED_VIRTUAL_MODULE_ID;
+      }
+    },
 
-      // Return HTML transformation
+    load(id) {
+      if (id === RESOLVED_VIRTUAL_MODULE_ID) {
+        return generateRuntimeCode(apiMetas);
+      }
+    },
+
+    transformIndexHtml() {
+      // Inject virtual module as script tag
+      // Use the virtual module ID without the null byte prefix for HTML
       return [
         {
           tag: 'script',
-          attrs: { type: 'module' },
-          children: runtimeCode,
+          attrs: { type: 'module', src: '/@id/__x00__virtual:error-mock-runtime' },
           injectTo: 'body',
         },
       ];
@@ -70,14 +82,14 @@ export function errorMockVitePlugin(options: ErrorMockVitePluginOptions = {}): P
 function generateRuntimeCode(apiMetas: ApiMeta[]): string {
   return `
 // Error Mock Runtime - Auto-injected by vite plugin
-(async () => {
+import { App } from '@error-mock/ui';
+import '@error-mock/ui/style.css';
+
+// API metadata from build time
+const apiMetas = ${JSON.stringify(apiMetas, null, 2)};
+
+function initErrorMock() {
   try {
-    const { App } = await import('@error-mock/ui');
-    await import('@error-mock/ui/dist/style.css');
-
-    // API metadata from build time
-    const apiMetas = ${JSON.stringify(apiMetas, null, 2)};
-
     // Create container
     const container = document.createElement('div');
     container.id = 'error-mock-root';
@@ -95,7 +107,14 @@ function generateRuntimeCode(apiMetas: ApiMeta[]): string {
   } catch (error) {
     console.error('[ErrorMock] Failed to initialize:', error);
   }
-})();
+}
+
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initErrorMock);
+} else {
+  initErrorMock();
+}
 `.trim();
 }
 

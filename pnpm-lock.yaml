@@ -47,6 +47,9 @@ importers:
       '@error-mock/vite-plugin':
         specifier: workspace:*
         version: link:../../packages/vite-plugin
+      svelte:
+        specifier: ^4.2.8
+        version: 4.2.20
     devDependencies:
       '@types/node':
         specifier: ^20.10.0

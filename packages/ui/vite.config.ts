@@ -8,6 +8,9 @@ export default defineConfig({
   plugins: [
     svelte({
       preprocess: sveltePreprocess(),
+      compilerOptions: {
+        customElement: false,
+      },
     }),
     dts({
       insertTypesEntry: true,
@@ -22,10 +25,10 @@ export default defineConfig({
       fileName: () => 'index.js',
     },
     rollupOptions: {
-      external: ['svelte', 'svelte/store', '@error-mock/core'],
+      external: ['@error-mock/core'],
       output: {
         globals: {
-          svelte: 'Svelte',
+          '@error-mock/core': 'ErrorMockCore',
         },
       },
     },

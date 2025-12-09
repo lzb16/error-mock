@@ -49,6 +49,20 @@ export class ErrorMockWebpackPlugin {
     }
 
     const pluginName = 'ErrorMockWebpackPlugin';
+    let apiMetas: ApiMeta[] = [];
+
+    // Parse API directory once during compilation setup
+    compiler.hooks.beforeCompile.tapAsync(pluginName, (params, callback) => {
+      try {
+        const fullPath = path.resolve(compiler.context, this.options.apiDir);
+        apiMetas = this.options.adapter.parse(fullPath);
+        console.log(`[ErrorMock] Parsed ${apiMetas.length} APIs from ${fullPath}`);
+      } catch (error) {
+        console.warn(`[ErrorMock] Failed to parse API directory`, error);
+        apiMetas = [];
+      }
+      callback();
+    });
 
     compiler.hooks.compilation.tap(pluginName, (compilation) => {
       // Hook into HtmlWebpackPlugin
@@ -56,29 +70,15 @@ export class ErrorMockWebpackPlugin {
 
       hooks.alterAssetTags.tapAsync(pluginName, (data, callback) => {
         try {
-          // Resolve API directory path
-          const fullPath = path.resolve(compiler.context, this.options.apiDir);
-
-          // Parse API directory
-          let apiMetas: ApiMeta[] = [];
-          try {
-            apiMetas = this.options.adapter.parse(fullPath);
-          } catch (error) {
-            console.warn(`[ErrorMock] Failed to parse API directory: ${fullPath}`, error);
-          }
-
-          // Generate runtime code
-          const runtimeCode = this.generateRuntimeCode(apiMetas);
-
-          // Inject script tag
+          // Inject script tag that references the emitted runtime module
           data.assetTags.scripts.push({
             tagName: 'script',
             voidTag: false,
             meta: { plugin: pluginName },
             attributes: {
               type: 'module',
+              src: '/error-mock-runtime.js',
             },
-            innerHTML: runtimeCode,
           });
 
           callback(null, data);
@@ -87,22 +87,36 @@ export class ErrorMockWebpackPlugin {
         }
       });
     });
+
+    // Emit runtime module as asset
+    compiler.hooks.thisCompilation.tap(pluginName, (compilation) => {
+      compilation.hooks.processAssets.tap(
+        {
+          name: pluginName,
+          stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+        },
+        () => {
+          const runtimeCode = this.generateRuntimeCode(apiMetas);
+          compilation.emitAsset(
+            'error-mock-runtime.js',
+            new compiler.webpack.sources.RawSource(runtimeCode)
+          );
+        }
+      );
+    });
   }
 
   private generateRuntimeCode(apiMetas: ApiMeta[]): string {
-    // Note: This inline module script uses bare imports which may not resolve in all Webpack setups
-    // If imports fail (404), you'll need to configure import maps or use a bundled runtime entry
-    // Vite handles this automatically via its dev server, but Webpack's HtmlWebpackPlugin does not
     return `
 // Error Mock Runtime - Auto-injected by webpack plugin
-(async () => {
+import { App } from '@error-mock/ui';
+import '@error-mock/ui/style.css';
+
+// API metadata from build time
+const apiMetas = ${JSON.stringify(apiMetas, null, 2)};
+
+function initErrorMock() {
   try {
-    const { App } = await import('@error-mock/ui');
-    await import('@error-mock/ui/dist/style.css');
-
-    // API metadata from build time
-    const apiMetas = ${JSON.stringify(apiMetas, null, 2)};
-
     // Create container
     const container = document.createElement('div');
     container.id = 'error-mock-root';
@@ -120,7 +134,14 @@ export class ErrorMockWebpackPlugin {
   } catch (error) {
     console.error('[ErrorMock] Failed to initialize:', error);
   }
-})();
+}
+
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initErrorMock);
+} else {
+  initErrorMock();
+}
 `.trim();
   }
 }
