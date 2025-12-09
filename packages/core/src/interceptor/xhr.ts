@@ -42,7 +42,16 @@ export function updateRules(rules: MockRule[]): void {
   currentRules = rules;
 }
 
-function shouldBypass(url: string, method: string): boolean {
+function shouldBypass(url: string, method: string, contentType?: string): boolean {
+  // Bypass specified content types (e.g., streams, binary)
+  if (contentType && bypassConfig.contentTypes.length > 0) {
+    for (const ct of bypassConfig.contentTypes) {
+      if (contentType.includes(ct)) {
+        return true;
+      }
+    }
+  }
+
   // Bypass specified methods (e.g., OPTIONS for CORS)
   if (bypassConfig.methods.includes(method.toUpperCase())) {
     return true;
@@ -182,9 +191,12 @@ class MockXMLHttpRequest {
       }
     }
 
+    // Get content-type from request headers
+    const contentType = this._requestHeaders['content-type'];
+
     const rule = matchRule(currentRules, urlForMatching, this._method);
 
-    if (!rule || rule.mockType === 'none' || shouldBypass(this._url, this._method)) {
+    if (!rule || rule.mockType === 'none' || shouldBypass(this._url, this._method, contentType)) {
       this._passthrough(body);
       return;
     }

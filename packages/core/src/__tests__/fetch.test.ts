@@ -11,8 +11,8 @@ describe('FetchInterceptor', () => {
   const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
-    globalThis.fetch = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ real: true }), { status: 200 })
+    globalThis.fetch = vi.fn().mockImplementation(() =>
+      Promise.resolve(new Response(JSON.stringify({ real: true }), { status: 200 }))
     );
   });
 
@@ -329,5 +329,143 @@ describe('FetchInterceptor', () => {
     await expect(fetchPromise).rejects.toThrow('Aborted');
 
     // Cleanup should have happened in the abort path
+  });
+
+  describe('contentTypes bypass', () => {
+    it('bypasses requests with specified content-type in Headers', async () => {
+      const rules = [createRule()];
+      installFetchInterceptor(rules, { contentTypes: ['application/octet-stream'] });
+
+      const headers = new Headers();
+      headers.set('content-type', 'application/octet-stream');
+
+      const response = await fetch('/api/test', {
+        method: 'POST',
+        headers,
+      });
+      const data = await response.json();
+
+      // Should bypass and use real fetch
+      expect(data.real).toBe(true);
+    });
+
+    it('bypasses requests with specified content-type in object headers', async () => {
+      const rules = [createRule()];
+      installFetchInterceptor(rules, { contentTypes: ['multipart/form-data'] });
+
+      const response = await fetch('/api/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundary',
+        },
+      });
+      const data = await response.json();
+
+      // Should bypass and use real fetch
+      expect(data.real).toBe(true);
+    });
+
+    it('bypasses requests with specified content-type in array headers', async () => {
+      const rules = [createRule()];
+      installFetchInterceptor(rules, { contentTypes: ['video/mp4'] });
+
+      const response = await fetch('/api/test', {
+        method: 'POST',
+        headers: [
+          ['content-type', 'video/mp4'],
+        ],
+      });
+      const data = await response.json();
+
+      // Should bypass and use real fetch
+      expect(data.real).toBe(true);
+    });
+
+    it('bypasses Request object with specified content-type', async () => {
+      const rules = [createRule()];
+      installFetchInterceptor(rules, { contentTypes: ['image/png'] });
+
+      const headers = new Headers();
+      headers.set('content-type', 'image/png');
+      const request = new Request('http://localhost/api/test', {
+        method: 'POST',
+        headers,
+      });
+
+      const response = await fetch(request);
+      const data = await response.json();
+
+      // Should bypass and use real fetch
+      expect(data.real).toBe(true);
+    });
+
+    it('does not bypass when content-type does not match', async () => {
+      const rules = [createRule({ method: 'POST' })];
+      installFetchInterceptor(rules, { contentTypes: ['application/octet-stream'] });
+
+      const response = await fetch('/api/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+
+      // Should be intercepted
+      expect(data.result).toEqual({ mocked: true });
+      expect(data.err_no).toBe(0);
+    });
+
+    it('supports multiple content-type patterns', async () => {
+      const rules = [createRule({ method: 'POST' })];
+      installFetchInterceptor(rules, { contentTypes: ['image/', 'video/', 'audio/'] });
+
+      const response1 = await fetch('/api/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'image/jpeg' },
+      });
+      const data1 = await response1.json();
+      expect(data1.real).toBe(true);
+
+      const response2 = await fetch('/api/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'video/webm' },
+      });
+      const data2 = await response2.json();
+      expect(data2.real).toBe(true);
+
+      const response3 = await fetch('/api/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'audio/mpeg' },
+      });
+      const data3 = await response3.json();
+      expect(data3.real).toBe(true);
+    });
+
+    it('does not bypass when contentTypes is empty', async () => {
+      const rules = [createRule({ method: 'POST' })];
+      installFetchInterceptor(rules, { contentTypes: [] });
+
+      const response = await fetch('/api/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' },
+      });
+      const data = await response.json();
+
+      // Should be intercepted
+      expect(data.result).toEqual({ mocked: true });
+      expect(data.err_no).toBe(0);
+    });
+
+    it('handles requests without content-type header', async () => {
+      const rules = [createRule()];
+      installFetchInterceptor(rules, { contentTypes: ['application/octet-stream'] });
+
+      const response = await fetch('/api/test', { method: 'GET' });
+      const data = await response.json();
+
+      // Should be intercepted (no content-type to bypass)
+      expect(data.result).toEqual({ mocked: true });
+    });
   });
 });

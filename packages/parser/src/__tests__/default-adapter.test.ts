@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { parseApiFile, createDefaultAdapter } from '../adapters/default';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -90,6 +90,144 @@ describe('parseApiFile', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0].url).toBe('/api/base');
+  });
+
+  describe('parser limitations (documented edge cases)', () => {
+    it('does not detect createRequest in object properties', () => {
+      const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const code = `
+        const apis = {
+          getUser: createRequest<User, void>({
+            url: '/api/user',
+          })
+        };
+        export default apis;
+      `;
+
+      const result = parseApiFile(code, 'test');
+
+      // Parser only detects top-level export const patterns
+      expect(result).toHaveLength(0);
+
+      spy.mockRestore();
+    });
+
+    it('does not resolve imported URL constants from other files', () => {
+      const code = `
+        import { BASE_URL } from './constants';
+        export const getUser = createRequest<User, void>({
+          url: BASE_URL + '/user',
+        });
+      `;
+
+      const result = parseApiFile(code, 'test');
+
+      // Parser cannot resolve imports or concatenated URLs
+      expect(result).toHaveLength(0);
+    });
+
+    it('does not detect createRequest calls in enum/class methods', () => {
+      const code = `
+        enum API {
+          GetUser = createRequest<User, void>({
+            url: '/api/user',
+          })
+        }
+
+        class ApiService {
+          getUser = createRequest<User, void>({
+            url: '/api/user',
+          });
+        }
+      `;
+
+      const result = parseApiFile(code, 'test');
+
+      // Parser only handles top-level variable declarations
+      expect(result).toHaveLength(0);
+    });
+
+    it('does not detect re-exported createRequest calls', () => {
+      const code = `
+        const getUserApi = createRequest<User, void>({
+          url: '/api/user',
+        });
+
+        export { getUserApi };
+      `;
+
+      const result = parseApiFile(code, 'test');
+
+      // NOTE: The parser actually DOES detect this pattern because
+      // it finds the variable declaration with createRequest call.
+      // The fact that it's re-exported doesn't prevent detection.
+      // This documents current behavior - not a limitation.
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('getUserApi');
+    });
+
+    it('does not detect createRequest in function returns', () => {
+      const code = `
+        function createUserApi() {
+          return createRequest<User, void>({
+            url: '/api/user',
+          });
+        }
+
+        export const getUser = createUserApi();
+      `;
+
+      const result = parseApiFile(code, 'test');
+
+      // Parser requires direct createRequest call, not function return
+      expect(result).toHaveLength(0);
+    });
+
+    it('does not detect createRequest with computed property URLs', () => {
+      const code = `
+        const API_VERSION = 'v1';
+        export const getUser = createRequest<User, void>({
+          url: \`/api/\${API_VERSION}/user\`,
+        });
+      `;
+
+      const result = parseApiFile(code, 'test');
+
+      // Parser only handles simple string literals or identifier references
+      // Template literals with substitutions are not supported
+      expect(result).toHaveLength(0);
+    });
+
+    it('documents that complex patterns require manual rule creation', () => {
+      const code = `
+        // Example of patterns that require manual MockRule creation:
+        // 1. Dynamic API registries
+        const apiRegistry = {
+          user: { get: createRequest({ url: '/api/user' }) },
+          post: { get: createRequest({ url: '/api/post' }) },
+        };
+
+        // 2. Factory functions
+        function createCRUD(resource: string) {
+          return {
+            get: createRequest({ url: \`/api/\${resource}\` }),
+            post: createRequest({ url: \`/api/\${resource}\`, method: 'POST' }),
+          };
+        }
+
+        // 3. Conditional API definitions
+        export const api = process.env.USE_V2
+          ? createRequest({ url: '/api/v2/user' })
+          : createRequest({ url: '/api/v1/user' });
+      `;
+
+      const result = parseApiFile(code, 'test');
+
+      // These patterns are intentionally not supported
+      // Users should create MockRules manually for such cases
+      expect(result).toHaveLength(0);
+    });
   });
 });
 

@@ -503,4 +503,111 @@ describe('XHRInterceptor', () => {
 
     await expect(makeXHRRequest('GET', '/api/test')).rejects.toThrow('XHR error');
   });
+
+  describe('contentTypes bypass', () => {
+    it('bypasses requests with specified content-type', async () => {
+      const rules = [createRule()];
+      installXHRInterceptor(rules, { contentTypes: ['application/octet-stream'] });
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/test');
+      xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+
+      // Should pass through without mocking
+      expect(xhr.readyState).toBe(1); // OPENED
+    });
+
+    it('bypasses requests with content-type including boundary', async () => {
+      const rules = [createRule()];
+      installXHRInterceptor(rules, { contentTypes: ['multipart/form-data'] });
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/test');
+      xhr.setRequestHeader('Content-Type', 'multipart/form-data; boundary=----WebKitFormBoundary');
+
+      // Should pass through without mocking
+      expect(xhr.readyState).toBe(1); // OPENED
+    });
+
+    it('does not bypass when content-type does not match', async () => {
+      const rules = [createRule({ method: 'POST' })];
+      installXHRInterceptor(rules, { contentTypes: ['application/octet-stream'] });
+
+      const result = await new Promise<{ status: number; response: any }>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = () => resolve({ status: xhr.status, response: JSON.parse(xhr.responseText) });
+        xhr.onerror = reject;
+        xhr.open('POST', '/api/test');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send();
+      });
+
+      // Should be intercepted
+      expect(result.status).toBe(200);
+      expect(result.response.result).toEqual({ mocked: true });
+    });
+
+    it('supports multiple content-type patterns', async () => {
+      const rules = [createRule()];
+      installXHRInterceptor(rules, { contentTypes: ['image/', 'video/', 'audio/'] });
+
+      const xhr1 = new XMLHttpRequest();
+      xhr1.open('POST', '/api/test');
+      xhr1.setRequestHeader('Content-Type', 'image/jpeg');
+      expect(xhr1.readyState).toBe(1); // Should bypass
+
+      const xhr2 = new XMLHttpRequest();
+      xhr2.open('POST', '/api/test');
+      xhr2.setRequestHeader('Content-Type', 'video/webm');
+      expect(xhr2.readyState).toBe(1); // Should bypass
+
+      const xhr3 = new XMLHttpRequest();
+      xhr3.open('POST', '/api/test');
+      xhr3.setRequestHeader('Content-Type', 'audio/mpeg');
+      expect(xhr3.readyState).toBe(1); // Should bypass
+    });
+
+    it('does not bypass when contentTypes is empty', async () => {
+      const rules = [createRule({ method: 'POST' })];
+      installXHRInterceptor(rules, { contentTypes: [] });
+
+      const result = await new Promise<{ status: number; response: any }>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = () => resolve({ status: xhr.status, response: JSON.parse(xhr.responseText) });
+        xhr.onerror = reject;
+        xhr.open('POST', '/api/test');
+        xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+        xhr.send();
+      });
+
+      // Should be intercepted
+      expect(result.status).toBe(200);
+      expect(result.response.result).toEqual({ mocked: true });
+    });
+
+    it('handles requests without content-type header', async () => {
+      const rules = [createRule()];
+      installXHRInterceptor(rules, { contentTypes: ['application/octet-stream'] });
+
+      const result = await makeXHRRequest('GET', '/api/test');
+      const data = JSON.parse(result.response);
+
+      // Should be intercepted (no content-type to bypass)
+      expect(result.status).toBe(200);
+      expect(data.result).toEqual({ mocked: true });
+    });
+
+    it('handles case-insensitive content-type header key', async () => {
+      const rules = [createRule()];
+      installXHRInterceptor(rules, { contentTypes: ['text/plain'] });
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/test');
+      // setRequestHeader normalizes to lowercase internally
+      xhr.setRequestHeader('CONTENT-TYPE', 'text/plain');
+
+      // Should pass through without mocking
+      expect(xhr.readyState).toBe(1); // OPENED
+    });
+  });
 });

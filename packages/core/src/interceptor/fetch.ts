@@ -35,14 +35,27 @@ export function installFetchInterceptor(
     // Extract URL and method early to handle relative URLs
     let url: string;
     let method: string;
+    let contentType: string | undefined;
 
     if (input instanceof Request) {
       url = input.url;
       method = input.method;
+      contentType = input.headers.get('content-type') || undefined;
     } else {
       // Handle string or URL input
       url = input.toString();
       method = init?.method?.toUpperCase() || 'GET';
+      if (init?.headers) {
+        if (init.headers instanceof Headers) {
+          contentType = init.headers.get('content-type') || undefined;
+        } else if (Array.isArray(init.headers)) {
+          const ctEntry = init.headers.find(([name]) => name.toLowerCase() === 'content-type');
+          contentType = ctEntry?.[1];
+        } else {
+          const headers = init.headers as Record<string, string>;
+          contentType = headers['content-type'] || headers['Content-Type'];
+        }
+      }
     }
 
     // For relative URLs in non-browser environments, we need to create a full URL
@@ -56,7 +69,7 @@ export function installFetchInterceptor(
     }
 
     // Check bypass (pass full URL for origin-based bypass rules)
-    if (shouldBypass(url, method)) {
+    if (shouldBypass(url, method, contentType)) {
       return originalFetch!.call(globalThis, input, init);
     }
 
@@ -107,7 +120,16 @@ export function updateRules(rules: MockRule[]): void {
 /**
  * Check if request should bypass interception
  */
-function shouldBypass(url: string, method: string): boolean {
+function shouldBypass(url: string, method: string, contentType?: string): boolean {
+  // Bypass specified content types (e.g., streams, binary)
+  if (contentType && bypassConfig.contentTypes.length > 0) {
+    for (const ct of bypassConfig.contentTypes) {
+      if (contentType.includes(ct)) {
+        return true;
+      }
+    }
+  }
+
   // Bypass specified methods (e.g., OPTIONS for CORS)
   if (bypassConfig.methods.includes(method.toUpperCase())) {
     return true;
