@@ -286,6 +286,20 @@ describe('XHRInterceptor', () => {
     expect('field2' in data.result).toBe(false);
   });
 
+  it('uses default response when useDefault is true', async () => {
+    const rules = [createRule({
+      response: { useDefault: true, customResult: { ignored: 'value' } },
+    })];
+    installXHRInterceptor(rules);
+
+    const result = await makeXHRRequest('GET', '/api/test');
+    const data = JSON.parse(result.response);
+
+    // Should use empty object as default, not the customResult
+    expect(data.result).toEqual({});
+    expect(data.err_no).toBe(0);
+  });
+
   it('applies delay', async () => {
     vi.useFakeTimers();
 
@@ -514,6 +528,18 @@ describe('XHRInterceptor', () => {
       xhr.setRequestHeader('Content-Type', 'application/octet-stream');
 
       // Should pass through without mocking
+      expect(xhr.readyState).toBe(1); // OPENED
+    });
+
+    it('handles synchronous XHR passthrough', () => {
+      const rules = [] as MockRule[];
+      installXHRInterceptor(rules);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', '/api/other', false);  // async=false
+
+      // In a real environment this would make a synchronous request
+      // For test purposes we just verify it doesn't crash
       expect(xhr.readyState).toBe(1); // OPENED
     });
 

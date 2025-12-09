@@ -123,8 +123,9 @@ export function updateRules(rules: MockRule[]): void {
 function shouldBypass(url: string, method: string, contentType?: string): boolean {
   // Bypass specified content types (e.g., streams, binary)
   if (contentType && bypassConfig.contentTypes.length > 0) {
+    const normalizedContentType = contentType.toLowerCase();
     for (const ct of bypassConfig.contentTypes) {
-      if (contentType.includes(ct)) {
+      if (normalizedContentType.includes(ct.toLowerCase())) {
         return true;
       }
     }
@@ -231,9 +232,16 @@ async function handleMock(rule: MockRule, signals: AbortSignal[]): Promise<Respo
   }
 
   // Generate response data
-  let responseData = mockType === 'businessError'
-    ? generateBusinessErrorResponse(rule.business)
-    : generateSuccessResponse(rule.response.customResult);
+  let responseData: unknown;
+  if (mockType === 'businessError') {
+    responseData = generateBusinessErrorResponse(rule.business);
+  } else {
+    // Handle useDefault flag
+    const result = rule.response.useDefault
+      ? {}
+      : rule.response.customResult;
+    responseData = generateSuccessResponse(result);
+  }
 
   // Apply field omission
   if (rule.fieldOmit.enabled) {

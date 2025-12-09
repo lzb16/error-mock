@@ -215,6 +215,20 @@ describe('FetchInterceptor', () => {
     expect('field2' in data.result).toBe(false);
   });
 
+  it('uses default response when useDefault is true', async () => {
+    const rules = [createRule({
+      response: { useDefault: true, customResult: { ignored: 'value' } },
+    })];
+    installFetchInterceptor(rules);
+
+    const response = await fetch('/api/test');
+    const data = await response.json();
+
+    // Should use empty object as default, not the customResult
+    expect(data.result).toEqual({});
+    expect(data.err_no).toBe(0);
+  });
+
   it('prevents reinstallation when already installed', async () => {
     const rules = [createRule()];
     installFetchInterceptor(rules);

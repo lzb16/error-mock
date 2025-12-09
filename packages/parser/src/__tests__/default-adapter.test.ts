@@ -290,6 +290,8 @@ describe('createDefaultAdapter', () => {
   });
 
   it('handles parse errors gracefully', () => {
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
     const badDir = path.join(testDir, 'bad');
     fs.mkdirSync(badDir, { recursive: true });
     // Write invalid TypeScript
@@ -299,6 +301,8 @@ describe('createDefaultAdapter', () => {
 
     // Should return empty array without throwing
     expect(result).toEqual([]);
+
+    spy.mockRestore();
   });
 
   it('parses multiple modules', () => {
