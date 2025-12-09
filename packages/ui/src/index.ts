@@ -1,3 +1,6 @@
+// Import styles to ensure they're included in bundle
+import './styles/main.css';
+
 // Export main App component
 export { default as App } from './App.svelte';
 
