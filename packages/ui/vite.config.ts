@@ -2,10 +2,13 @@ import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { resolve } from 'path';
 import dts from 'vite-plugin-dts';
+import sveltePreprocess from 'svelte-preprocess';
 
 export default defineConfig({
   plugins: [
-    svelte(),
+    svelte({
+      preprocess: sveltePreprocess(),
+    }),
     dts({
       insertTypesEntry: true,
       exclude: ['**/*.test.ts', '**/*.spec.ts'],
