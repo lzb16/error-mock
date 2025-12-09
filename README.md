@@ -149,211 +149,61 @@ error-mock-plugin/
 
 ## 开发
 
-### 安装依赖
+### 快速开始
 
 ```bash
+# 安装依赖
 pnpm install
+
+# 构建所有包
+pnpm build
+
+# 启动热更新开发模式（推荐）
+pnpm dev
 ```
 
-### 构建所有包
+开发服务器启动后，访问 `http://localhost:3000` 查看示例项目。
+
+### 热更新开发流程
+
+**单命令启动**（自动热更新）：
 
 ```bash
-pnpm build
+pnpm dev
 ```
+
+**工作流程**：
+1. 修改 `packages/ui/src/` 中的任何文件
+2. Vite 自动检测变化并重新构建（~2秒）
+3. 浏览器自动刷新，查看更新 ✅
+
+**并行运行的进程**：
+- `packages/ui`: `vite build --watch` 监听UI源码
+- `examples/vite-example`: Vite dev server 在 http://localhost:3000
+
+**详细架构说明**：参见 [docs/hot-reload-architecture.md](./docs/hot-reload-architecture.md)
 
 ### 运行测试
 
 ```bash
+# 运行所有测试
 pnpm test
+
+# 运行测试并生成覆盖率报告
 pnpm test:coverage
 ```
 
-### 运行示例
-
-```bash
-cd examples/vite-example
-pnpm install
-pnpm dev
-```
-
-### 开发工作流：打包并更新示例项目
-
-#### 1. 快速构建单个包
+### 手动构建单个包
 
 ```bash
 # 构建 core 包
-cd packages/core && pnpm build
+pnpm --filter @error-mock/core build
 
 # 构建 UI 包
-cd packages/ui && pnpm build
-
-# 构建 parser 包
-cd packages/parser && pnpm build
+pnpm --filter @error-mock/ui build
 
 # 构建 vite-plugin 包
-cd packages/vite-plugin && pnpm build
-```
-
-#### 2. 构建所有包（推荐）
-
-```bash
-# 在项目根目录
-pnpm build
-```
-
-这会依次构建所有包：`core` → `parser` → `ui` → `vite-plugin` → `webpack-plugin`
-
-#### 3. 更新示例项目
-
-由于使用了 `file:` 协议链接本地包，示例项目会自动使用最新构建的代码：
-
-```bash
-# 方式一：重启开发服务器
-cd examples/vite-example
-# 按 Ctrl+C 停止
-pnpm dev
-
-# 方式二：强制重新安装（如果依赖关系变化）
-cd examples/vite-example
-rm -rf node_modules/.vite  # 清除 Vite 缓存
-pnpm install --force
-pnpm dev
-```
-
-#### 4. 开发调试流程
-
-完整的开发-测试循环：
-
-```bash
-# 1. 修改代码（如 packages/core/src/xxx.ts）
-vim packages/core/src/interceptor/fetch.ts
-
-# 2. 构建修改的包
-cd packages/core && pnpm build
-
-# 3. 如果修改了 core，需要重新构建依赖它的包
-cd ../vite-plugin && pnpm build
-
-# 4. 回到示例项目，刷新浏览器
-cd ../../examples/vite-example
-# 浏览器硬刷新: Ctrl+Shift+R (Chrome/Firefox)
-```
-
-#### 5. 监听模式开发（高级）
-
-对于频繁修改的包，可以使用 watch 模式：
-
-```bash
-# 终端 1: 监听 core 包变化
-cd packages/core
-pnpm build --watch
-
-# 终端 2: 监听 UI 包变化
-cd packages/ui
-pnpm build --watch
-
-# 终端 3: 运行示例项目
-cd examples/vite-example
-pnpm dev
-```
-
-**注意**: watch 模式修改后仍需手动刷新浏览器。
-
-#### 6. 验证打包结果
-
-检查打包产物是否正确：
-
-```bash
-# 查看 core 包输出
-ls -lh packages/core/dist/
-
-# 应该包含:
-# - index.js (ESM 模块)
-# - index.d.ts (类型定义)
-# - index.d.ts.map (source map)
-
-# 查看 UI 包输出
-ls -lh packages/ui/dist/
-
-# 应该包含:
-# - index.js (打包后的 Svelte 组件)
-# - index.css (Tailwind 样式)
-# - index.d.ts (类型定义)
-```
-
-#### 7. 测试新功能
-
-```bash
-# 1. 运行单元测试
-pnpm test
-
-# 2. 运行覆盖率测试
-pnpm test:coverage
-
-# 3. 在示例项目中手动测试
-cd examples/vite-example
-pnpm dev
-# 打开浏览器测试新功能
-```
-
-#### 8. 常见问题
-
-**问题：修改代码后示例项目没有更新**
-
-```bash
-# 解决步骤：
-# 1. 确认已重新构建
-cd packages/core && pnpm build
-
-# 2. 清除 Vite 缓存
-cd ../../examples/vite-example
-rm -rf node_modules/.vite
-
-# 3. 硬刷新浏览器
-# Chrome/Firefox: Ctrl+Shift+R
-# Safari: Cmd+Shift+R
-```
-
-**问题：类型定义未更新**
-
-```bash
-# TypeScript 类型更新需要：
-# 1. 重新构建包（生成新的 .d.ts）
-cd packages/core && pnpm build
-
-# 2. 重启 IDE 的 TypeScript 服务
-# VS Code: Cmd+Shift+P → "TypeScript: Restart TS Server"
-```
-
-**问题：依赖关系变化**
-
-```bash
-# 如果修改了 package.json 的 dependencies
-cd examples/vite-example
-rm -rf node_modules pnpm-lock.yaml
-pnpm install
-```
-
-#### 9. 发布前检查清单
-
-```bash
-# ✅ 所有测试通过
-pnpm test
-
-# ✅ 覆盖率达标
-pnpm test:coverage
-
-# ✅ 所有包成功构建
-pnpm build
-
-# ✅ 示例项目运行正常
-cd examples/vite-example && pnpm dev
-
-# ✅ 类型检查通过
-pnpm -r exec tsc --noEmit
-
-# ✅ 代码格式正确
-pnpm -r exec eslint . --ext .ts,.svelte
+pnpm --filter @error-mock/vite-plugin build
 ```
 
 ## 调试方式

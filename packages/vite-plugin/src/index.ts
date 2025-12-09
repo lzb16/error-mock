@@ -1,4 +1,4 @@
-import type { Plugin, ResolvedConfig } from 'vite';
+import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
 import { createDefaultAdapter, type ApiAdapter, type ApiMeta } from '@error-mock/parser';
 import path from 'path';
 import fs from 'fs';
@@ -120,3 +120,113 @@ if (document.readyState === 'loading') {
 
 // Default export
 export default errorMockVitePlugin;
+
+/**
+ * Development-only watcher for monorepo hot reload
+ * Watches package build completion markers and triggers browser reload
+ *
+ * @internal Only for monorepo development, not for end users
+ * @example
+ * ```ts
+ * import errorMockPlugin, { errorMockDevWatcher } from '@error-mock/vite-plugin';
+ *
+ * export default defineConfig({
+ *   plugins: [
+ *     errorMockPlugin({ apiDir: 'src/api' }),
+ *     errorMockDevWatcher({ watch: ['ui', 'core'] })
+ *   ]
+ * });
+ * ```
+ */
+export interface ErrorMockDevWatcherOptions {
+  /**
+   * Package names to watch (relative to workspace packages directory)
+   * @example ['ui', 'core']
+   */
+  watch: string[];
+
+  /**
+   * Workspace packages directory relative to project root
+   * @default '../../packages'
+   */
+  packagesDir?: string;
+
+  /**
+   * Delay in ms before triggering reload (allows build to complete)
+   * @default 500
+   */
+  reloadDelay?: number;
+}
+
+export function errorMockDevWatcher(options: ErrorMockDevWatcherOptions): Plugin {
+  const { watch: watchPackages, packagesDir = '../../packages', reloadDelay = 500 } = options;
+
+  return {
+    name: 'error-mock-dev-watcher',
+    // Only apply in serve mode
+    apply: 'serve',
+
+    configureServer(server: ViteDevServer) {
+      // Resolve packages directory
+      const resolvedPackagesDir = path.resolve(server.config.root, packagesDir);
+
+      // Watch each package's build completion marker
+      watchPackages.forEach((pkg) => {
+        const markerPath = path.normalize(path.resolve(resolvedPackagesDir, pkg, 'dist', '.build-complete'));
+
+        // Add to watcher
+        server.watcher.add(markerPath);
+
+        let reloadTimer: NodeJS.Timeout | null = null;
+
+        // Handler for marker changes
+        const handleMarkerChange = (changedPath: string) => {
+          const normalizedChangedPath = path.normalize(changedPath);
+
+          if (normalizedChangedPath === markerPath) {
+            console.log(`[dev-watcher] ${pkg} 包构建完成`);
+
+            // Clear previous timer
+            if (reloadTimer) clearTimeout(reloadTimer);
+
+            // Delay + existence check
+            reloadTimer = setTimeout(() => {
+              const indexPath = path.resolve(resolvedPackagesDir, pkg, 'dist', 'index.js');
+              const stylePath = path.resolve(resolvedPackagesDir, pkg, 'dist', 'style.css');
+
+              // Check if critical files exist
+              const indexExists = fs.existsSync(indexPath);
+              const styleExists = fs.existsSync(stylePath);
+
+              if (indexExists && styleExists) {
+                console.log(`[dev-watcher] ${pkg} 关键文件存在，触发刷新`);
+                server.moduleGraph.invalidateAll();
+                server.ws.send({ type: 'full-reload', path: '*' });
+              } else if (indexExists) {
+                // Style might not exist for some packages, only check index
+                console.log(`[dev-watcher] ${pkg} index.js 存在，触发刷新`);
+                server.moduleGraph.invalidateAll();
+                server.ws.send({ type: 'full-reload', path: '*' });
+              } else {
+                console.log(`[dev-watcher] ${pkg} 文件未就绪，延迟重试`);
+                // Retry once after 300ms
+                setTimeout(() => {
+                  if (fs.existsSync(indexPath)) {
+                    server.moduleGraph.invalidateAll();
+                    server.ws.send({ type: 'full-reload', path: '*' });
+                  }
+                }, 300);
+              }
+            }, reloadDelay);
+          }
+        };
+
+        // Listen to both 'add' (first build) and 'change' (subsequent builds)
+        server.watcher.on('add', handleMarkerChange);
+        server.watcher.on('change', handleMarkerChange);
+      });
+
+      console.log(`[dev-watcher] 监听包: ${watchPackages.join(', ')}`);
+    },
+  };
+}

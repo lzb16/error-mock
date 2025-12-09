@@ -16,7 +16,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "vite build",
+    "build": "rm -rf dist && vite build",
+    "dev": "nodemon --watch src --watch tailwind.config.* --watch postcss.config.* --watch tsconfig.* --ext svelte,ts,js,css --exec \"vite build\"",
     "clean": "rm -rf dist"
   },
   "dependencies": {
@@ -27,6 +28,7 @@
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
     "@tsconfig/svelte": "^5.0.2",
     "autoprefixer": "^10.4.16",
+    "nodemon": "^3.1.11",
     "postcss": "^8.4.32",
     "svelte-preprocess": "^6.0.3",
     "tailwindcss": "^3.4.0",
