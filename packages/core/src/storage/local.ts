@@ -34,11 +34,27 @@ export class RuleStorage {
   getRules(): MockRule[] {
     try {
       const data = localStorage.getItem(this.rulesKey);
-      return data ? JSON.parse(data) : [];
+      if (!data) return [];
+
+      const rules = JSON.parse(data) as MockRule[];
+
+      // Validate and normalize methods
+      return rules.map((rule) => ({
+        ...rule,
+        method: this.normalizeMethod(rule.method),
+      }));
     } catch (e) {
       console.error('[ErrorMock] Failed to read rules:', e);
       return [];
     }
+  }
+
+  private normalizeMethod(method: string | MockRule['method']): MockRule['method'] {
+    const validMethods: MockRule['method'][] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+    const upper = (typeof method === 'string' ? method.toUpperCase() : method) as string;
+    return validMethods.includes(upper as MockRule['method'])
+      ? (upper as MockRule['method'])
+      : 'GET';
   }
 
   updateRule(rule: MockRule): void {
@@ -83,7 +99,14 @@ export class RuleStorage {
   importConfig(json: string): boolean {
     try {
       const data = JSON.parse(json);
-      if (data.rules) this.saveRules(data.rules);
+      if (data.rules) {
+        // Normalize methods before saving
+        const normalizedRules = data.rules.map((rule: MockRule) => ({
+          ...rule,
+          method: this.normalizeMethod(rule.method),
+        }));
+        this.saveRules(normalizedRules);
+      }
       if (data.config) this.saveGlobalConfig(data.config);
       return true;
     } catch {

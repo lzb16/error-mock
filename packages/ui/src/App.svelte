@@ -25,9 +25,7 @@
   export let metas: ApiMeta[] = [];
 
   // Reactively update API metas when props change
-  $: if (metas.length > 0) {
-    apiMetas.set(metas);
-  }
+  $: apiMetas.set(metas);
 
   // Initialize storage and load saved rules
   onMount(() => {
@@ -51,8 +49,12 @@
 
   // Helper to deep clone objects (preserves all data)
   function deepClone<T>(obj: T): T {
-    if (typeof structuredClone === 'function') {
-      return structuredClone(obj);
+    try {
+      if (typeof structuredClone === 'function') {
+        return structuredClone(obj);
+      }
+    } catch (e) {
+      console.warn('[ErrorMock] structuredClone failed, using JSON fallback:', e);
     }
     // Fallback for older environments
     return JSON.parse(JSON.stringify(obj));
@@ -118,8 +120,8 @@
     });
   }
 
-  function handleApply(event: CustomEvent<MockRule>) {
-    const rule = event.detail;
+  function handleApply(event: CustomEvent<{ rule: MockRule; editedFields: Set<string> }>) {
+    const { rule, editedFields } = event.detail;
 
     mockRules.update((rules) => {
       const newRules = new Map(rules);
@@ -128,13 +130,45 @@
       for (const id of $selectedIds) {
         const existingRule = newRules.get(id);
         if (existingRule) {
-          // Update existing rule
-          newRules.set(id, {
-            ...rule,
-            id: existingRule.id,
-            url: existingRule.url,
-            method: existingRule.method,
-          });
+          // Update existing rule - only merge changed fields in batch mode
+          if (isBatch && editedFields.size > 0) {
+            // Batch mode: apply only edited fields
+            const updatedRule = { ...existingRule };
+
+            for (const field of editedFields) {
+              if (field.startsWith('network.')) {
+                const networkField = field.split('.')[1] as keyof typeof rule.network;
+                updatedRule.network = { ...updatedRule.network, [networkField]: rule.network[networkField] };
+              } else if (field.startsWith('business.')) {
+                const businessField = field.split('.')[1] as keyof typeof rule.business;
+                updatedRule.business = { ...updatedRule.business, [businessField]: rule.business[businessField] };
+              } else if (field.startsWith('fieldOmit.')) {
+                if (field === 'fieldOmit.enabled' || field === 'fieldOmit.mode' || field === 'fieldOmit.fields') {
+                  const fieldOmitField = field.split('.')[1] as 'enabled' | 'mode' | 'fields';
+                  updatedRule.fieldOmit = { ...updatedRule.fieldOmit, [fieldOmitField]: rule.fieldOmit[fieldOmitField] };
+                } else if (field.startsWith('fieldOmit.random.')) {
+                  const randomField = field.split('.')[2] as keyof typeof rule.fieldOmit.random;
+                  updatedRule.fieldOmit = {
+                    ...updatedRule.fieldOmit,
+                    random: { ...updatedRule.fieldOmit.random, [randomField]: rule.fieldOmit.random[randomField] }
+                  };
+                }
+              } else {
+                // Top-level fields
+                (updatedRule as any)[field] = (rule as any)[field];
+              }
+            }
+
+            newRules.set(id, updatedRule);
+          } else {
+            // Single mode: update all fields except id, url, method
+            newRules.set(id, {
+              ...rule,
+              id: existingRule.id,
+              url: existingRule.url,
+              method: existingRule.method,
+            });
+          }
         } else {
           // Create new rule
           const meta = $apiMetas.find((m) => `${m.module}-${m.name}` === id);

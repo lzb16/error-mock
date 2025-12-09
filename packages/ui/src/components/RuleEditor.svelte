@@ -7,9 +7,22 @@
   export let isBatch = false;
 
   const dispatch = createEventDispatcher<{
-    apply: MockRule;
+    apply: { rule: MockRule; editedFields: Set<string> };
     cancel: void;
   }>();
+
+  // Track which fields have been edited
+  let editedFields = new Set<string>();
+
+  // Reset edited fields when rule changes
+  $: if (rule) {
+    editedFields = new Set();
+  }
+
+  // Helper to track field edits
+  function trackEdit(field: string) {
+    editedFields.add(field);
+  }
 
   // Helper to check if value is mixed
   function isMixedValue(value: unknown): value is typeof MIXED {
@@ -18,7 +31,7 @@
 
   function handleApply() {
     if (rule) {
-      dispatch('apply', rule);
+      dispatch('apply', { rule, editedFields });
     }
   }
 
@@ -32,6 +45,7 @@
   function addField() {
     if (rule && newFieldName.trim() && !rule.fieldOmit.fields.includes(newFieldName.trim())) {
       rule.fieldOmit.fields = [...rule.fieldOmit.fields, newFieldName.trim()];
+      trackEdit('fieldOmit.fields');
       newFieldName = '';
     }
   }
@@ -39,6 +53,7 @@
   function removeField(field: string) {
     if (rule) {
       rule.fieldOmit.fields = rule.fieldOmit.fields.filter((f) => f !== field);
+      trackEdit('fieldOmit.fields');
     }
   }
 
@@ -96,7 +111,7 @@
                 type
                   ? 'em-bg-blue-600 em-text-white em-border-blue-600 em-shadow-md'
                   : 'em-bg-white em-text-gray-700 em-border-gray-300 hover:em-bg-gray-50 hover:em-border-gray-400'}"
-                on:click={() => (rule.mockType = type)}
+                on:click={() => { rule.mockType = type; trackEdit('mockType'); }}
                 type="button"
               >
                 {type === 'none' ? '🚫 None' : ''}
@@ -114,6 +129,7 @@
             id="enabled"
             type="checkbox"
             bind:checked={rule.enabled}
+            on:change={() => trackEdit('enabled')}
             class="em-h-5 em-w-5 em-text-blue-600 focus:em-ring-blue-500 em-border-gray-300 em-rounded em-cursor-pointer"
           />
           <label for="enabled" class="em-ml-3 em-block em-text-sm em-font-medium em-text-gray-900 em-cursor-pointer">
@@ -148,6 +164,7 @@
                   type="number"
                   min="0"
                   bind:value={rule.network.delay}
+                  on:input={() => trackEdit('network.delay')}
                   class="em-w-full em-px-3 em-py-2 em-text-sm em-border em-border-blue-300 em-rounded-md focus:em-ring-2 focus:em-ring-blue-500 focus:em-border-blue-500 focus:em-outline-none"
                 />
               </div>
@@ -161,6 +178,7 @@
                   min="0"
                   max="1"
                   bind:value={rule.network.failRate}
+                  on:input={() => trackEdit('network.failRate')}
                   class="em-w-full em-px-3 em-py-2 em-text-sm em-border em-border-blue-300 em-rounded-md focus:em-ring-2 focus:em-ring-blue-500 focus:em-border-blue-500 focus:em-outline-none"
                 />
               </div>
@@ -171,6 +189,7 @@
                 <input
                   type="checkbox"
                   bind:checked={rule.network.timeout}
+                  on:change={() => trackEdit('network.timeout')}
                   class="em-h-4 em-w-4 em-text-blue-600 focus:em-ring-blue-500 em-border-blue-300 em-rounded"
                 />
                 <span class="em-ml-2 em-text-sm em-text-blue-900">Simulate Timeout</span>
@@ -179,6 +198,7 @@
                 <input
                   type="checkbox"
                   bind:checked={rule.network.offline}
+                  on:change={() => trackEdit('network.offline')}
                   class="em-h-4 em-w-4 em-text-blue-600 focus:em-ring-blue-500 em-border-blue-300 em-rounded"
                 />
                 <span class="em-ml-2 em-text-sm em-text-blue-900">Simulate Offline</span>
@@ -206,6 +226,7 @@
                   <input
                     type="number"
                     bind:value={rule.business.errNo}
+                    on:input={() => trackEdit('business.errNo')}
                     class="em-w-full em-px-3 em-py-2 em-text-sm em-border em-border-red-300 em-rounded-md focus:em-ring-2 focus:em-ring-red-500 focus:em-border-red-500 focus:em-outline-none"
                     placeholder="e.g., 10001"
                   />
@@ -215,6 +236,7 @@
                   <input
                     type="text"
                     bind:value={rule.business.errMsg}
+                    on:input={() => trackEdit('business.errMsg')}
                     class="em-w-full em-px-3 em-py-2 em-text-sm em-border em-border-red-300 em-rounded-md focus:em-ring-2 focus:em-ring-red-500 focus:em-border-red-500 focus:em-outline-none"
                     placeholder="Brief error message"
                   />
@@ -225,6 +247,7 @@
                   </label>
                   <textarea
                     bind:value={rule.business.detailErrMsg}
+                    on:input={() => trackEdit('business.detailErrMsg')}
                     rows="2"
                     class="em-w-full em-px-3 em-py-2 em-text-sm em-border em-border-red-300 em-rounded-md focus:em-ring-2 focus:em-ring-red-500 focus:em-border-red-500 focus:em-outline-none em-resize-none"
                     placeholder="Detailed explanation of the error"
@@ -259,6 +282,7 @@
                   <input
                     type="checkbox"
                     bind:checked={rule.fieldOmit.enabled}
+                    on:change={() => trackEdit('fieldOmit.enabled')}
                     class="em-h-4 em-w-4 em-text-blue-600 focus:em-ring-blue-500 em-border-gray-300 em-rounded"
                   />
                   <span class="em-ml-2 em-text-sm em-text-gray-700">Enable</span>
@@ -273,6 +297,7 @@
                       type="radio"
                       bind:group={rule.fieldOmit.mode}
                       value="manual"
+                      on:change={() => trackEdit('fieldOmit.mode')}
                       class="em-h-4 em-w-4 em-text-blue-600 focus:em-ring-blue-500"
                     />
                     <span class="em-ml-2 em-text-sm em-text-gray-700">Manual Selection</span>
@@ -282,6 +307,7 @@
                       type="radio"
                       bind:group={rule.fieldOmit.mode}
                       value="random"
+                      on:change={() => trackEdit('fieldOmit.mode')}
                       class="em-h-4 em-w-4 em-text-blue-600 focus:em-ring-blue-500"
                     />
                     <span class="em-ml-2 em-text-sm em-text-gray-700">Random Omission</span>
@@ -362,6 +388,7 @@
                         max="1"
                         step="0.1"
                         bind:value={rule.fieldOmit.random.probability}
+                        on:input={() => trackEdit('fieldOmit.random.probability')}
                         class="em-w-full em-h-2 em-bg-gray-200 em-rounded-lg em-appearance-none em-cursor-pointer"
                       />
                       <div class="em-flex em-justify-between em-text-xs em-text-gray-500 em-mt-1">
@@ -381,6 +408,7 @@
                         type="number"
                         min="0"
                         bind:value={rule.fieldOmit.random.maxOmitCount}
+                        on:input={() => trackEdit('fieldOmit.random.maxOmitCount')}
                         class="em-w-full em-px-3 em-py-2 em-text-sm em-border em-border-gray-300 em-rounded-md focus:em-ring-2 focus:em-ring-blue-500 focus:em-outline-none"
                       />
                     </div>
@@ -393,6 +421,7 @@
                         type="number"
                         min="1"
                         bind:value={rule.fieldOmit.random.depthLimit}
+                        on:input={() => trackEdit('fieldOmit.random.depthLimit')}
                         class="em-w-full em-px-3 em-py-2 em-text-sm em-border em-border-gray-300 em-rounded-md focus:em-ring-2 focus:em-ring-blue-500 focus:em-outline-none"
                       />
                     </div>
@@ -404,8 +433,10 @@
                       <input
                         type="text"
                         value={formatExcludedFields(rule.fieldOmit.random.excludeFields)}
-                        on:input={(e) =>
-                          (rule.fieldOmit.random.excludeFields = parseExcludedFields(e.currentTarget.value))}
+                        on:input={(e) => {
+                          rule.fieldOmit.random.excludeFields = parseExcludedFields(e.currentTarget.value);
+                          trackEdit('fieldOmit.random.excludeFields');
+                        }}
                         placeholder="id, type, status"
                         class="em-w-full em-px-3 em-py-2 em-text-sm em-border em-border-gray-300 em-rounded-md focus:em-ring-2 focus:em-ring-blue-500 focus:em-outline-none"
                       />
@@ -420,6 +451,7 @@
                               type="radio"
                               bind:group={rule.fieldOmit.random.omitMode}
                               value={mode}
+                              on:change={() => trackEdit('fieldOmit.random.omitMode')}
                               class="em-h-4 em-w-4 em-text-blue-600 focus:em-ring-blue-500"
                             />
                             <span class="em-ml-2 em-text-sm em-text-gray-700 em-capitalize">{mode}</span>
