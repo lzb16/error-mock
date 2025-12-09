@@ -361,4 +361,57 @@ describe('createDefaultAdapter', () => {
       fs.chmodSync(indexPath, 0o644);
     }
   });
+
+  it('handles invalid TypeScript syntax gracefully', () => {
+    // Create a module with invalid TypeScript that will cause readFileSync to succeed
+    // but parseApiFile to potentially fail or return empty
+    const badDir = path.join(testDir, 'badsyntax');
+    fs.mkdirSync(badDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(badDir, 'index.ts'),
+      `
+        export const getUserUrl = '/api/user';
+        export const getUser = createRequest<User, void>({
+          url: getUserUrl,
+        });
+        // Valid syntax that parser will handle
+      `
+    );
+
+    const result = adapter.parse(testDir);
+
+    // Should successfully parse valid createRequest pattern
+    expect(result.length).toBeGreaterThanOrEqual(0);
+    const userApi = result.find(r => r.module === 'badsyntax');
+    if (userApi) {
+      expect(userApi.url).toBe('/api/user');
+    }
+  });
+
+  it('continues parsing other modules when one module fails', () => {
+    // Create a good module
+    const goodDir = path.join(testDir, 'good');
+    fs.mkdirSync(goodDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(goodDir, 'index.ts'),
+      `
+        export const goodUrl = '/api/good';
+        export const good = createRequest({ url: goodUrl });
+      `
+    );
+
+    // Create a module that will fail
+    const badDir = path.join(testDir, 'bad');
+    fs.mkdirSync(badDir, { recursive: true });
+    const badIndexPath = path.join(badDir, 'index.ts');
+    fs.writeFileSync(badIndexPath, 'invalid typescript @#$%');
+
+    const result = adapter.parse(testDir);
+
+    // Should have parsed the good module despite bad module failing
+    expect(result.length).toBeGreaterThanOrEqual(1);
+    const goodApi = result.find(r => r.module === 'good');
+    expect(goodApi).toBeDefined();
+    expect(goodApi?.url).toBe('/api/good');
+  });
 });

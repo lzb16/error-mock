@@ -482,4 +482,43 @@ describe('FetchInterceptor', () => {
       expect(data.result).toEqual({ mocked: true });
     });
   });
+
+  describe('AbortSignal edge cases', () => {
+    it('throws immediately if signal is already aborted before fetch', async () => {
+      const rules = [createRule({
+        network: { delay: 1000, timeout: false, offline: false, failRate: 0 },
+      })];
+      installFetchInterceptor(rules);
+
+      // Create an already-aborted signal
+      const controller = new AbortController();
+      controller.abort();
+
+      // Should throw immediately without waiting for delay
+      await expect(
+        fetch('/api/test', { signal: controller.signal })
+      ).rejects.toThrow('Aborted');
+    });
+
+    it('detects abort that happens during delay', async () => {
+      vi.useFakeTimers();
+
+      const rules = [createRule({
+        network: { delay: 1000, timeout: false, offline: false, failRate: 0 },
+      })];
+      installFetchInterceptor(rules);
+
+      const controller = new AbortController();
+      const fetchPromise = fetch('/api/test', { signal: controller.signal });
+
+      // Abort after delay starts but before it completes
+      await vi.advanceTimersByTimeAsync(500);
+      controller.abort();
+
+      // Should throw AbortError
+      await expect(fetchPromise).rejects.toThrow('Aborted');
+
+      vi.useRealTimers();
+    });
+  });
 });

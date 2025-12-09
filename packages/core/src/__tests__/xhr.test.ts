@@ -636,4 +636,53 @@ describe('XHRInterceptor', () => {
       expect(xhr.readyState).toBe(1); // OPENED
     });
   });
+
+  describe('EventTarget methods', () => {
+    it('throws NotImplementedError for addEventListener', () => {
+      const rules = [createRule()];
+      installXHRInterceptor(rules);
+
+      const xhr = new XMLHttpRequest();
+      expect(() => {
+        xhr.addEventListener('load', () => {});
+      }).toThrow('addEventListener is not implemented');
+    });
+
+    it('throws NotImplementedError for removeEventListener', () => {
+      const rules = [createRule()];
+      installXHRInterceptor(rules);
+
+      const xhr = new XMLHttpRequest();
+      expect(() => {
+        xhr.removeEventListener('load', () => {});
+      }).toThrow('removeEventListener is not implemented');
+    });
+
+    it('throws NotImplementedError for dispatchEvent', () => {
+      const rules = [createRule()];
+      installXHRInterceptor(rules);
+
+      const xhr = new XMLHttpRequest();
+      expect(() => {
+        xhr.dispatchEvent(new Event('load'));
+      }).toThrow('dispatchEvent is not implemented');
+    });
+  });
+
+  describe('Synchronous XHR', () => {
+    it('handles synchronous requests (async=false)', () => {
+      const rules = [createRule()];
+      installXHRInterceptor(rules);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', '/api/test', false); // async=false
+      xhr.send();
+
+      // Should complete immediately
+      expect(xhr.readyState).toBe(4);
+      expect(xhr.status).toBe(200);
+      const data = JSON.parse(xhr.responseText);
+      expect(data.result).toEqual({ mocked: true });
+    });
+  });
 });

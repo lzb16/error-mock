@@ -1,6 +1,6 @@
 // packages/core/src/__tests__/matcher.test.ts
 import { describe, it, expect } from 'vitest';
-import { matchUrl, matchRule } from '../engine/matcher';
+import { matchUrl, matchRule, clearMatcherCache } from '../engine/matcher';
 import type { MockRule } from '../types';
 
 describe('matchUrl', () => {
@@ -105,5 +105,28 @@ describe('matchRule', () => {
     ];
     const result = matchRule(rules, '/api/user/123', 'POST');
     expect(result?.id).toBe('first');
+  });
+
+  it('handles invalid URL patterns gracefully', () => {
+    // Create a rule with a pattern that might cause path-to-regexp to throw
+    // The matcher should catch the error and fall back to exact matching
+    const rules = [createRule({ url: '/api/test[invalid' })];
+
+    // Should use exact matching fallback
+    expect(matchUrl('/api/test[invalid', '/api/test[invalid')).toBe(true);
+    expect(matchUrl('/api/test', '/api/test[invalid')).toBe(false);
+  });
+});
+
+describe('clearMatcherCache', () => {
+  it('clears the matcher cache', () => {
+    // First call creates cache entry
+    expect(matchUrl('/api/user/123', '/api/user/:id')).toBe(true);
+
+    // Clear cache
+    clearMatcherCache();
+
+    // Should still work (recreates cache entry)
+    expect(matchUrl('/api/user/456', '/api/user/:id')).toBe(true);
   });
 });

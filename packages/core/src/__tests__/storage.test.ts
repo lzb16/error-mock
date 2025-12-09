@@ -147,4 +147,22 @@ describe('RuleStorage', () => {
     const result = storage.importConfig('invalid json {');
     expect(result).toBe(false);
   });
+
+  it('normalizes invalid HTTP methods to GET', () => {
+    // Save a rule with an invalid method by manipulating localStorage directly
+    const invalidRule = {
+      ...createRule('test1'),
+      method: 'INVALID' as any,
+    };
+
+    localStorage.setItem(
+      'test-prefix:rules',
+      JSON.stringify([invalidRule])
+    );
+
+    // getRules should normalize the invalid method to GET
+    const retrieved = storage.getRules();
+    expect(retrieved).toHaveLength(1);
+    expect(retrieved[0].method).toBe('GET');
+  });
 });
