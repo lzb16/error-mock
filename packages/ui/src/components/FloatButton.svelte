@@ -144,7 +144,7 @@
   style="transform: translate({$coords.x}px, {$coords.y}px); will-change: transform;"
 >
   <button
-    class="em-bg-blue-600 em-text-white em-rounded-full em-w-14 em-h-14 em-shadow-lg em-flex em-items-center em-justify-center em-cursor-move hover:em-bg-blue-700 hover:em-scale-105 em-transition-transform em-duration-200 focus:em-outline-none focus:em-ring-2 focus:em-ring-offset-2 focus:em-ring-blue-500 em-relative"
+    class="em-bg-blue-600 em-text-white em-rounded-full em-w-14 em-h-14 em-shadow-lg em-flex em-items-center em-justify-center em-cursor-pointer hover:em-bg-blue-700 hover:em-scale-105 em-transition-transform em-duration-200 focus:em-outline-none focus:em-ring-2 focus:em-ring-offset-2 focus:em-ring-blue-500 em-relative"
     on:mousedown={handleMouseDown}
     on:keydown={handleKeyDown}
     aria-label="Open Error Mock Settings"
