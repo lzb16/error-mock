@@ -176,6 +176,139 @@ pnpm install
 pnpm dev
 ```
 
+## 调试方式
+
+### 1. 检查插件是否正确注入
+
+打开浏览器控制台，输入：
+
+```javascript
+window.__ERROR_MOCK_INSTALLED__
+```
+
+如果返回 `true`，说明插件已成功注入。
+
+### 2. 查看控制台日志
+
+插件会在以下情况输出日志：
+
+```javascript
+// 所有日志都以 [ErrorMock] 前缀标识
+[ErrorMock] API directory not found: /path/to/api
+[ErrorMock] Failed to save rules: Error message
+[ErrorMock] Failed to parse /path/to/file: Error message
+```
+
+### 3. 检查 localStorage 配置
+
+在浏览器控制台查看已保存的配置：
+
+```javascript
+// 查看所有规则
+JSON.parse(localStorage.getItem('error-mock:rules'))
+
+// 查看全局配置
+JSON.parse(localStorage.getItem('error-mock:config'))
+
+// 清空所有配置
+localStorage.removeItem('error-mock:rules')
+localStorage.removeItem('error-mock:config')
+```
+
+### 4. 追踪 Mock 请求
+
+每个 Mock 响应都包含唯一的 `trace_id`：
+
+```javascript
+// 在响应中查看
+{
+  "trace_id": "[1a2b3c4d5e]",
+  "err_no": 0,
+  "result": { ... }
+}
+```
+
+使用 Network 面板过滤：
+1. 打开 DevTools → Network 标签
+2. 在 Filter 输入框输入请求 URL
+3. 查看 Response 中的 `trace_id` 字段
+4. Mock 的请求状态码固定为 200
+
+### 5. 检查拦截器状态
+
+```javascript
+// 查看当前的 Mock 规则
+window.__ERROR_MOCK_RULES__
+
+// 手动触发规则更新（高级用法）
+import { updateRules } from '@error-mock/core';
+updateRules(newRules);
+```
+
+### 6. 常见问题排查
+
+#### 问题：插件未生效
+
+**检查清单：**
+- ✅ 确认是开发环境（`process.env.NODE_ENV !== 'production'`）
+- ✅ 检查插件配置中的 `apiDir` 路径是否正确
+- ✅ 确认 API 文件符合 `createRequest` 模式
+- ✅ 查看控制台是否有错误日志
+
+#### 问题：Mock 规则不生效
+
+**排查步骤：**
+1. 检查规则是否已启用（`enabled: true`）
+2. 检查 URL 和 Method 是否完全匹配
+3. 查看是否被 Bypass 配置排除
+4. 使用浏览器 Network 面板确认请求实际 URL
+
+#### 问题：UI 面板打不开
+
+**可能原因：**
+- 样式未正确加载 → 检查 Tailwind CSS 是否正确配置
+- 按钮被其他元素遮挡 → 尝试拖动按钮位置
+- JavaScript 错误 → 查看控制台错误信息
+
+#### 问题：配置丢失
+
+**原因分析：**
+- localStorage 被清空
+- 浏览器隐私模式
+- 切换了不同域名/端口
+
+**解决方案：**
+```javascript
+// 导出配置备份
+const storage = new RuleStorage();
+const backup = storage.exportConfig();
+console.log(backup); // 复制保存
+
+// 导入配置
+storage.importConfig(backup);
+```
+
+### 7. 启用详细日志（开发模式）
+
+在项目中添加全局配置：
+
+```javascript
+// 在应用入口文件（如 main.ts）添加
+if (import.meta.env.DEV) {
+  window.__ERROR_MOCK_DEBUG__ = true;
+}
+```
+
+这将启用详细的调试日志输出。
+
+### 8. 使用 Vue/React DevTools
+
+插件状态可以通过组件开发工具查看：
+
+- **Vue DevTools**: 查看 Svelte 组件状态（如果使用 Svelte DevTools）
+- **React DevTools**: 不适用（插件使用 Svelte）
+- **浏览器 Elements**: 检查 `.em-` 前缀的样式元素
+
 ## 技术细节
 
 ### 拦截实现
