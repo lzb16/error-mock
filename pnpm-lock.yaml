@@ -36,6 +36,28 @@ importers:
         specifier: ^1.0.0
         version: 1.6.1(@types/node@20.19.25)(jsdom@27.3.0(postcss@8.5.6))(terser@5.44.1)
 
+  examples/vite-example:
+    dependencies:
+      '@error-mock/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@error-mock/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@error-mock/vite-plugin':
+        specifier: workspace:*
+        version: link:../../packages/vite-plugin
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.25
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vite:
+        specifier: ^5.0.10
+        version: 5.4.21(@types/node@20.19.25)(terser@5.44.1)
+
   packages/core:
     dependencies:
       path-to-regexp:
