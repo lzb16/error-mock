@@ -76,10 +76,12 @@ export function markFieldDirty(field: string) {
 export function resetEditor() {
   activeRuleDraft.set(null);
   originalRule = null;
-  editorUiState.update(state => ({
-    ...state,
+  editorUiState.set({
+    activeTab: 'network',
+    isBatchMode: false,
+    selectedCount: 0,
     dirtyFields: new Set()
-  }));
+  });
 }
 
 // 切换Tab
