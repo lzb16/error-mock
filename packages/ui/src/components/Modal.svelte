@@ -3,7 +3,7 @@
   import { fade, scale } from 'svelte/transition';
   import Header from './modal/Header.svelte';
   import Footer from './modal/Footer.svelte';
-  import { activeRuleDraft, editorUiState } from '../stores/ruleEditor';
+  import { activeRuleDraft, editorUiState, type RuleDraft } from '../stores/ruleEditor';
 
   export let currentApi: { method: string; url: string } | null = null;
   export let isBatchMode = false;
@@ -12,7 +12,7 @@
   const dispatch = createEventDispatcher<{
     close: void;
     minimize: void;
-    apply: { rule: any; editedFields: Set<string> };
+    apply: { rule: RuleDraft; editedFields: Set<string> };
     cancel: void;
   }>();
 

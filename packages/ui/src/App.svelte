@@ -18,6 +18,7 @@
   } from './stores/rules';
   import { isModalOpen, toasts } from './stores/config';
   import type { ApiMeta, MockRule } from '@error-mock/core';
+  import type { RuleDraft } from './stores/ruleEditor';
   import { RuleStorage, install, updateRules } from '@error-mock/core';
 
   // Initialize storage
@@ -48,6 +49,7 @@
   // Reactive editing state - always deep clone to prevent direct mutation
   $: currentRule = getCurrentRule($selectedIds, $apiMetas, $mockRules);
   $: isBatch = $selectedIds.size > 1;
+  $: batchRules = getBatchRules($selectedIds, $apiMetas, $mockRules);
   $: modalCurrentApi = !isBatch && currentRule ? { method: currentRule.method, url: currentRule.url } : null;
 
   // Helper to deep clone objects (preserves all data)
@@ -109,6 +111,29 @@
     return deepClone(selectedRules[0]);
   }
 
+  // Get all selected rules for batch mode MIXED value computation
+  function getBatchRules(
+    selected: Set<string>,
+    metas: ApiMeta[],
+    rules: Map<string, MockRule>
+  ): MockRule[] {
+    if (selected.size <= 1) return [];
+
+    const selectedRules: MockRule[] = [];
+    for (const id of selected) {
+      const rule = rules.get(id);
+      if (rule) {
+        selectedRules.push(rule);
+      } else {
+        const meta = metas.find((m) => `${m.module}-${m.name}` === id);
+        if (meta) {
+          selectedRules.push(createDefaultRule(meta));
+        }
+      }
+    }
+    return selectedRules;
+  }
+
   function handleSelect(event: CustomEvent<string>) {
     const id = event.detail;
     // Single select - clear others
@@ -129,8 +154,10 @@
     });
   }
 
-  function handleApply(event: CustomEvent<{ rule: MockRule; editedFields: Set<string> }>) {
-    const { rule, editedFields } = event.detail;
+  function handleApply(event: CustomEvent<{ rule: MockRule | RuleDraft; editedFields: Set<string> }>) {
+    const { rule: incomingRule, editedFields } = event.detail;
+    // Convert RuleDraft to MockRule if needed (in batch mode, rule may have MIXED values)
+    const rule = incomingRule as MockRule;
 
     mockRules.update((rules) => {
       const newRules = new Map(rules);
@@ -293,6 +320,7 @@
           rule={currentRule}
           {isBatch}
           selectedCount={$selectedIds.size}
+          {batchRules}
           on:apply={handleApply}
           on:cancel={handleCancel}
         />

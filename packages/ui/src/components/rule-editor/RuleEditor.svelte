@@ -38,6 +38,7 @@
   export let rule: MockRule | null = null;
   export let isBatch = false;
   export let selectedCount = 0;
+  export let batchRules: MockRule[] = [];
 
   const dispatch = createEventDispatcher<{
     apply: { rule: MockRule; editedFields: Set<string> };
@@ -63,7 +64,7 @@
 
       if (rule) {
         const count = isBatch ? selectedCount : 1;
-        initEditor(rule, isBatch, count);
+        initEditor(rule, isBatch, count, batchRules);
       } else if (propsMode) {
         // Only reset if we were previously using props
         resetEditor();
@@ -133,24 +134,4 @@
       </div>
     {/if}
   </div>
-
-  <!-- Action Buttons (Bottom) -->
-  {#if draft}
-    <div class="em-shrink-0 em-border-t em-border-[#D0D7DE] em-bg-[#F6F8FA] em-px-6 em-py-4">
-      <div class="em-flex em-justify-end em-gap-3">
-        <button
-          class="em-rounded-md em-border em-border-[#D0D7DE] em-bg-white em-px-4 em-py-2 em-text-sm em-font-medium em-text-[#24292F] hover:em-bg-[#F3F4F6] focus:em-outline-none focus:em-ring-2 focus:em-ring-[#0969DA] focus:em-ring-offset-2"
-          on:click={handleCancel}
-        >
-          Cancel
-        </button>
-        <button
-          class="em-rounded-md em-bg-[#1F883D] em-px-4 em-py-2 em-text-sm em-font-medium em-text-white hover:em-bg-[#1A7F37] focus:em-outline-none focus:em-ring-2 focus:em-ring-[#1F883D] focus:em-ring-offset-2"
-          on:click={handleApply}
-        >
-          Apply
-        </button>
-      </div>
-    </div>
-  {/if}
 </div>
