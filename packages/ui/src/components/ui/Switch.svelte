@@ -46,11 +46,6 @@
     meltChecked.set(checked);
   }
 
-  // Sync disabled state
-  $: if (disabled !== undefined) {
-    // Melt UI handles disabled through the disabled prop
-  }
-
   // Size classes
   $: trackClasses = size === 'sm'
     ? 'em-h-4 em-w-7'
@@ -82,6 +77,7 @@
     use:melt={$input}
     type="checkbox"
     class="em-peer em-sr-only"
+    {disabled}
   />
 
   <!-- Visual track -->

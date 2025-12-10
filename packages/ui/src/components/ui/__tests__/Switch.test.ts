@@ -66,4 +66,29 @@ describe('Switch.svelte', () => {
     // Melt UI handles checkbox state through standard checked attribute
     expect(checkbox).toBeChecked();
   });
+
+  it('should update disabled state reactively after mount', async () => {
+    const { component, getByRole } = render(Switch, {
+      label: 'Enable',
+      checked: false,
+      disabled: false
+    });
+
+    const checkbox = getByRole('checkbox', { hidden: true });
+
+    // Initially enabled
+    expect(checkbox).not.toBeDisabled();
+
+    // Update disabled prop
+    await component.$set({ disabled: true });
+
+    // Should now be disabled
+    expect(checkbox).toBeDisabled();
+
+    // Toggle back to enabled
+    await component.$set({ disabled: false });
+
+    // Should be enabled again
+    expect(checkbox).not.toBeDisabled();
+  });
 });
