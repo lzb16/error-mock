@@ -1,4 +1,33 @@
 <script lang="ts">
+  /**
+   * RuleEditor - Main container for rule editing interface
+   *
+   * IMPORTANT: Tab State Management Architecture
+   * ============================================
+   * This component uses {#if} conditional rendering for tab content (lines 77-92),
+   * which means the DOM is completely destroyed and recreated on every tab switch.
+   *
+   * **Critical Requirement for Phase 2 Tab Implementation:**
+   * ALL tab-local state MUST be stored in Svelte stores (editorUiState/activeRuleDraft),
+   * NOT in component-local variables. This ensures:
+   * - State survives tab switches (DOM remounts)
+   * - Batch editing works correctly across tabs
+   * - No data loss when users navigate between tabs
+   *
+   * **Store Binding Contract:**
+   * - activeRuleDraft: All draft rule data (network, response, business, fieldOmit)
+   * - editorUiState: UI state (activeTab, dirtyFields, isBatchMode, selectedCount)
+   *
+   * **Example (CORRECT):**
+   *   <input bind:value={$activeRuleDraft.network.delay} />
+   *
+   * **Example (WRONG - will lose state on tab switch):**
+   *   let localDelay = 100;
+   *   <input bind:value={localDelay} />
+   *
+   * See: packages/ui/src/stores/ruleEditor.ts for store implementation
+   * See: packages/ui/src/stores/__tests__/ruleEditor.test.ts for state preservation tests
+   */
   import { createEventDispatcher, onMount } from 'svelte';
   import type { MockRule } from '@error-mock/core';
   import { activeRuleDraft, editorUiState, initEditor, resetEditor } from '../../stores/ruleEditor';

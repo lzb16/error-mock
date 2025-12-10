@@ -532,4 +532,181 @@ describe('ruleEditor Store', () => {
       expect(get(hasUnsavedChanges)).toBe(true);
     });
   });
+
+  describe('Tab State Preservation (Critical for RuleEditor {#if} rendering)', () => {
+    /**
+     * RuleEditor uses {#if} conditional rendering which destroys/recreates DOM on tab switches.
+     * These tests verify that the store contract preserves all state across tab navigation,
+     * which is critical for Phase 2 tab implementations.
+     */
+
+    it('preserves draft mutations across multiple tab switches', () => {
+      initEditor(mockRule, false);
+
+      // Simulate user editing network delay
+      updateDraft({ network: { delay: 250 } });
+
+      // User switches from network tab to response tab
+      setActiveTab('response');
+      expect(get(editorUiState).activeTab).toBe('response');
+
+      // Then to advanced tab
+      setActiveTab('advanced');
+      expect(get(editorUiState).activeTab).toBe('advanced');
+
+      // Then back to network tab (DOM is remounted)
+      setActiveTab('network');
+      expect(get(editorUiState).activeTab).toBe('network');
+
+      // Draft mutation must survive all tab switches
+      const draft = get(activeRuleDraft);
+      expect(draft?.network.delay).toBe(250);
+      expect(draft?.network.timeout).toBe(mockRule.network.timeout);
+      expect(draft?.network.offline).toBe(mockRule.network.offline);
+    });
+
+    it('preserves dirtyFields tracking when tabs remount', () => {
+      // Create a second rule for batch mode
+      const mockRule2 = { ...mockRule, id: 'test-module-test-api2', url: '/api/test2' };
+      initEditor(mockRule, true, 2, [mockRule, mockRule2]);
+
+      // Mark multiple fields as dirty
+      markFieldDirty('network.delay');
+      markFieldDirty('business.errNo');
+      markFieldDirty('response.useDefault');
+
+      // Switch through all tabs
+      setActiveTab('network');
+      setActiveTab('response');
+      setActiveTab('advanced');
+      setActiveTab('network');
+
+      // All dirty fields must be preserved
+      const state = get(editorUiState);
+      expect(state.dirtyFields.has('network.delay')).toBe(true);
+      expect(state.dirtyFields.has('business.errNo')).toBe(true);
+      expect(state.dirtyFields.has('response.useDefault')).toBe(true);
+      expect(state.dirtyFields.size).toBe(3);
+    });
+
+    it('preserves complex draft updates across tab navigation', () => {
+      initEditor(mockRule, false);
+
+      // Simulate complex multi-field edit
+      updateDraft({
+        network: { delay: 500, timeout: true },
+        business: { errNo: 404, errMsg: 'Not Found' },
+        response: { useDefault: false, customResult: { data: 'test' } }
+      });
+
+      // Navigate through tabs
+      setActiveTab('response');
+      setActiveTab('advanced');
+      setActiveTab('network');
+
+      // All updates must survive
+      const draft = get(activeRuleDraft);
+      expect(draft?.network.delay).toBe(500);
+      expect(draft?.network.timeout).toBe(true);
+      expect(draft?.business.errNo).toBe(404);
+      expect(draft?.business.errMsg).toBe('Not Found');
+      expect(draft?.response.useDefault).toBe(false);
+      expect(draft?.response.customResult).toEqual({ data: 'test' });
+    });
+
+    it('preserves MIXED values in batch mode across tab switches', () => {
+      // Create two rules with different values to generate MIXED
+      const mockRule2 = {
+        ...mockRule,
+        id: 'test-module-test-api2',
+        enabled: false, // Different from mockRule.enabled = true
+        mockType: 'businessError' as const // Different from mockRule.mockType = 'success'
+      };
+      initEditor(mockRule, true, 2, [mockRule, mockRule2]);
+
+      // Verify MIXED values exist
+      const before = get(activeRuleDraft);
+      expect(isMixed(before!.enabled)).toBe(true);
+      expect(isMixed(before!.mockType)).toBe(true);
+
+      // Navigate through tabs
+      setActiveTab('response');
+      setActiveTab('advanced');
+      setActiveTab('network');
+
+      // MIXED values must persist
+      const after = get(activeRuleDraft);
+      expect(isMixed(after!.enabled)).toBe(true);
+      expect(isMixed(after!.mockType)).toBe(true);
+    });
+
+    it('preserves unsavedChanges state across tab switches', () => {
+      initEditor(mockRule, false);
+
+      // Make a change
+      updateDraft({ network: { delay: 999 } });
+      expect(get(hasUnsavedChanges)).toBe(true);
+
+      // Navigate through all tabs
+      setActiveTab('response');
+      expect(get(hasUnsavedChanges)).toBe(true);
+
+      setActiveTab('advanced');
+      expect(get(hasUnsavedChanges)).toBe(true);
+
+      setActiveTab('network');
+      expect(get(hasUnsavedChanges)).toBe(true);
+    });
+
+    it('preserves batch mode state and selectedCount across tabs', () => {
+      // Create a second rule for batch mode
+      const mockRule2 = { ...mockRule, id: 'test-module-test-api2' };
+      initEditor(mockRule, true, 5, [mockRule, mockRule2]);
+
+      // Verify initial state
+      let state = get(editorUiState);
+      expect(state.isBatchMode).toBe(true);
+      expect(state.selectedCount).toBe(5);
+
+      // Navigate through tabs
+      setActiveTab('response');
+      state = get(editorUiState);
+      expect(state.isBatchMode).toBe(true);
+      expect(state.selectedCount).toBe(5);
+
+      setActiveTab('advanced');
+      state = get(editorUiState);
+      expect(state.isBatchMode).toBe(true);
+      expect(state.selectedCount).toBe(5);
+
+      setActiveTab('network');
+      state = get(editorUiState);
+      expect(state.isBatchMode).toBe(true);
+      expect(state.selectedCount).toBe(5);
+    });
+
+    it('handles rapid tab switching without state loss', () => {
+      initEditor(mockRule, false);
+
+      // Make multiple updates
+      updateDraft({ network: { delay: 100 } });
+      setActiveTab('response');
+
+      updateDraft({ business: { errNo: 500 } });
+      setActiveTab('advanced');
+
+      updateDraft({ response: { useDefault: false } });
+      setActiveTab('network');
+
+      updateDraft({ network: { timeout: true } });
+      setActiveTab('response');
+
+      // All updates must be present
+      const draft = get(activeRuleDraft);
+      expect(draft?.network.delay).toBe(100);
+      expect(draft?.network.timeout).toBe(true);
+      expect(draft?.business.errNo).toBe(500);
+      expect(draft?.response.useDefault).toBe(false);
+    });
+  });
 });
