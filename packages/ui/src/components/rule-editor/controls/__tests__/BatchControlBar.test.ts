@@ -48,9 +48,114 @@ describe('BatchControlBar', () => {
     }
   };
 
+  const mockRule1: MockRule = {
+    id: 'test-module-test-api-1',
+    url: '/api/test/1',
+    method: 'GET',
+    enabled: true,
+    mockType: 'success',
+    network: {
+      delay: 100,
+      timeout: false,
+      offline: false,
+      failRate: 0
+    },
+    business: {
+      errNo: 0,
+      errMsg: '',
+      detailErrMsg: ''
+    },
+    response: {
+      useDefault: true,
+      customResult: null
+    },
+    fieldOmit: {
+      enabled: false,
+      mode: 'manual',
+      fields: [],
+      random: {
+        probability: 0,
+        maxOmitCount: 0,
+        excludeFields: [],
+        depthLimit: 5,
+        omitMode: 'delete'
+      }
+    }
+  };
+
+  const mockRule2: MockRule = {
+    id: 'test-module-test-api-2',
+    url: '/api/test/2',
+    method: 'GET',
+    enabled: true,
+    mockType: 'success',
+    network: {
+      delay: 100,
+      timeout: false,
+      offline: false,
+      failRate: 0
+    },
+    business: {
+      errNo: 0,
+      errMsg: '',
+      detailErrMsg: ''
+    },
+    response: {
+      useDefault: true,
+      customResult: null
+    },
+    fieldOmit: {
+      enabled: false,
+      mode: 'manual',
+      fields: [],
+      random: {
+        probability: 0,
+        maxOmitCount: 0,
+        excludeFields: [],
+        depthLimit: 5,
+        omitMode: 'delete'
+      }
+    }
+  };
+
+  const mockRule3: MockRule = {
+    id: 'test-module-test-api-3',
+    url: '/api/test/3',
+    method: 'GET',
+    enabled: true,
+    mockType: 'success',
+    network: {
+      delay: 100,
+      timeout: false,
+      offline: false,
+      failRate: 0
+    },
+    business: {
+      errNo: 0,
+      errMsg: '',
+      detailErrMsg: ''
+    },
+    response: {
+      useDefault: true,
+      customResult: null
+    },
+    fieldOmit: {
+      enabled: false,
+      mode: 'manual',
+      fields: [],
+      random: {
+        probability: 0,
+        maxOmitCount: 0,
+        excludeFields: [],
+        depthLimit: 5,
+        omitMode: 'delete'
+      }
+    }
+  };
+
   beforeEach(() => {
     resetEditor();
-    initEditor(mockRule, true, 3); // Initialize in batch mode with 3 selected items
+    initEditor(mockRule, true, 3, [mockRule1, mockRule2, mockRule3]); // Initialize in batch mode with 3 selected items
   });
 
   describe('Batch Context Display', () => {

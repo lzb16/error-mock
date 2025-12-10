@@ -13,18 +13,142 @@ import type { MockRule } from '@error-mock/core';
 describe('Modal Footer', () => {
   const mockRule: MockRule = {
     id: 'test-api',
-    module: 'test',
-    name: 'GET /test',
     url: '/test',
     method: 'GET',
     enabled: true,
     mockType: 'success',
-    delay: 100,
-    failureRate: 0,
-    timeout: false,
-    offline: false,
-    businessError: { err_no: 0, err_msg: '', detail_err_msg: '' },
-    fieldOmit: { enabled: false, mode: 'manual', fields: [], config: {} }
+    network: {
+      delay: 100,
+      timeout: false,
+      offline: false,
+      failRate: 0
+    },
+    business: {
+      errNo: 0,
+      errMsg: '',
+      detailErrMsg: ''
+    },
+    response: {
+      useDefault: true,
+      customResult: null
+    },
+    fieldOmit: {
+      enabled: false,
+      mode: 'manual',
+      fields: [],
+      random: {
+        probability: 0,
+        maxOmitCount: 0,
+        excludeFields: [],
+        depthLimit: 5,
+        omitMode: 'delete'
+      }
+    }
+  };
+
+  const mockRule1: MockRule = {
+    id: 'test-api-1',
+    url: '/test/1',
+    method: 'GET',
+    enabled: true,
+    mockType: 'success',
+    network: {
+      delay: 100,
+      timeout: false,
+      offline: false,
+      failRate: 0
+    },
+    business: {
+      errNo: 0,
+      errMsg: '',
+      detailErrMsg: ''
+    },
+    response: {
+      useDefault: true,
+      customResult: null
+    },
+    fieldOmit: {
+      enabled: false,
+      mode: 'manual',
+      fields: [],
+      random: {
+        probability: 0,
+        maxOmitCount: 0,
+        excludeFields: [],
+        depthLimit: 5,
+        omitMode: 'delete'
+      }
+    }
+  };
+
+  const mockRule2: MockRule = {
+    id: 'test-api-2',
+    url: '/test/2',
+    method: 'GET',
+    enabled: true,
+    mockType: 'success',
+    network: {
+      delay: 100,
+      timeout: false,
+      offline: false,
+      failRate: 0
+    },
+    business: {
+      errNo: 0,
+      errMsg: '',
+      detailErrMsg: ''
+    },
+    response: {
+      useDefault: true,
+      customResult: null
+    },
+    fieldOmit: {
+      enabled: false,
+      mode: 'manual',
+      fields: [],
+      random: {
+        probability: 0,
+        maxOmitCount: 0,
+        excludeFields: [],
+        depthLimit: 5,
+        omitMode: 'delete'
+      }
+    }
+  };
+
+  const mockRule3: MockRule = {
+    id: 'test-api-3',
+    url: '/test/3',
+    method: 'GET',
+    enabled: true,
+    mockType: 'success',
+    network: {
+      delay: 100,
+      timeout: false,
+      offline: false,
+      failRate: 0
+    },
+    business: {
+      errNo: 0,
+      errMsg: '',
+      detailErrMsg: ''
+    },
+    response: {
+      useDefault: true,
+      customResult: null
+    },
+    fieldOmit: {
+      enabled: false,
+      mode: 'manual',
+      fields: [],
+      random: {
+        probability: 0,
+        maxOmitCount: 0,
+        excludeFields: [],
+        depthLimit: 5,
+        omitMode: 'delete'
+      }
+    }
   };
 
   it('does not render when hasUnsavedChanges is false', () => {
@@ -37,7 +161,7 @@ describe('Modal Footer', () => {
 
   it('renders when hasUnsavedChanges is true (single mode)', () => {
     initEditor(mockRule, false);
-    updateDraft({ delay: 200 }); // Create unsaved changes
+    updateDraft({ network: { delay: 200, timeout: false, offline: false, failRate: 0 } }); // Create unsaved changes
 
     render(Footer);
 
@@ -46,7 +170,7 @@ describe('Modal Footer', () => {
 
   it('displays warning message for unsaved changes in single mode', () => {
     initEditor(mockRule, false);
-    updateDraft({ delay: 200 });
+    updateDraft({ network: { delay: 200, timeout: false, offline: false, failRate: 0 } });
 
     render(Footer);
 
@@ -55,7 +179,7 @@ describe('Modal Footer', () => {
 
   it('displays Cancel and Apply buttons', () => {
     initEditor(mockRule, false);
-    updateDraft({ delay: 200 });
+    updateDraft({ network: { delay: 200, timeout: false, offline: false, failRate: 0 } });
 
     render(Footer);
 
@@ -65,7 +189,7 @@ describe('Modal Footer', () => {
 
   it('emits cancel event when Cancel button clicked', async () => {
     initEditor(mockRule, false);
-    updateDraft({ delay: 200 });
+    updateDraft({ network: { delay: 200, timeout: false, offline: false, failRate: 0 } });
 
     const { component } = render(Footer);
     const mockHandler = vi.fn();
@@ -80,7 +204,7 @@ describe('Modal Footer', () => {
 
   it('emits apply event when Apply button clicked', async () => {
     initEditor(mockRule, false);
-    updateDraft({ delay: 200 });
+    updateDraft({ network: { delay: 200, timeout: false, offline: false, failRate: 0 } });
 
     const { component } = render(Footer);
     const mockHandler = vi.fn();
@@ -95,7 +219,7 @@ describe('Modal Footer', () => {
 
   it('displays correct text in single mode', () => {
     initEditor(mockRule, false);
-    updateDraft({ delay: 200 });
+    updateDraft({ network: { delay: 200, timeout: false, offline: false, failRate: 0 } });
 
     render(Footer);
 
@@ -103,7 +227,7 @@ describe('Modal Footer', () => {
   });
 
   it('displays correct text in batch mode', () => {
-    initEditor(mockRule, true, 3);
+    initEditor(mockRule, true, 3, [mockRule1, mockRule2, mockRule3]);
     markFieldDirty('delay');
 
     render(Footer);
@@ -114,7 +238,7 @@ describe('Modal Footer', () => {
 
   it('displays warning icon in single mode', () => {
     initEditor(mockRule, false);
-    updateDraft({ delay: 200 });
+    updateDraft({ network: { delay: 200, timeout: false, offline: false, failRate: 0 } });
 
     const { container } = render(Footer);
 
@@ -123,7 +247,7 @@ describe('Modal Footer', () => {
   });
 
   it('renders when hasUnsavedChanges is true (batch mode)', () => {
-    initEditor(mockRule, true, 3);
+    initEditor(mockRule, true, 3, [mockRule1, mockRule2, mockRule3]);
     markFieldDirty('delay'); // Create dirty field
 
     render(Footer);
@@ -132,7 +256,7 @@ describe('Modal Footer', () => {
   });
 
   it('displays blue dot indicator in batch mode', () => {
-    initEditor(mockRule, true, 3);
+    initEditor(mockRule, true, 3, [mockRule1, mockRule2, mockRule3]);
     markFieldDirty('delay');
 
     const { container } = render(Footer);
@@ -142,7 +266,7 @@ describe('Modal Footer', () => {
   });
 
   it('appears when enabled field is marked dirty in batch mode', () => {
-    initEditor(mockRule, true, 3);
+    initEditor(mockRule, true, 3, [mockRule1, mockRule2, mockRule3]);
     markFieldDirty('enabled');
 
     render(Footer);

@@ -14,18 +14,142 @@ import type { MockRule } from '@error-mock/core';
 describe('RuleEditor Container', () => {
   const mockRule: MockRule = {
     id: 'test-api',
-    module: 'test',
-    name: 'GET /test',
     url: '/test',
     method: 'GET',
     enabled: true,
     mockType: 'success',
-    delay: 100,
-    failureRate: 0,
-    timeout: false,
-    offline: false,
-    businessError: { err_no: 0, err_msg: '', detail_err_msg: '' },
-    fieldOmit: { enabled: false, mode: 'manual', fields: [], config: {} }
+    network: {
+      delay: 100,
+      timeout: false,
+      offline: false,
+      failRate: 0
+    },
+    business: {
+      errNo: 0,
+      errMsg: '',
+      detailErrMsg: ''
+    },
+    response: {
+      useDefault: true,
+      customResult: null
+    },
+    fieldOmit: {
+      enabled: false,
+      mode: 'manual',
+      fields: [],
+      random: {
+        probability: 0,
+        maxOmitCount: 0,
+        excludeFields: [],
+        depthLimit: 5,
+        omitMode: 'delete'
+      }
+    }
+  };
+
+  const mockRule1: MockRule = {
+    id: 'test-api-1',
+    url: '/test/1',
+    method: 'GET',
+    enabled: true,
+    mockType: 'success',
+    network: {
+      delay: 100,
+      timeout: false,
+      offline: false,
+      failRate: 0
+    },
+    business: {
+      errNo: 0,
+      errMsg: '',
+      detailErrMsg: ''
+    },
+    response: {
+      useDefault: true,
+      customResult: null
+    },
+    fieldOmit: {
+      enabled: false,
+      mode: 'manual',
+      fields: [],
+      random: {
+        probability: 0,
+        maxOmitCount: 0,
+        excludeFields: [],
+        depthLimit: 5,
+        omitMode: 'delete'
+      }
+    }
+  };
+
+  const mockRule2: MockRule = {
+    id: 'test-api-2',
+    url: '/test/2',
+    method: 'GET',
+    enabled: true,
+    mockType: 'success',
+    network: {
+      delay: 100,
+      timeout: false,
+      offline: false,
+      failRate: 0
+    },
+    business: {
+      errNo: 0,
+      errMsg: '',
+      detailErrMsg: ''
+    },
+    response: {
+      useDefault: true,
+      customResult: null
+    },
+    fieldOmit: {
+      enabled: false,
+      mode: 'manual',
+      fields: [],
+      random: {
+        probability: 0,
+        maxOmitCount: 0,
+        excludeFields: [],
+        depthLimit: 5,
+        omitMode: 'delete'
+      }
+    }
+  };
+
+  const mockRule3: MockRule = {
+    id: 'test-api-3',
+    url: '/test/3',
+    method: 'GET',
+    enabled: true,
+    mockType: 'success',
+    network: {
+      delay: 100,
+      timeout: false,
+      offline: false,
+      failRate: 0
+    },
+    business: {
+      errNo: 0,
+      errMsg: '',
+      detailErrMsg: ''
+    },
+    response: {
+      useDefault: true,
+      customResult: null
+    },
+    fieldOmit: {
+      enabled: false,
+      mode: 'manual',
+      fields: [],
+      random: {
+        probability: 0,
+        maxOmitCount: 0,
+        excludeFields: [],
+        depthLimit: 5,
+        omitMode: 'delete'
+      }
+    }
   };
 
   beforeEach(() => {
@@ -58,7 +182,7 @@ describe('RuleEditor Container', () => {
     });
 
     it('renders BatchControlBar in batch mode', () => {
-      initEditor(mockRule, true, 3);
+      initEditor(mockRule, true, 3, [mockRule1, mockRule2, mockRule3]);
       render(RuleEditor);
 
       // Check for BatchControlBar specific elements
@@ -150,7 +274,7 @@ describe('RuleEditor Container', () => {
 
   describe('Event Handling', () => {
     it('emits cancelBatch event from BatchControlBar', async () => {
-      initEditor(mockRule, true, 3);
+      initEditor(mockRule, true, 3, [mockRule1, mockRule2, mockRule3]);
       const { component } = render(RuleEditor);
 
       const mockHandler = vi.fn();
