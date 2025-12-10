@@ -17,6 +17,7 @@
     getRuleForApi,
   } from './stores/rules';
   import { isModalOpen, toasts } from './stores/config';
+  import { hasUnsavedChanges } from './stores/ruleEditor';
   import { applyDirtyFields } from './stores/utils/applyDirtyFields';
   import type { ApiMeta, MockRule } from '@error-mock/core';
   import type { RuleDraft } from './stores/ruleEditor';
@@ -137,12 +138,34 @@
 
   function handleSelect(event: CustomEvent<string>) {
     const id = event.detail;
+
+    // Check for unsaved changes before switching
+    if ($hasUnsavedChanges) {
+      const confirmed = confirm(
+        'You have unsaved changes. Switching to another API will discard them. Continue?'
+      );
+      if (!confirmed) {
+        return; // User cancelled, stay on current selection
+      }
+    }
+
     // Single select - clear others
     selectedIds.set(new Set([id]));
   }
 
   function handleToggle(event: CustomEvent<string>) {
     const id = event.detail;
+
+    // Check for unsaved changes before modifying selection
+    if ($hasUnsavedChanges) {
+      const confirmed = confirm(
+        'You have unsaved changes. Changing selection will discard them. Continue?'
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+
     // Toggle selection
     selectedIds.update((ids) => {
       const newIds = new Set(ids);
@@ -242,6 +265,16 @@
   }
 
   function handleCloseModal() {
+    // Check for unsaved changes before closing
+    if ($hasUnsavedChanges) {
+      const confirmed = confirm(
+        'You have unsaved changes. Closing will discard them. Continue?'
+      );
+      if (!confirmed) {
+        return; // User cancelled, keep modal open
+      }
+    }
+
     isModalOpen.set(false);
     // Also clear selection when closing
     selectedIds.set(new Set());
