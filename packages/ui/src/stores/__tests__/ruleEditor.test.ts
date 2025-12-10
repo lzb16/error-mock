@@ -150,4 +150,19 @@ describe('ruleEditor Store', () => {
     setActiveTab('advanced');
     expect(get(editorUiState).activeTab).toBe('advanced');
   });
+
+  it('hasUnsavedChanges returns false when draft is null', () => {
+    resetEditor();
+    expect(get(activeRuleDraft)).toBeNull();
+    expect(get(hasUnsavedChanges)).toBe(false);
+  });
+
+  it('updateDraft returns draft unchanged when draft is null', () => {
+    resetEditor();
+    expect(get(activeRuleDraft)).toBeNull();
+
+    updateDraft({ mockType: 'error' });
+
+    expect(get(activeRuleDraft)).toBeNull();
+  });
 });
