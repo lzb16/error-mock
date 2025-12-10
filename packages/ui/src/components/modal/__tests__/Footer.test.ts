@@ -140,4 +140,14 @@ describe('Modal Footer', () => {
     const blueDot = container.querySelector('.em-bg-\\[\\#0969DA\\]');
     expect(blueDot).toBeInTheDocument();
   });
+
+  it('appears when enabled field is marked dirty in batch mode', () => {
+    initEditor(mockRule, true, 3);
+    markFieldDirty('enabled');
+
+    render(Footer);
+
+    expect(screen.getByRole('contentinfo')).toBeInTheDocument();
+    expect(screen.getByText(/pending changes for 3 items/i)).toBeInTheDocument();
+  });
 });

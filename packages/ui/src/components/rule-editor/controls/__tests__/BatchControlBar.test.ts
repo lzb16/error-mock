@@ -123,6 +123,17 @@ describe('BatchControlBar', () => {
       expect(draft?.enabled).toBe(false);
     });
 
+    it('marks enabled field as dirty when toggle is clicked', async () => {
+      const user = userEvent.setup();
+      render(BatchControlBar);
+
+      const toggle = screen.getByRole('checkbox');
+      await user.click(toggle);
+
+      const uiState = get(editorUiState);
+      expect(uiState.dirtyFields.has('enabled')).toBe(true);
+    });
+
     it('syncs toggle state with store', async () => {
       render(BatchControlBar);
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { activeRuleDraft, editorUiState } from '../../../stores/ruleEditor';
+  import { activeRuleDraft, editorUiState, markFieldDirty } from '../../../stores/ruleEditor';
 
   const dispatch = createEventDispatcher();
 
@@ -9,6 +9,8 @@
       if (!draft) return draft;
       return { ...draft, enabled: !draft.enabled };
     });
+    // Mark 'enabled' field as dirty for batch mode
+    markFieldDirty('enabled');
   }
 
   function handleCancelBatch() {
