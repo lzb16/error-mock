@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Tabs from '../../ui/Tabs.svelte';
+  import { Tabs } from '../../ui';
   import { activeRuleDraft, editorUiState, updateDraft, setActiveTab, markFieldDirty } from '../../../stores/ruleEditor';
   import type { MockRule } from '@error-mock/core';
 
