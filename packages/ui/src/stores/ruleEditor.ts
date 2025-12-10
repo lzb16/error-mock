@@ -1,12 +1,50 @@
 import { writable, derived } from 'svelte/store';
 import type { MockRule } from '@error-mock/core';
 import fastDeepEqual from 'fast-deep-equal';
+import { MIXED, type MixedValue } from './rules';
+
+// Draft type that supports MIXED values for batch editing
+export type RuleDraft = Omit<
+  MockRule,
+  'enabled' | 'mockType' | 'network' | 'business' | 'response' | 'fieldOmit'
+> & {
+  enabled: MixedValue<boolean>;
+  mockType: MixedValue<MockRule['mockType']>;
+  network: {
+    delay: MixedValue<number>;
+    timeout: MixedValue<boolean>;
+    offline: MixedValue<boolean>;
+    failRate: MixedValue<number>;
+  };
+  business: {
+    errNo: MixedValue<number>;
+    errMsg: MixedValue<string>;
+    detailErrMsg: MixedValue<string>;
+  };
+  response: {
+    useDefault: MixedValue<boolean>;
+    customResult: MixedValue<unknown>;
+  };
+  fieldOmit: {
+    enabled: MixedValue<boolean>;
+    mode: MixedValue<MockRule['fieldOmit']['mode']>;
+    fields: MixedValue<string[]>;
+    random: {
+      probability: MixedValue<number>;
+      maxOmitCount: MixedValue<number>;
+      excludeFields: MixedValue<string[]>;
+      depthLimit: MixedValue<number>;
+      omitMode: MixedValue<MockRule['fieldOmit']['random']['omitMode']>;
+      seed?: MixedValue<number | undefined>;
+    };
+  };
+};
 
 // 当前编辑的草稿（深拷贝，避免直接修改原始数据）
-export const activeRuleDraft = writable<MockRule | null>(null);
+export const activeRuleDraft = writable<RuleDraft | null>(null);
 
 // 原始rule引用（用于检测变更）
-let originalRule: MockRule | null = null;
+let originalRule: RuleDraft | null = null;
 
 // UI状态
 export interface EditorUiState {
@@ -39,24 +77,112 @@ export const hasUnsavedChanges = derived(
   }
 );
 
+// Helper: Check if a value is MIXED
+export function isMixed<T>(value: MixedValue<T>): value is typeof MIXED {
+  return value === MIXED;
+}
+
+// Helper: Deep clone a value
+function deepCloneValue<T>(value: T): T {
+  const cloneFn = (globalThis as any).structuredClone;
+  if (typeof cloneFn === 'function') {
+    try {
+      return cloneFn(value);
+    } catch {
+      // Fall back to JSON clone
+    }
+  }
+
+  try {
+    return JSON.parse(JSON.stringify(value));
+  } catch {
+    return value;
+  }
+}
+
+// Helper: Compute mixed value from multiple rules
+function computeMixedValue<T>(rules: MockRule[], selector: (rule: MockRule) => T): MixedValue<T> {
+  if (rules.length === 0) {
+    return MIXED as MixedValue<T>;
+  }
+
+  const first = selector(rules[0]);
+  const allSame = rules.every(rule => fastDeepEqual(selector(rule), first));
+
+  return allSame ? (deepCloneValue(first) as MixedValue<T>) : (MIXED as MixedValue<T>);
+}
+
+// Helper: Build draft for batch mode with MIXED detection
+function buildBatchDraft(rules: MockRule[]): RuleDraft {
+  const baseline = rules[0];
+
+  return {
+    id: baseline.id,
+    url: baseline.url,
+    method: baseline.method,
+    enabled: computeMixedValue(rules, rule => rule.enabled),
+    mockType: computeMixedValue(rules, rule => rule.mockType),
+    network: {
+      delay: computeMixedValue(rules, rule => rule.network.delay),
+      timeout: computeMixedValue(rules, rule => rule.network.timeout),
+      offline: computeMixedValue(rules, rule => rule.network.offline),
+      failRate: computeMixedValue(rules, rule => rule.network.failRate)
+    },
+    business: {
+      errNo: computeMixedValue(rules, rule => rule.business.errNo),
+      errMsg: computeMixedValue(rules, rule => rule.business.errMsg),
+      detailErrMsg: computeMixedValue(rules, rule => rule.business.detailErrMsg)
+    },
+    response: {
+      useDefault: computeMixedValue(rules, rule => rule.response.useDefault),
+      customResult: computeMixedValue(rules, rule => rule.response.customResult)
+    },
+    fieldOmit: {
+      enabled: computeMixedValue(rules, rule => rule.fieldOmit.enabled),
+      mode: computeMixedValue(rules, rule => rule.fieldOmit.mode),
+      fields: computeMixedValue(rules, rule => rule.fieldOmit.fields),
+      random: {
+        probability: computeMixedValue(rules, rule => rule.fieldOmit.random.probability),
+        maxOmitCount: computeMixedValue(rules, rule => rule.fieldOmit.random.maxOmitCount),
+        excludeFields: computeMixedValue(rules, rule => rule.fieldOmit.random.excludeFields),
+        depthLimit: computeMixedValue(rules, rule => rule.fieldOmit.random.depthLimit),
+        omitMode: computeMixedValue(rules, rule => rule.fieldOmit.random.omitMode),
+        seed: computeMixedValue(rules, rule => rule.fieldOmit.random.seed)
+      }
+    }
+  };
+}
+
+// Helper: Clone a single rule to draft format
+function cloneRule(rule: MockRule): RuleDraft {
+  return deepCloneValue(rule) as RuleDraft;
+}
+
 // 初始化Editor
-export function initEditor(rule: MockRule, isBatch: boolean, selectedCount = 0) {
-  // 深拷贝rule
-  const draft = JSON.parse(JSON.stringify(rule));
+export function initEditor(rule: MockRule, isBatch: boolean, selectedCount = 0, batchRules?: MockRule[]) {
+  // 批量模式下传入所有选中的规则以检测MIXED值
+  const rulesForDraft = isBatch && batchRules?.length ? batchRules : (isBatch ? [] : [rule]);
+  if (rulesForDraft.length === 0) {
+    resetEditor();
+    return;
+  }
+
+  const draft = isBatch ? buildBatchDraft(rulesForDraft) : cloneRule(rule);
 
   activeRuleDraft.set(draft);
-  originalRule = JSON.parse(JSON.stringify(rule));
+  // 单选模式下用于深度对比；批量模式依赖dirtyFields
+  originalRule = isBatch ? null : cloneRule(rule);
 
   editorUiState.update(state => ({
     ...state,
     isBatchMode: isBatch,
-    selectedCount,
+    selectedCount: selectedCount || rulesForDraft.length,
     dirtyFields: new Set()
   }));
 }
 
 // 更新草稿
-export function updateDraft(updates: Partial<MockRule>) {
+export function updateDraft(updates: Partial<RuleDraft>) {
   activeRuleDraft.update(draft => {
     if (!draft) return draft;
     return { ...draft, ...updates };
