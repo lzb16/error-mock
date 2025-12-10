@@ -3,6 +3,9 @@ import type { MockRule } from '@error-mock/core';
 import fastDeepEqual from 'fast-deep-equal';
 import { MIXED, type MixedValue } from './rules';
 
+// Re-export MIXED for convenience
+export { MIXED, type MixedValue };
+
 // Recursive partial type for deep updates
 type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends Array<unknown>

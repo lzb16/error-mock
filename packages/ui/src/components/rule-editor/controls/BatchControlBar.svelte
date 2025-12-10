@@ -1,13 +1,18 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { activeRuleDraft, editorUiState, markFieldDirty } from '../../../stores/ruleEditor';
+  import { activeRuleDraft, editorUiState, markFieldDirty, MIXED, isMixed } from '../../../stores/ruleEditor';
 
   const dispatch = createEventDispatcher();
 
   function handleToggleChange() {
     activeRuleDraft.update(draft => {
       if (!draft) return draft;
-      return { ...draft, enabled: !draft.enabled };
+
+      // If current value is MIXED, default to true (enable all)
+      // Otherwise, toggle the boolean value
+      const nextValue = isMixed(draft.enabled) ? true : !draft.enabled;
+
+      return { ...draft, enabled: nextValue };
     });
     // Mark 'enabled' field as dirty for batch mode
     markFieldDirty('enabled');

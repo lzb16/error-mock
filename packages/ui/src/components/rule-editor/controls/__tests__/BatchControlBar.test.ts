@@ -8,7 +8,8 @@ import {
   activeRuleDraft,
   editorUiState,
   resetEditor,
-  initEditor
+  initEditor,
+  MIXED
 } from '../../../../stores/ruleEditor';
 import type { MockRule } from '@error-mock/core';
 
@@ -248,6 +249,30 @@ describe('BatchControlBar', () => {
 
       const toggle = screen.getByRole('checkbox') as HTMLInputElement;
       expect(toggle.checked).toBe(false);
+    });
+
+    it('should default MIXED to true when toggling', () => {
+      // Initialize with MIXED value
+      initEditor(mockRule, true, 2, [mockRule1, mockRule2]);
+
+      // Set enabled to MIXED manually
+      activeRuleDraft.update(draft => {
+        if (!draft) return draft;
+        return { ...draft, enabled: MIXED };
+      });
+
+      const { getByRole } = render(BatchControlBar);
+      const toggle = getByRole('checkbox');
+
+      // Toggle should set to true (not false) when value is MIXED
+      fireEvent.click(toggle);
+
+      const draft = get(activeRuleDraft);
+      expect(draft?.enabled).toBe(true);
+
+      // Dirty field should be marked
+      const ui = get(editorUiState);
+      expect(ui.dirtyFields.has('enabled')).toBe(true);
     });
   });
 
