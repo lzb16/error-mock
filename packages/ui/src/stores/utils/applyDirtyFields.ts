@@ -48,8 +48,23 @@ export function applyDirtyFields(
     method: draft.method
   } as ApiMeta);
 
-  // Clone to avoid mutation
-  const result: MockRule = JSON.parse(JSON.stringify(base));
+  // Clone to avoid mutation; be resilient to prior symbol pollution
+  const cloneBase = () =>
+    JSON.parse(
+      JSON.stringify(base, (_key, value) =>
+        typeof value === 'symbol' ? undefined : value
+      )
+    );
+
+  let result: MockRule;
+  try {
+    result =
+      typeof structuredClone === 'function'
+        ? structuredClone(base)
+        : cloneBase();
+  } catch {
+    result = cloneBase();
+  }
 
   // Preserve identity fields from existing rule
   if (existingRule) {
@@ -66,6 +81,11 @@ export function applyDirtyFields(
     }
 
     const value = getNestedValue(draft, fieldPath);
+
+    // Skip undefined to avoid wiping existing data
+    if (value === undefined) {
+      continue;
+    }
 
     // Skip values containing MIXED at any depth
     if (containsMixed(value)) {

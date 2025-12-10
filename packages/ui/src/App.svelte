@@ -186,6 +186,9 @@
 
       // Batch mode with zero edits - do nothing
       if (isBatch && editedFields.size === 0) {
+        console.warn(
+          '[ErrorMock] Batch mode Apply with zero edited fields - this may indicate a bug where markFieldDirty was not called'
+        );
         return rules;
       }
 
