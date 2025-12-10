@@ -1,0 +1,558 @@
+<!-- ERROR MOCK PLUGIN PROTOTYPE - SINGLE SELECT MODE -->
+<!--
+  This prototype shows the SINGLE SELECT MODE (default state).
+  For BATCH MODE (when selectedCount > 1), see batch-mode-prototype.html
+
+  Design: GitHub Primer Style
+  Source: Gemini AI (Google) - 6 rounds of expert review
+  Status: Production-ready, approved for Phase 1 implementation
+
+  Key Features Shown:
+  - Header: Simplified (no search box per Round 5)
+  - Sidebar: Global Status Bar (pulse animation) + Collapsible Modules + Multi-select (Round 3/4)
+  - Tab Content: Advanced Tab with Field Omission
+  - Footer: Conditional display
+
+  Note: Batch Context Bar and Batch Edit Form are commented out below.
+        Uncomment when implementing batch mode, or see batch-mode-prototype.html
+-->
+<!-- Font: Using system fonts as requested -->
+<div class="em-font-sans em-text-[#1F2328]" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
+
+  <!-- 1. MAIN MODAL WRAPPER -->
+  <div class="em-fixed em-inset-0 em-z-50 em-flex em-items-center em-justify-center em-bg-black/50 em-backdrop-blur-sm">
+
+    <!-- Modal Window -->
+    <div class="em-flex em-h-[85vh] em-w-[90vw] em-max-w-6xl em-flex-col em-bg-white em-shadow-2xl em-rounded-lg em-overflow-hidden em-ring-1 em-ring-[#D0D7DE]">
+
+      <!-- HEADER (Unified Design - Gemini Round 7) -->
+      <!-- Structure: Left (Title) | Center (Context) | Right (Window Controls) -->
+      <!-- Controls (Mock Type, Enable) moved to Tab Content Control Bar -->
+      <header class="em-flex em-h-14 em-shrink-0 em-items-center em-justify-between em-border-b em-border-[#D0D7DE] em-bg-[#F6F8FA] em-px-4">
+
+        <!-- Left: App Title -->
+        <div class="em-flex em-items-center em-gap-3">
+          <span class="em-font-bold em-text-[#1F2328]">Error Mock</span>
+          <div class="em-h-5 em-w-px em-bg-[#D0D7DE]"></div>
+        </div>
+
+        <!-- Center: API Context (Single Mode) -->
+        <div class="em-flex em-flex-1 em-items-baseline em-gap-2 em-px-4 em-text-sm em-min-w-0" title="POST /api/user/login">
+           <span class="em-font-mono em-font-bold em-text-[#1F883D] em-shrink-0">POST</span>
+           <span class="em-truncate em-max-w-[300px] em-text-[#1F2328] em-font-medium">/api/user/login</span>
+        </div>
+
+        <!-- Right: Window Controls Only -->
+        <div class="em-flex em-items-center em-gap-2">
+          <!-- Minimize -->
+          <button class="em-group em-flex em-h-8 em-w-8 em-items-center em-justify-center em-rounded-md em-text-[#656D76] hover:em-bg-[#D0D7DE]/50 hover:em-text-[#0969DA] focus:em-outline-none" aria-label="Minimize">
+              <svg class="em-h-4 em-w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M2 8a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 8Z" /></svg>
+          </button>
+          <!-- Close -->
+          <button class="em-group em-flex em-h-8 em-w-8 em-items-center em-justify-center em-rounded-md em-text-[#656D76] hover:em-bg-[#FFEBE9] hover:em-text-[#CF222E] focus:em-outline-none" aria-label="Close">
+            <svg class="em-h-4 em-w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" /></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- HEADER (Batch Mode Alternative) - Uncomment when implementing batch mode -->
+      <!--
+      <header class="em-flex em-h-14 em-shrink-0 em-items-center em-justify-between em-border-b em-border-[#D0D7DE] em-bg-[#F6F8FA] em-px-4">
+        <div class="em-flex em-items-center em-gap-3">
+          <span class="em-font-bold em-text-[#1F2328]">Error Mock</span>
+          <div class="em-h-5 em-w-px em-bg-[#D0D7DE]"></div>
+        </div>
+
+        <!-- Center: Batch Context -->
+        <div class="em-flex em-flex-1 em-items-center em-gap-2 em-px-4 em-text-sm em-min-w-0">
+           <svg class="em-h-4 em-w-4 em-text-[#0969DA] em-shrink-0" viewBox="0 0 16 16" fill="currentColor"><path d="M7.75 12.5a.75.75 0 0 1 .75.75V15h3a.75.75 0 0 1 0-1.5H9.25a.75.75 0 0 1 0-1.5h3.25a1.5 1.5 0 0 1 1.5 1.5v2.25a.75.75 0 0 1-.75.75h-11a.75.75 0 0 1-.75-.75V13.5a1.5 1.5 0 0 1 1.5-1.5h3.25a.75.75 0 0 1 0 1.5H5.5a.75.75 0 0 1 0 1.5h3v-1.75a.75.75 0 0 1-.25-.75ZM2.75 4a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5H2.75ZM1 8.75A.75.75 0 0 1 1.75 8h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 8.75Z" /></svg>
+           <span class="em-font-medium em-text-[#1F2328]">Batch Editing <span class="em-font-bold em-text-[#0969DA]">3 items</span></span>
+        </div>
+
+        <div class="em-flex em-items-center em-gap-2">
+          <button class="em-group em-flex em-h-8 em-w-8 em-items-center em-justify-center em-rounded-md em-text-[#656D76] hover:em-bg-[#D0D7DE]/50 hover:em-text-[#0969DA] focus:em-outline-none" aria-label="Minimize">
+              <svg class="em-h-4 em-w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M2 8a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 8Z" /></svg>
+          </button>
+          <button class="em-group em-flex em-h-8 em-w-8 em-items-center em-justify-center em-rounded-md em-text-[#656D76] hover:em-bg-[#FFEBE9] hover:em-text-[#CF222E] focus:em-outline-none" aria-label="Close">
+            <svg class="em-h-4 em-w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" /></svg>
+          </button>
+        </div>
+      </header>
+      -->
+
+      <!-- CONTENT WRAPPER -->
+      <div class="em-flex em-flex-1 em-overflow-hidden">
+
+        <!-- 2. SIDEBAR (Gemini v4 - Complete with Module Collapsing & Batch Operations) -->
+        <aside class="em-flex em-w-64 em-flex-col em-border-r em-border-[#D0D7DE] em-bg-[#F6F8FA]">
+
+          <!-- TOP SECTION: Filter or Batch Toolbar (Conditional) -->
+          <div class="em-border-b em-border-[#D0D7DE] em-bg-white em-p-3">
+
+            <!-- Option A: BATCH ACTION TOOLBAR (when selectedCount > 0) -->
+            <!-- Uncomment when implementing batch mode -->
+            <!--
+            <div class="em-flex em-items-center em-justify-between em-animate-in em-fade-in em-slide-in-from-top-1">
+              <div class="em-flex em-items-center em-gap-2">
+                <span class="em-flex em-h-5 em-items-center em-justify-center em-rounded-full em-bg-[#0969DA] em-px-1.5 em-text-[10px] em-font-bold em-text-white">
+                  1
+                </span>
+                <button class="em-text-xs em-text-[#0969DA] hover:em-underline">
+                  Clear
+                </button>
+              </div>
+              <div class="em-flex em-gap-1">
+                <button class="em-rounded-md em-p-1.5 em-text-[#1F883D] hover:em-bg-[#dafbe1]" title="Enable Selected">
+                  <svg class="em-h-4 em-w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16Zm3.78-9.72a.751.751 0 0 1 .018 1.042l-2.363 2.904a.909.909 0 0 1-1.356.042L5.47 7.72a.75.75 0 0 1 1.06-1.06l1.969 1.969 1.74-2.148a.75.75 0 0 1 1.54.24Z"/></svg>
+                </button>
+                <button class="em-rounded-md em-p-1.5 em-text-[#656D76] hover:em-bg-[#F3F4F6]" title="Disable Selected">
+                  <svg class="em-h-4 em-w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16ZM4 8a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 4 8Z"/></svg>
+                </button>
+                <button class="em-rounded-md em-p-1.5 em-text-[#CF222E] hover:em-bg-[#FFEBE9]" title="Delete Rules">
+                  <svg class="em-h-4 em-w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.576l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"/></svg>
+                </button>
+              </div>
+            </div>
+            -->
+
+            <!-- Option B: NORMAL FILTER INPUT (default state) -->
+            <div class="em-relative">
+              <div class="em-absolute em-inset-y-0 em-left-0 em-flex em-items-center em-pl-2 em-pointer-events-none">
+                <svg class="em-h-3.5 em-w-3.5 em-text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input type="text" placeholder="Filter API... (⌘K)" class="em-w-full em-rounded em-border em-border-[#D0D7DE] em-bg-white em-px-2 em-py-1.5 em-pl-8 em-text-xs focus:em-border-[#0969DA] focus:em-ring-2 focus:em-ring-[#0969DA]/30 focus:em-outline-none">
+            </div>
+          </div>
+
+          <!-- MIDDLE SECTION: Collapsible Module List -->
+          <nav class="em-flex-1 em-overflow-y-auto em-py-2" aria-label="API Endpoints">
+
+            <!-- Module Group 1: user (expanded) -->
+            <div class="em-mb-1">
+              <!-- Module Header: Collapsible (GitHub file tree style) -->
+              <button
+                class="em-group em-flex em-w-full em-items-center em-rounded-sm em-px-2 em-py-1.5 em-text-left hover:em-bg-[#D0D7DE]/30 focus:em-bg-[#D0D7DE]/30 focus:em-outline-none"
+                aria-expanded="true"
+                aria-controls="module-list-user"
+              >
+                <!-- Chevron: Rotates 90deg when expanded -->
+                <svg
+                  class="em-mr-2 em-h-3 em-w-3 em-text-[#656D76] em-transition-transform em-duration-200 em-rotate-90"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06Z" />
+                </svg>
+                <span class="em-text-[11px] em-font-bold em-uppercase em-tracking-wider em-text-[#656D76]">
+                  user
+                </span>
+                <span class="em-ml-auto em-rounded-full em-bg-[#D0D7DE]/50 em-px-2 em-py-0.5 em-text-[10px] em-font-semibold em-text-[#656D76]">
+                  2
+                </span>
+              </button>
+
+              <!-- API Items List (when expanded) -->
+              <div id="module-list-user" class="em-mt-0.5 em-space-y-0.5">
+
+                <!-- API Item 1: POST /api/user/login (isViewed=true, isSelected=false) -->
+                <div
+                  class="
+                    em-group em-relative em-flex em-cursor-pointer em-items-center
+                    em-py-2 em-pl-3 em-pr-2
+                    em-transition-colors
+                    em-border-l-4 em-border-[#0969DA] em-bg-white
+                  "
+                >
+                  <!-- Checkbox: Hidden by default, shown on hover -->
+                  <div class="em-mr-2 em-flex em-h-4 em-w-4 em-shrink-0 em-items-center em-justify-center">
+                    <input
+                      type="checkbox"
+                      class="
+                        em-h-3.5 em-w-3.5
+                        em-cursor-pointer
+                        em-rounded-sm
+                        em-border-[#D0D7DE]
+                        em-text-[#0969DA]
+                        focus:em-ring-2 focus:em-ring-[#0969DA]/30
+                        em-hidden group-hover:em-block
+                      "
+                    />
+                  </div>
+
+                  <!-- Content Container -->
+                  <div class="em-flex em-min-w-0 em-flex-1 em-items-center em-justify-between">
+                    <!-- Method & Path -->
+                    <div class="em-flex em-flex-col em-truncate">
+                      <span class="em-text-[10px] em-font-bold em-text-[#1F883D]">POST</span>
+                      <span class="em-truncate em-text-xs em-text-[#1F2328] em-font-semibold">/api/user/login</span>
+                    </div>
+                    <!-- Status Dot -->
+                    <span class="em-ml-2 em-h-2 em-w-2 em-shrink-0 em-rounded-full em-bg-[#1F883D]" aria-label="Enabled"></span>
+                  </div>
+                </div>
+
+                <!-- API Item 2: GET /api/user/profile (isViewed=false, isSelected=false) -->
+                <div
+                  class="
+                    em-group em-relative em-flex em-cursor-pointer em-items-center
+                    em-py-2 em-pl-3 em-pr-2
+                    em-transition-colors
+                    em-border-l-4 em-border-transparent hover:em-border-[#D0D7DE] hover:em-bg-[#F6F8FA]
+                  "
+                >
+                  <!-- Checkbox: Hidden by default, shown on hover -->
+                  <div class="em-mr-2 em-flex em-h-4 em-w-4 em-shrink-0 em-items-center em-justify-center">
+                    <input
+                      type="checkbox"
+                      class="
+                        em-h-3.5 em-w-3.5
+                        em-cursor-pointer
+                        em-rounded-sm
+                        em-border-[#D0D7DE]
+                        em-text-[#0969DA]
+                        focus:em-ring-2 focus:em-ring-[#0969DA]/30
+                        em-hidden group-hover:em-block
+                      "
+                    />
+                  </div>
+
+                  <!-- Content Container -->
+                  <div class="em-flex em-min-w-0 em-flex-1 em-items-center em-justify-between">
+                    <!-- Method & Path -->
+                    <div class="em-flex em-flex-col em-truncate">
+                      <span class="em-text-[10px] em-font-bold em-text-[#0969DA]">GET</span>
+                      <span class="em-truncate em-text-xs em-text-[#1F2328]">/api/user/profile</span>
+                    </div>
+                    <!-- Status Dot (disabled) -->
+                    <span class="em-ml-2 em-h-2 em-w-2 em-shrink-0 em-rounded-full em-bg-gray-300" aria-label="Disabled"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Module Group 2: storage (expanded) -->
+            <div class="em-mb-1">
+              <!-- Module Header: Collapsible -->
+              <button
+                class="em-group em-flex em-w-full em-items-center em-rounded-sm em-px-2 em-py-1.5 em-text-left hover:em-bg-[#D0D7DE]/30 focus:em-bg-[#D0D7DE]/30 focus:em-outline-none"
+                aria-expanded="true"
+                aria-controls="module-list-storage"
+              >
+                <svg
+                  class="em-mr-2 em-h-3 em-w-3 em-text-[#656D76] em-transition-transform em-duration-200 em-rotate-90"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06Z" />
+                </svg>
+                <span class="em-text-[11px] em-font-bold em-uppercase em-tracking-wider em-text-[#656D76]">
+                  storage
+                </span>
+                <span class="em-ml-auto em-rounded-full em-bg-[#D0D7DE]/50 em-px-2 em-py-0.5 em-text-[10px] em-font-semibold em-text-[#656D76]">
+                  1
+                </span>
+              </button>
+
+              <!-- API Items List -->
+              <div id="module-list-storage" class="em-mt-0.5 em-space-y-0.5">
+
+                <!-- API Item: POST /api/storage/save (isViewed=false, isSelected=true) -->
+                <div
+                  class="
+                    em-group em-relative em-flex em-cursor-pointer em-items-center
+                    em-py-2 em-pl-3 em-pr-2
+                    em-transition-colors
+                    em-border-l-4 em-border-transparent hover:em-border-[#D0D7DE] hover:em-bg-[#F6F8FA]
+                    !em-bg-[#ddf4ff]
+                  "
+                >
+                  <!-- Checkbox: Visible because isSelected=true -->
+                  <div class="em-mr-2 em-flex em-h-4 em-w-4 em-shrink-0 em-items-center em-justify-center">
+                    <input
+                      type="checkbox"
+                      checked
+                      class="
+                        em-h-3.5 em-w-3.5
+                        em-cursor-pointer
+                        em-rounded-sm
+                        em-border-[#D0D7DE]
+                        em-text-[#0969DA]
+                        focus:em-ring-2 focus:em-ring-[#0969DA]/30
+                        em-block
+                      "
+                    />
+                  </div>
+
+                  <!-- Content Container -->
+                  <div class="em-flex em-min-w-0 em-flex-1 em-items-center em-justify-between">
+                    <!-- Method & Path -->
+                    <div class="em-flex em-flex-col em-truncate">
+                      <span class="em-text-[10px] em-font-bold em-text-[#1F883D]">POST</span>
+                      <span class="em-truncate em-text-xs em-text-[#1F2328]">/api/storage/save</span>
+                    </div>
+                    <!-- Status Dot -->
+                    <span class="em-ml-2 em-h-2 em-w-2 em-shrink-0 em-rounded-full em-bg-[#1F883D]" aria-label="Enabled"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </nav>
+
+          <!-- Global Status Bar & Settings (Gemini v3 Design) -->
+          <!-- Always visible. No z-index issues. No hover requirements. -->
+          <div class="em-border-t em-border-[#D0D7DE] em-bg-white em-p-3">
+
+            <!-- Status Row -->
+            <div class="em-flex em-items-center em-justify-between em-gap-2">
+
+              <!-- Status Indicator -->
+              <div class="em-flex em-items-center em-gap-2 em-overflow-hidden" title="3 rules are currently active">
+                <!-- Pulse Animation for 'Active' state -->
+                <span class="em-relative em-flex em-h-2.5 em-w-2.5 em-shrink-0">
+                  <span class="em-absolute em-inline-flex em-h-full em-w-full em-animate-ping em-rounded-full em-bg-[#1F883D] em-opacity-75"></span>
+                  <span class="em-relative em-inline-flex em-h-2.5 em-w-2.5 em-rounded-full em-bg-[#1F883D]"></span>
+                </span>
+                <span class="em-text-sm em-font-semibold em-text-[#1F2328] em-truncate">
+                  3 Active
+                </span>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="em-flex em-items-center">
+                <!-- Pause All (Danger Style) -->
+                <button
+                  class="em-group em-rounded-md em-p-1.5 em-text-[#656D76] hover:em-bg-[#FFEBE9] hover:em-text-[#CF222E] focus:em-ring-2 focus:em-ring-[#CF222E]/40 focus:em-outline-none"
+                  title="Pause All Mocks"
+                  aria-label="Pause All Mocks"
+                >
+                  <svg class="em-h-4 em-w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+
+                <!-- Settings -->
+                <button
+                  class="em-ml-1 em-rounded-md em-p-1.5 em-text-[#656D76] hover:em-bg-[#F3F4F6] hover:em-text-[#0969DA] focus:em-ring-2 focus:em-ring-[#0969DA]/40 focus:em-outline-none"
+                  title="Global Settings"
+                  aria-label="Global Settings"
+                >
+                  <svg class="em-h-4 em-w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="em-flex em-flex-1 em-flex-col em-bg-white">
+
+          <!-- CONTROL BAR (Single Mode - Gemini Round 7) -->
+          <!-- Tabs + Primary Actions (Mock Type, Enable moved from Header) -->
+          <div class="em-shrink-0 em-border-b em-border-[#D0D7DE] em-bg-white em-px-6 em-py-3">
+            <div class="em-flex em-items-center em-justify-between">
+
+              <!-- Left: Tabs -->
+              <nav class="em-flex em-gap-1">
+                <button class="em-rounded-md em-bg-[#F6F8FA] em-px-3 em-py-1.5 em-text-sm em-font-medium em-text-[#1F2328] hover:em-bg-[#F3F4F6]">
+                  Network
+                </button>
+                <button class="em-rounded-md em-px-3 em-py-1.5 em-text-sm em-font-medium em-text-[#656D76] hover:em-bg-[#F6F8FA] hover:em-text-[#1F2328]">
+                  Response
+                </button>
+                <button class="em-rounded-md em-px-3 em-py-1.5 em-text-sm em-font-medium em-text-[#656D76] hover:em-bg-[#F6F8FA] hover:em-text-[#1F2328]">
+                  Advanced
+                </button>
+              </nav>
+
+              <!-- Right: Primary Actions (Moved from Header) -->
+              <div class="em-flex em-items-center em-gap-4">
+
+                <!-- Mock Type Dropdown -->
+                <div class="em-relative">
+                  <select class="em-w-36 em-appearance-none em-rounded-md em-border em-border-[#D0D7DE] em-bg-white em-px-3 em-py-1.5 em-pr-8 em-text-sm em-text-[#1F2328] focus:em-border-[#0969DA] focus:em-ring-2 focus:em-ring-[#0969DA]/30 focus:em-outline-none">
+                    <option value="networkError">Network Error</option>
+                    <option value="businessError">Business Error</option>
+                    <option value="success">Success</option>
+                    <option value="none">None</option>
+                  </select>
+                  <!-- Chevron -->
+                  <svg class="em-pointer-events-none em-absolute em-right-2.5 em-top-2.5 em-h-3 em-w-3 em-text-[#656D76]" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 5.22a.75.75 0 0 1 1.06 0L8 8.44l3.22-3.22a.75.75 0 1 1 1.06 1.06l-3.75 3.75a.75.75 0 0 1-1.06 0L3.72 6.28a.75.75 0 0 1 0-1.06Z"/></svg>
+                </div>
+
+                <div class="em-h-4 em-w-px em-bg-[#D0D7DE]"></div>
+
+                <!-- Enable Toggle -->
+                <label class="em-flex em-items-center em-gap-2 em-cursor-pointer">
+                  <span class="em-text-xs em-font-medium em-text-[#1F2328]">Enable</span>
+                  <input type="checkbox" class="em-peer em-sr-only">
+                  <div class="em-relative em-h-5 em-w-9 em-rounded-full em-bg-[#D0D7DE] em-transition-colors peer-checked:em-bg-[#1F883D] peer-focus:em-ring-2 peer-focus:em-ring-[#0969DA] peer-focus:em-ring-offset-1">
+                     <span class="em-absolute em-left-[2px] em-top-[2px] em-h-4 em-w-4 em-rounded-full em-bg-white em-shadow-sm em-transition-transform peer-checked:em-translate-x-4"></span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Navigation (OLD - Replaced by Control Bar above) -->
+          <!-- DEPRECATED: Tab nav is now integrated into Control Bar -->
+          <!--
+          <div class="em-flex em-border-b em-border-[#D0D7DE] em-px-4" role="tablist">
+            <button role="tab" class="em-border-b-2 em-border-transparent em-px-4 em-py-3 em-text-sm em-font-medium em-text-gray-600 hover:em-border-gray-300 hover:em-text-gray-800">Network</button>
+            <button role="tab" class="em-border-b-2 em-border-transparent em-px-4 em-py-3 em-text-sm em-font-medium em-text-gray-600 hover:em-border-gray-300 hover:em-text-gray-800">Response</button>
+            <button role="tab" aria-selected="true" class="em-border-b-2 em-border-[#0969DA] em-px-4 em-py-3 em-text-sm em-font-medium em-text-[#1F2328]">Advanced</button>
+          </div>
+          -->
+
+          <!-- BATCH CONTEXT BAR (Gemini v6 - Shown when selectedCount > 1) -->
+          <!-- Uncomment when implementing batch mode -->
+          <!--
+          <div class="em-sticky em-top-0 em-z-10 em-shrink-0 em-border-b em-border-blue-200 em-bg-blue-50 em-px-6 em-py-3 em-shadow-sm">
+            <div class="em-flex em-items-center em-justify-between">
+              <div class="em-flex em-items-center em-gap-3">
+                <div class="em-flex em-h-8 em-w-8 em-items-center em-justify-center em-rounded-full em-bg-white em-text-[#0969DA] em-shadow-sm em-ring-1 em-ring-blue-100">
+                  <svg class="em-h-4 em-w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M7.75 12.5a.75.75 0 0 1 .75.75V15h3a.75.75 0 0 1 0-1.5H9.25a.75.75 0 0 1 0-1.5h3.25a1.5 1.5 0 0 1 1.5 1.5v2.25a.75.75 0 0 1-.75.75h-11a.75.75 0 0 1-.75-.75V13.5a1.5 1.5 0 0 1 1.5-1.5h3.25a.75.75 0 0 1 0 1.5H5.5a.75.75 0 0 1 0 1.5h3v-1.75a.75.75 0 0 1-.25-.75ZM2.75 4a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5H2.75ZM1 8.75A.75.75 0 0 1 1.75 8h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 8.75Z" /></svg>
+                </div>
+                <div class="em-leading-tight">
+                  <h2 class="em-text-sm em-font-bold em-text-[#1F2328]">Batch Editing</h2>
+                  <p class="em-text-xs em-text-[#656D76]">Modifying <span class="em-font-bold em-text-[#0969DA]">3</span> selected items</p>
+                </div>
+              </div>
+              <div class="em-flex em-items-center em-gap-5">
+                <label class="em-flex em-items-center em-gap-2 em-cursor-pointer">
+                  <span class="em-text-xs em-font-bold em-text-[#1F2328]">Enable All</span>
+                  <input type="checkbox" class="em-peer em-sr-only">
+                  <div class="em-relative em-h-5 em-w-9 em-rounded-full em-bg-[#D0D7DE] em-transition-colors peer-checked:em-bg-[#1F883D] peer-focus:em-ring-2 peer-focus:em-ring-[#0969DA] peer-focus:em-ring-offset-1">
+                     <span class="em-absolute em-left-[2px] em-top-[2px] em-h-4 em-w-4 em-rounded-full em-bg-white em-shadow-sm em-transition-transform peer-checked:em-translate-x-4"></span>
+                  </div>
+                </label>
+                <button class="em-text-xs em-font-medium em-text-[#CF222E] hover:em-underline">Cancel Batch</button>
+              </div>
+            </div>
+          </div>
+          -->
+
+          <!-- Tab Panel -->
+          <div class="em-flex-1 em-overflow-y-auto em-p-6" role="tabpanel">
+
+              <!-- 4. FIELD OMISSION (Grouped Disclosure) -->
+              <div class="em-space-y-6">
+                  <div class="em-flex em-items-center em-justify-between">
+                      <h2 class="em-text-lg em-font-semibold em-text-[#1F2328]">Field Omission</h2>
+                      <span class="em-rounded-full em-border em-border-[#D0D7DE] em-px-2 em-py-0.5 em-text-xs em-font-medium em-text-gray-500">Random Mode</span>
+                  </div>
+
+                  <!-- Visible Configs -->
+                  <div class="em-grid em-grid-cols-2 em-gap-6">
+                      <!-- Probability -->
+                      <div class="em-space-y-1">
+                          <label class="em-block em-text-sm em-font-semibold em-text-[#1F2328]">Omission Probability</label>
+                          <div class="em-flex em-items-center em-gap-3">
+                              <input type="range" class="em-h-2 em-w-full em-cursor-pointer em-rounded-lg em-bg-gray-200 em-accent-[#0969DA]" value="20">
+                              <span class="em-w-12 em-rounded em-border em-border-[#D0D7DE] em-bg-[#F6F8FA] em-px-2 em-py-1 em-text-center em-text-sm em-font-mono">0.2</span>
+                          </div>
+                      </div>
+                       <!-- Mode -->
+                       <div class="em-space-y-1">
+                          <label class="em-block em-text-sm em-font-semibold em-text-[#1F2328]">Omission Mode</label>
+                          <div class="em-flex em-rounded-md em-shadow-sm" role="group">
+                              <button type="button" class="em-rounded-l-md em-border em-border-[#D0D7DE] em-bg-[#0969DA] em-px-4 em-py-1.5 em-text-sm em-font-medium em-text-white focus:em-z-10 focus:em-ring-2 focus:em-ring-blue-500">Value</button>
+                              <button type="button" class="em-rounded-r-md em-border em-border-l-0 em-border-[#D0D7DE] em-bg-white em-px-4 em-py-1.5 em-text-sm em-font-medium em-text-gray-700 hover:em-bg-gray-50 focus:em-z-10 focus:em-ring-2 focus:em-ring-blue-500">Key</button>
+                          </div>
+                      </div>
+                  </div>
+
+                  <hr class="em-border-[#D0D7DE]">
+
+                  <!-- Accordion 1: Constraints -->
+                  <details class="em-group em-rounded-md em-border em-border-[#D0D7DE] em-bg-white open:em-shadow-sm">
+                      <summary class="em-flex em-cursor-pointer em-items-center em-justify-between em-bg-[#F6F8FA] em-px-4 em-py-2 em-text-sm em-font-semibold em-text-[#1F2328] hover:em-bg-gray-100 focus:em-outline-none focus:em-ring-2 focus:em-ring-[#0969DA] group-open:em-rounded-t-md group-open:em-border-b group-open:em-border-[#D0D7DE]">
+                          <span>Constraints</span>
+                          <!-- Chevron rotation -->
+                          <svg class="em-h-5 em-w-5 em-text-gray-500 em-transition-transform group-open:em-rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                      </summary>
+                      <div class="em-grid em-grid-cols-3 em-gap-4 em-p-4">
+                          <div class="em-space-y-1">
+                              <label class="em-block em-text-xs em-font-medium em-text-gray-600">Max Count</label>
+                              <input type="number" class="em-w-full em-rounded-md em-border em-border-[#D0D7DE] em-px-2 em-py-1 em-text-sm focus:em-border-[#0969DA] focus:em-ring-2 focus:em-ring-[#0969DA]/30" placeholder="Unlimited">
+                          </div>
+                          <div class="em-space-y-1">
+                              <label class="em-block em-text-xs em-font-medium em-text-gray-600">Max Depth</label>
+                              <input type="number" class="em-w-full em-rounded-md em-border em-border-[#D0D7DE] em-px-2 em-py-1 em-text-sm focus:em-border-[#0969DA] focus:em-ring-2 focus:em-ring-[#0969DA]/30" value="3">
+                          </div>
+                           <div class="em-space-y-1">
+                              <label class="em-block em-text-xs em-font-medium em-text-gray-600">Seed</label>
+                              <input type="text" class="em-w-full em-rounded-md em-border em-border-[#D0D7DE] em-px-2 em-py-1 em-text-sm focus:em-border-[#0969DA] focus:em-ring-2 focus:em-ring-[#0969DA]/30" placeholder="Random">
+                          </div>
+                      </div>
+                  </details>
+
+                   <!-- Accordion 2: Exceptions -->
+                   <details class="em-group em-rounded-md em-border em-border-[#D0D7DE] em-bg-white open:em-shadow-sm">
+                      <summary class="em-flex em-cursor-pointer em-items-center em-justify-between em-bg-[#F6F8FA] em-px-4 em-py-2 em-text-sm em-font-semibold em-text-[#1F2328] hover:em-bg-gray-100 focus:em-outline-none focus:em-ring-2 focus:em-ring-[#0969DA] group-open:em-rounded-t-md group-open:em-border-b group-open:em-border-[#D0D7DE]">
+                          <span>Exceptions</span>
+                          <svg class="em-h-5 em-w-5 em-text-gray-500 em-transition-transform group-open:em-rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                      </summary>
+                      <div class="em-p-4">
+                          <label class="em-mb-2 em-block em-text-xs em-font-medium em-text-gray-600">Excluded Fields (comma separated)</label>
+                          <textarea class="em-w-full em-rounded-md em-border em-border-[#D0D7DE] em-px-3 em-py-2 em-text-sm em-font-mono focus:em-border-[#0969DA] focus:em-ring-2 focus:em-ring-[#0969DA]/30" rows="2" placeholder="id, created_at, ..."></textarea>
+                      </div>
+                  </details>
+              </div>
+          </div>
+
+          <!-- Footer (Conditional - Single Mode) -->
+          <footer class="em-border-t em-border-[#D0D7DE] em-bg-[#F6F8FA] em-px-6 em-py-3 em-flex em-justify-end em-gap-3">
+               <span class="em-mr-auto em-text-xs em-text-amber-600 em-flex em-items-center em-gap-1">
+                  <!-- Warning Icon -->
+                  <svg class="em-w-3 em-h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                  Unsaved changes
+               </span>
+               <button class="em-rounded-md em-border em-border-[#D0D7DE] em-bg-white em-px-4 em-py-1.5 em-text-sm em-font-medium em-text-[#1F2328] hover:em-bg-gray-100 focus:em-ring-2 focus:em-ring-[#0969DA]">Cancel</button>
+               <button class="em-rounded-md em-bg-[#1F883D] em-px-4 em-py-1.5 em-text-sm em-font-medium em-text-white hover:em-bg-[#1a7f37] focus:em-ring-2 focus:em-ring-[#0969DA] focus:em-ring-offset-1">Apply Changes</button>
+          </footer>
+
+          <!-- Footer (Batch Mode - Alternative State) -->
+          <!-- When selectedCount > 1, button text changes -->
+          <!-- Uncomment when implementing batch mode: -->
+          <!--
+          <footer class="em-flex em-h-14 em-shrink-0 em-items-center em-justify-between em-border-t em-border-[#D0D7DE] em-bg-[#F6F8FA] em-px-6">
+            <div class="em-flex em-items-center em-gap-2">
+              <span class="em-h-2 em-w-2 em-rounded-full em-bg-[#0969DA]"></span>
+              <span class="em-text-xs em-font-medium em-text-[#656D76]">Pending changes for 3 items...</span>
+            </div>
+            <div class="em-flex em-gap-2">
+              <button class="em-rounded-md em-border em-border-[#D0D7DE] em-bg-white em-px-4 em-py-1.5 em-text-sm em-font-medium em-text-[#1F2328] em-shadow-sm hover:em-bg-[#F3F4F6]">Cancel</button>
+              <button class="em-rounded-md em-bg-[#0969DA] em-px-4 em-py-1.5 em-text-sm em-font-bold em-text-white em-shadow-sm hover:em-bg-[#0860CA]">Apply to 3 Selected</button>
+            </div>
+          </footer>
+          -->
+
+        </main>
+      </div>
+    </div>
+
+    <!-- ❌ 3. STATUS PILL (Deprecated - Replaced by Sidebar Global Status Bar) -->
+    <!--
+      Original Design: Floating bottom-right pill with hover expansion
+      Issues Found (Gemini Review):
+        - Low discoverability (hover-dependent)
+        - Potential z-index conflict with Footer
+        - Not aligned with IDE patterns (VS Code, Slack)
+
+      New Solution: See Sidebar bottom section (Global Status Bar)
+        - Always visible, no hover required
+        - Zero z-index conflicts
+        - Aligns with VS Code/Slack patterns
+        - High accessibility (natural tab flow)
+
+      Note: For Modal minimized state, use FloatButton component instead.
+    -->
+
+  </div>
+</div>

@@ -1,0 +1,245 @@
+# 批量模式完整原型
+
+本文档包含完整的批量模式UI原型代码（Gemini第六轮提供）
+
+## 使用说明
+
+将此代码复制到浏览器查看批量模式的完整效果。
+
+---
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error Mock Plugin - Batch Mode Prototype</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom em- prefix */
+    [class*="em-"] { /* Placeholder for Tailwind with em- prefix */ }
+  </style>
+</head>
+<body class="em-bg-gray-900 em-flex em-items-center em-justify-center em-min-h-screen">
+
+<!-- BATCH MODE COMPLETE PROTOTYPE -->
+<div class="em-font-sans em-text-[#1F2328]" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
+
+  <!-- Modal Background -->
+  <div class="em-fixed em-inset-0 em-z-50 em-flex em-items-center em-justify-center em-bg-black/50 em-backdrop-blur-sm">
+
+    <!-- Modal Window -->
+    <div class="em-flex em-h-[85vh] em-w-[90vw] em-max-w-6xl em-flex-col em-bg-white em-shadow-2xl em-rounded-lg em-overflow-hidden em-ring-1 em-ring-[#D0D7DE]">
+
+      <!-- HEADER (Batch Mode - Gemini Round 7) -->
+      <header class="em-flex em-h-14 em-shrink-0 em-items-center em-justify-between em-border-b em-border-[#D0D7DE] em-bg-[#F6F8FA] em-px-4">
+        <!-- Left: App Title -->
+        <div class="em-flex em-items-center em-gap-3">
+          <span class="em-font-bold em-text-[#1F2328]">Error Mock</span>
+          <div class="em-h-5 em-w-px em-bg-[#D0D7DE]"></div>
+        </div>
+
+        <!-- Center: Batch Context -->
+        <div class="em-flex em-flex-1 em-items-center em-gap-2 em-px-4 em-text-sm em-min-w-0">
+           <!-- Batch Icon (Stack icon) -->
+           <svg class="em-h-4 em-w-4 em-text-[#0969DA] em-shrink-0" viewBox="0 0 16 16" fill="currentColor">
+             <path d="M7.75 12.5a.75.75 0 0 1 .75.75V15h3a.75.75 0 0 1 0-1.5H9.25a.75.75 0 0 1 0-1.5h3.25a1.5 1.5 0 0 1 1.5 1.5v2.25a.75.75 0 0 1-.75.75h-11a.75.75 0 0 1-.75-.75V13.5a1.5 1.5 0 0 1 1.5-1.5h3.25a.75.75 0 0 1 0 1.5H5.5a.75.75 0 0 1 0 1.5h3v-1.75a.75.75 0 0 1-.25-.75ZM2.75 4a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5H2.75ZM1 8.75A.75.75 0 0 1 1.75 8h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 8.75Z" />
+           </svg>
+           <!-- Text -->
+           <span class="em-font-medium em-text-[#1F2328]">
+             Batch Editing <span class="em-font-bold em-text-[#0969DA]">3 items</span>
+           </span>
+        </div>
+
+        <!-- Right: Window Controls -->
+        <div class="em-flex em-items-center em-gap-2">
+          <button class="em-group em-flex em-h-8 em-w-8 em-items-center em-justify-center em-rounded-md em-text-[#656D76] hover:em-bg-[#D0D7DE]/50 hover:em-text-[#0969DA] focus:em-outline-none" aria-label="Minimize">
+              <svg class="em-h-4 em-w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M2 8a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 8Z" /></svg>
+          </button>
+          <button class="em-group em-flex em-h-8 em-w-8 em-items-center em-justify-center em-rounded-md em-text-[#656D76] hover:em-bg-[#FFEBE9] hover:em-text-[#CF222E] focus:em-outline-none" aria-label="Close">
+            <svg class="em-h-4 em-w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" /></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- CONTENT WRAPPER -->
+      <div class="em-flex em-flex-1 em-overflow-hidden">
+
+        <!-- SIDEBAR (Batch Mode with 3 selected items) -->
+        <aside class="em-flex em-w-64 em-flex-col em-border-r em-border-[#D0D7DE] em-bg-[#F6F8FA]">
+          <!-- Batch Toolbar (replaces Filter) -->
+          <div class="em-border-b em-border-[#D0D7DE] em-bg-white em-p-3">
+            <div class="em-flex em-items-center em-justify-between">
+              <div class="em-flex em-items-center em-gap-2">
+                <span class="em-flex em-h-5 em-items-center em-justify-center em-rounded-full em-bg-[#0969DA] em-px-1.5 em-text-[10px] em-font-bold em-text-white">3</span>
+                <button class="em-text-xs em-text-[#0969DA] hover:em-underline">Clear</button>
+              </div>
+              <div class="em-flex em-gap-1">
+                <button class="em-rounded-md em-p-1.5 em-text-[#1F883D] hover:em-bg-[#dafbe1]" title="Enable Selected"><svg class="em-h-4 em-w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16Zm3.78-9.72a.751.751 0 0 1 .018 1.042l-2.363 2.904a.909.909 0 0 1-1.356.042L5.47 7.72a.75.75 0 0 1 1.06-1.06l1.969 1.969 1.74-2.148a.75.75 0 0 1 1.54.24Z"/></svg></button>
+                <button class="em-rounded-md em-p-1.5 em-text-[#656D76] hover:em-bg-[#F3F4F6]" title="Disable Selected"><svg class="em-h-4 em-w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16ZM4 8a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 4 8Z"/></svg></button>
+                <button class="em-rounded-md em-p-1.5 em-text-[#CF222E] hover:em-bg-[#FFEBE9]" title="Delete Rules"><svg class="em-h-4 em-w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.576l-.66-6.6a.75.75 0 1 1 1.492-.15ZM6.5 1.75V3h3V1.75a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25Z"/></svg></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- API List (3 items selected) -->
+          <nav class="em-flex-1 em-overflow-y-auto em-py-2" aria-label="API Endpoints">
+            <div class="em-mb-1">
+              <button class="em-group em-flex em-w-full em-items-center em-rounded-sm em-px-2 em-py-1.5 em-text-left hover:em-bg-[#D0D7DE]/30 em-rotate-90" aria-expanded="true">
+                <svg class="em-mr-2 em-h-3 em-w-3 em-text-[#656D76] em-rotate-90" fill="currentColor" viewBox="0 0 16 16"><path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06Z" /></svg>
+                <span class="em-text-[11px] em-font-bold em-uppercase em-tracking-wider em-text-[#656D76]">user</span>
+                <span class="em-ml-auto em-rounded-full em-bg-[#D0D7DE]/50 em-px-2 em-py-0.5 em-text-[10px] em-font-semibold em-text-[#656D76]">2</span>
+              </button>
+              <div class="em-mt-0.5 em-space-y-0.5">
+                <!-- Selected items show checkbox -->
+                <div class="em-group em-py-2 em-pl-3 em-pr-2 em-border-l-4 em-border-transparent !em-bg-[#ddf4ff]">
+                  <div class="em-mr-2 em-flex em-h-4 em-w-4"><input type="checkbox" checked class="em-h-3.5 em-w-3.5 em-rounded-sm em-border-[#D0D7DE] em-text-[#0969DA] em-block"></div>
+                  <div class="em-flex em-min-w-0 em-flex-1 em-items-center em-justify-between">
+                    <div class="em-flex em-flex-col em-truncate">
+                      <span class="em-text-[10px] em-font-bold em-text-[#1F883D]">POST</span>
+                      <span class="em-truncate em-text-xs em-text-[#1F2328]">/api/user/login</span>
+                    </div>
+                    <span class="em-ml-2 em-h-2 em-w-2 em-shrink-0 em-rounded-full em-bg-[#1F883D]"></span>
+                  </div>
+                </div>
+                <div class="em-group em-py-2 em-pl-3 em-pr-2 em-border-l-4 em-border-transparent !em-bg-[#ddf4ff]">
+                  <div class="em-mr-2 em-flex em-h-4 em-w-4"><input type="checkbox" checked class="em-h-3.5 em-w-3.5 em-rounded-sm em-border-[#D0D7DE] em-text-[#0969DA] em-block"></div>
+                  <div class="em-flex em-min-w-0 em-flex-1 em-items-center em-justify-between">
+                    <div class="em-flex em-flex-col em-truncate">
+                      <span class="em-text-[10px] em-font-bold em-text-[#0969DA]">GET</span>
+                      <span class="em-truncate em-text-xs em-text-[#1F2328]">/api/user/profile</span>
+                    </div>
+                    <span class="em-ml-2 em-h-2 em-w-2 em-shrink-0 em-rounded-full em-bg-gray-300"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="em-mb-1">
+              <button class="em-group em-flex em-w-full em-items-center em-rounded-sm em-px-2 em-py-1.5 em-text-left hover:em-bg-[#D0D7DE]/30 em-rotate-90" aria-expanded="true">
+                <svg class="em-mr-2 em-h-3 em-w-3 em-text-[#656D76] em-rotate-90" fill="currentColor" viewBox="0 0 16 16"><path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06Z" /></svg>
+                <span class="em-text-[11px] em-font-bold em-uppercase em-tracking-wider em-text-[#656D76]">storage</span>
+                <span class="em-ml-auto em-rounded-full em-bg-[#D0D7DE]/50 em-px-2 em-py-0.5 em-text-[10px] em-font-semibold em-text-[#656D76]">1</span>
+              </button>
+              <div class="em-mt-0.5 em-space-y-0.5">
+                <div class="em-group em-py-2 em-pl-3 em-pr-2 em-border-l-4 em-border-transparent !em-bg-[#ddf4ff]">
+                  <div class="em-mr-2 em-flex em-h-4 em-w-4"><input type="checkbox" checked class="em-h-3.5 em-w-3.5 em-rounded-sm em-border-[#D0D7DE] em-text-[#0969DA] em-block"></div>
+                  <div class="em-flex em-min-w-0 em-flex-1 em-items-center em-justify-between">
+                    <div class="em-flex em-flex-col em-truncate">
+                      <span class="em-text-[10px] em-font-bold em-text-[#1F883D]">POST</span>
+                      <span class="em-truncate em-text-xs em-text-[#1F2328]">/api/storage/save</span>
+                    </div>
+                    <span class="em-ml-2 em-h-2 em-w-2 em-shrink-0 em-rounded-full em-bg-[#1F883D]"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </nav>
+
+          <!-- Global Status Bar -->
+          <div class="em-border-t em-border-[#D0D7DE] em-bg-white em-p-3">
+            <div class="em-flex em-items-center em-justify-between em-gap-2">
+              <div class="em-flex em-items-center em-gap-2">
+                <span class="em-relative em-flex em-h-2.5 em-w-2.5 em-shrink-0">
+                  <span class="em-absolute em-inline-flex em-h-full em-w-full em-animate-ping em-rounded-full em-bg-[#1F883D] em-opacity-75"></span>
+                  <span class="em-relative em-inline-flex em-h-2.5 em-w-2.5 em-rounded-full em-bg-[#1F883D]"></span>
+                </span>
+                <span class="em-text-sm em-font-semibold em-text-[#1F2328]">3 Active</span>
+              </div>
+              <div class="em-flex em-items-center">
+                <button class="em-rounded-md em-p-1.5 em-text-[#656D76] hover:em-bg-[#FFEBE9] hover:em-text-[#CF222E]" title="Pause All"><svg class="em-h-4 em-w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
+                <button class="em-ml-1 em-rounded-md em-p-1.5 em-text-[#656D76] hover:em-bg-[#F3F4F6] hover:em-text-[#0969DA]" title="Settings"><svg class="em-h-4 em-w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg></button>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="em-flex em-flex-1 em-flex-col em-bg-white">
+
+          <!-- BATCH CONTEXT BAR (Sticky) -->
+          <div class="em-sticky em-top-0 em-z-10 em-shrink-0 em-border-b em-border-blue-200 em-bg-blue-50 em-px-6 em-py-3 em-shadow-sm">
+            <div class="em-flex em-items-center em-justify-between">
+              <div class="em-flex em-items-center em-gap-3">
+                <div class="em-flex em-h-8 em-w-8 em-items-center em-justify-center em-rounded-full em-bg-white em-text-[#0969DA] em-shadow-sm em-ring-1 em-ring-blue-100">
+                  <svg class="em-h-4 em-w-4" viewBox="0 0 16 16" fill="currentColor"><path d="M7.75 12.5a.75.75 0 0 1 .75.75V15h3a.75.75 0 0 1 0-1.5H9.25a.75.75 0 0 1 0-1.5h3.25a1.5 1.5 0 0 1 1.5 1.5v2.25a.75.75 0 0 1-.75.75h-11a.75.75 0 0 1-.75-.75V13.5a1.5 1.5 0 0 1 1.5-1.5h3.25a.75.75 0 0 1 0 1.5H5.5a.75.75 0 0 1 0 1.5h3v-1.75a.75.75 0 0 1-.25-.75ZM2.75 4a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5H2.75ZM1 8.75A.75.75 0 0 1 1.75 8h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 8.75Z" /></svg>
+                </div>
+                <div class="em-leading-tight">
+                  <h2 class="em-text-sm em-font-bold em-text-[#1F2328]">Batch Editing</h2>
+                  <p class="em-text-xs em-text-[#656D76]">Modifying <span class="em-font-bold em-text-[#0969DA]">3</span> selected items</p>
+                </div>
+              </div>
+              <div class="em-flex em-items-center em-gap-5">
+                <label class="em-flex em-items-center em-gap-2 em-cursor-pointer">
+                  <span class="em-text-xs em-font-bold em-text-[#1F2328]">Enable All</span>
+                  <input type="checkbox" class="em-peer em-sr-only">
+                  <div class="em-relative em-h-5 em-w-9 em-rounded-full em-bg-[#D0D7DE] em-transition-colors peer-checked:em-bg-[#1F883D] peer-focus:em-ring-2 peer-focus:em-ring-[#0969DA] peer-focus:em-ring-offset-1">
+                     <span class="em-absolute em-left-[2px] em-top-[2px] em-h-4 em-w-4 em-rounded-full em-bg-white em-shadow-sm em-transition-transform peer-checked:em-translate-x-4"></span>
+                  </div>
+                </label>
+                <button class="em-text-xs em-font-medium em-text-[#CF222E] hover:em-underline">Cancel Batch</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- BATCH EDIT FORM -->
+          <div class="em-flex-1 em-overflow-y-auto em-p-6">
+            <form class="em-space-y-6">
+              <div class="em-space-y-4">
+                <h3 class="em-text-[11px] em-font-bold em-uppercase em-tracking-wider em-text-[#656D76]">Common Settings</h3>
+                <div class="em-grid em-grid-cols-[140px_1fr] em-gap-4 em-items-center">
+                  <label class="em-text-sm em-font-medium em-text-[#1F2328]">Mock Type</label>
+                  <select class="em-w-full em-rounded-md em-border em-border-[#D0D7DE] em-bg-white em-px-3 em-py-1.5 em-text-sm focus:em-border-[#0969DA] focus:em-ring-2 focus:em-ring-[#0969DA]/30">
+                    <option>(Keep Original)</option>
+                    <option>Network Error</option>
+                    <option>Business Error</option>
+                    <option>Success</option>
+                    <option>None</option>
+                  </select>
+                </div>
+                <div class="em-grid em-grid-cols-[140px_1fr] em-gap-4 em-items-center">
+                  <label class="em-text-sm em-font-medium em-text-[#1F2328]">Delay (ms)</label>
+                  <input type="number" placeholder="(Keep Original)" class="em-w-full em-rounded-md em-border em-border-[#D0D7DE] em-px-3 em-py-1.5 em-text-sm">
+                </div>
+                <div class="em-grid em-grid-cols-[140px_1fr] em-gap-4 em-items-center">
+                  <label class="em-text-sm em-font-medium em-text-[#1F2328]">Failure Rate</label>
+                  <div class="em-flex em-items-center em-gap-3">
+                    <input type="range" min="0" max="1" step="0.1" class="em-h-1.5 em-flex-1 em-cursor-pointer em-rounded-lg em-bg-[#D0D7DE] em-accent-[#0969DA]">
+                    <span class="em-w-16 em-text-right em-text-xs em-text-[#656D76]">(Mixed)</span>
+                  </div>
+                </div>
+              </div>
+              <div class="em-rounded-md em-border em-border-yellow-200 em-bg-yellow-50 em-p-4">
+                <div class="em-flex em-gap-3">
+                  <svg class="em-mt-0.5 em-h-4 em-w-4 em-shrink-0 em-text-[#9A6700]" viewBox="0 0 16 16" fill="currentColor"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>
+                  <div>
+                    <h4 class="em-text-sm em-font-bold em-text-[#9A6700]">Limited Batch Capability</h4>
+                    <p class="em-mt-1 em-text-xs em-text-[#9A6700]">Business Error details (error code, message) and custom Response Data cannot be batch edited as they are unique to each API rule.</p>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- FOOTER (Batch Mode) -->
+          <footer class="em-flex em-h-14 em-shrink-0 em-items-center em-justify-between em-border-t em-border-[#D0D7DE] em-bg-[#F6F8FA] em-px-6">
+            <div class="em-flex em-items-center em-gap-2">
+              <span class="em-h-2 em-w-2 em-rounded-full em-bg-[#0969DA]"></span>
+              <span class="em-text-xs em-font-medium em-text-[#656D76]">Pending changes for 3 items...</span>
+            </div>
+            <div class="em-flex em-gap-2">
+              <button class="em-rounded-md em-border em-border-[#D0D7DE] em-bg-white em-px-4 em-py-1.5 em-text-sm em-font-medium em-text-[#1F2328] hover:em-bg-[#F3F4F6]">Cancel</button>
+              <button class="em-rounded-md em-bg-[#0969DA] em-px-4 em-py-1.5 em-text-sm em-font-bold em-text-white hover:em-bg-[#0860CA]">Apply to 3 Selected</button>
+            </div>
+          </footer>
+
+        </main>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
+```
