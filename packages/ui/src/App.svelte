@@ -48,6 +48,7 @@
   // Reactive editing state - always deep clone to prevent direct mutation
   $: currentRule = getCurrentRule($selectedIds, $apiMetas, $mockRules);
   $: isBatch = $selectedIds.size > 1;
+  $: modalCurrentApi = !isBatch && currentRule ? { method: currentRule.method, url: currentRule.url } : null;
 
   // Helper to deep clone objects (preserves all data)
   function deepClone<T>(obj: T): T {
@@ -271,7 +272,15 @@
 
   <!-- Modal - Shown when open -->
   {#if $isModalOpen}
-    <Modal on:close={handleCloseModal} on:minimize={handleMinimizeModal}>
+    <Modal
+      currentApi={modalCurrentApi}
+      isBatchMode={isBatch}
+      selectedCount={$selectedIds.size}
+      on:apply={handleApply}
+      on:cancel={handleCancel}
+      on:close={handleCloseModal}
+      on:minimize={handleMinimizeModal}
+    >
       <!-- Left Sidebar: API List -->
       <div slot="sidebar" class="em-h-full em-relative">
         <ApiList rules={$mockRules} on:select={handleSelect} on:toggle={handleToggle} />
@@ -280,7 +289,13 @@
 
       <!-- Right Content: Rule Editor -->
       <div slot="content" class="em-h-full">
-        <RuleEditor rule={currentRule} {isBatch} on:apply={handleApply} on:cancel={handleCancel} />
+        <RuleEditor
+          rule={currentRule}
+          {isBatch}
+          selectedCount={$selectedIds.size}
+          on:apply={handleApply}
+          on:cancel={handleCancel}
+        />
       </div>
     </Modal>
   {/if}

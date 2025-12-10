@@ -37,6 +37,7 @@
   // Props (to maintain compatibility with App.svelte)
   export let rule: MockRule | null = null;
   export let isBatch = false;
+  export let selectedCount = 0;
 
   const dispatch = createEventDispatcher<{
     apply: { rule: MockRule; editedFields: Set<string> };
@@ -47,16 +48,22 @@
   // Track if props are being used (for App.svelte compatibility) vs store-only (for tests)
   let propsMode = false;
   let lastRule: MockRule | null = null;
+  let lastSelectedCount = 0;
+  let lastIsBatch = isBatch;
 
   // Initialize editor when rule or isBatch changes (only if props are provided)
   $: {
+    const selectionChanged = selectedCount !== lastSelectedCount || isBatch !== lastIsBatch;
     // If rule prop is provided, we're in props mode (App.svelte)
-    if (rule !== undefined && rule !== lastRule) {
+    if (rule !== undefined && (rule !== lastRule || selectionChanged)) {
       propsMode = true;
       lastRule = rule;
+      lastSelectedCount = selectedCount;
+      lastIsBatch = isBatch;
 
       if (rule) {
-        initEditor(rule, isBatch, isBatch ? 0 : 1);
+        const count = isBatch ? selectedCount : 1;
+        initEditor(rule, isBatch, count);
       } else if (propsMode) {
         // Only reset if we were previously using props
         resetEditor();

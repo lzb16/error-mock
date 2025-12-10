@@ -28,7 +28,7 @@
 
   <!-- Left: App Title -->
   <div class="em-flex em-items-center em-gap-3">
-    <span class="em-font-bold em-text-[#1F2328]">Error Mock</span>
+    <span id="modal-title" class="em-font-bold em-text-[#1F2328]">Error Mock</span>
     <div class="em-h-5 em-w-px em-bg-[#D0D7DE]"></div>
   </div>
 

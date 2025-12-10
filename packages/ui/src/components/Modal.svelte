@@ -1,10 +1,19 @@
 <script lang="ts">
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import { fade, scale } from 'svelte/transition';
+  import Header from './modal/Header.svelte';
+  import Footer from './modal/Footer.svelte';
+  import { activeRuleDraft, editorUiState } from '../stores/ruleEditor';
+
+  export let currentApi: { method: string; url: string } | null = null;
+  export let isBatchMode = false;
+  export let selectedCount = 0;
 
   const dispatch = createEventDispatcher<{
     close: void;
     minimize: void;
+    apply: { rule: any; editedFields: Set<string> };
+    cancel: void;
   }>();
 
   let modalElement: HTMLElement | null = null;
@@ -77,6 +86,19 @@
       }
     }
   }
+
+  function handleFooterApply() {
+    if ($activeRuleDraft) {
+      dispatch('apply', {
+        rule: $activeRuleDraft,
+        editedFields: $editorUiState.dirtyFields
+      });
+    }
+  }
+
+  function handleFooterCancel() {
+    dispatch('cancel');
+  }
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -100,51 +122,13 @@
     transition:scale={{ start: 0.95, duration: 200 }}
     on:click|stopPropagation
   >
-    <!-- Header -->
-    <div
-      class="em-flex em-justify-between em-items-center em-px-6 em-py-4 em-border-b em-border-gray-200 em-bg-gradient-to-r em-from-blue-50 em-to-indigo-50"
-    >
-      <h2 id="modal-title" class="em-text-xl em-font-bold em-text-gray-800 em-flex em-items-center em-gap-2">
-        <svg
-          class="em-w-6 em-h-6 em-text-blue-600"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-          />
-        </svg>
-        Error Mock Control Panel
-      </h2>
-
-      <div class="em-flex em-gap-2">
-        <button
-          class="em-p-2 em-text-gray-500 hover:em-text-gray-700 hover:em-bg-gray-100 em-rounded-lg em-transition-colors em-duration-150"
-          on:click={() => dispatch('minimize')}
-          aria-label="Minimize"
-          type="button"
-        >
-          <svg class="em-w-5 em-h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-          </svg>
-        </button>
-        <button
-          class="em-p-2 em-text-gray-500 hover:em-text-red-600 hover:em-bg-red-50 em-rounded-lg em-transition-colors em-duration-150"
-          on:click={() => dispatch('close')}
-          aria-label="Close"
-          type="button"
-        >
-          <svg class="em-w-5 em-h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-    </div>
+    <Header
+      {currentApi}
+      {isBatchMode}
+      {selectedCount}
+      on:minimize={() => dispatch('minimize')}
+      on:close={() => dispatch('close')}
+    />
 
     <!-- Content Body - Left/Right Split -->
     <div class="em-flex em-flex-1 em-overflow-hidden">
@@ -158,5 +142,7 @@
         <slot name="content" />
       </div>
     </div>
+
+    <Footer on:apply={handleFooterApply} on:cancel={handleFooterCancel} />
   </div>
 </div>
