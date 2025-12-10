@@ -1,12 +1,39 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import { activeRuleDraft, editorUiState } from '../../stores/ruleEditor';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import type { MockRule } from '@error-mock/core';
+  import { activeRuleDraft, editorUiState, initEditor, resetEditor } from '../../stores/ruleEditor';
   import RuleControlBar from './controls/RuleControlBar.svelte';
   import BatchControlBar from './controls/BatchControlBar.svelte';
 
+  // Props (to maintain compatibility with App.svelte)
+  export let rule: MockRule | null = null;
+  export let isBatch = false;
+
   const dispatch = createEventDispatcher<{
+    apply: { rule: MockRule; editedFields: Set<string> };
+    cancel: void;
     cancelBatch: void;
   }>();
+
+  // Track if props are being used (for App.svelte compatibility) vs store-only (for tests)
+  let propsMode = false;
+  let lastRule: MockRule | null = null;
+
+  // Initialize editor when rule or isBatch changes (only if props are provided)
+  $: {
+    // If rule prop is provided, we're in props mode (App.svelte)
+    if (rule !== undefined && rule !== lastRule) {
+      propsMode = true;
+      lastRule = rule;
+
+      if (rule) {
+        initEditor(rule, isBatch, isBatch ? 0 : 1);
+      } else if (propsMode) {
+        // Only reset if we were previously using props
+        resetEditor();
+      }
+    }
+  }
 
   // Reactive store bindings
   $: draft = $activeRuleDraft;
@@ -16,7 +43,21 @@
 
   // Event handlers
   function handleCancelBatch() {
-    dispatch('cancelBatch');
+    dispatch('cancelBatch'); // For test compatibility
+    dispatch('cancel'); // For App.svelte
+  }
+
+  function handleApply() {
+    if ($activeRuleDraft) {
+      dispatch('apply', {
+        rule: $activeRuleDraft,
+        editedFields: $editorUiState.dirtyFields
+      });
+    }
+  }
+
+  function handleCancel() {
+    dispatch('cancel');
   }
 </script>
 
@@ -56,4 +97,24 @@
       </div>
     {/if}
   </div>
+
+  <!-- Action Buttons (Bottom) -->
+  {#if draft}
+    <div class="em-shrink-0 em-border-t em-border-[#D0D7DE] em-bg-[#F6F8FA] em-px-6 em-py-4">
+      <div class="em-flex em-justify-end em-gap-3">
+        <button
+          class="em-rounded-md em-border em-border-[#D0D7DE] em-bg-white em-px-4 em-py-2 em-text-sm em-font-medium em-text-[#24292F] hover:em-bg-[#F3F4F6] focus:em-outline-none focus:em-ring-2 focus:em-ring-[#0969DA] focus:em-ring-offset-2"
+          on:click={handleCancel}
+        >
+          Cancel
+        </button>
+        <button
+          class="em-rounded-md em-bg-[#1F883D] em-px-4 em-py-2 em-text-sm em-font-medium em-text-white hover:em-bg-[#1A7F37] focus:em-outline-none focus:em-ring-2 focus:em-ring-[#1F883D] focus:em-ring-offset-2"
+          on:click={handleApply}
+        >
+          Apply
+        </button>
+      </div>
+    </div>
+  {/if}
 </div>

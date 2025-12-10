@@ -5,7 +5,7 @@
   import FloatButton from './components/FloatButton.svelte';
   import Modal from './components/Modal.svelte';
   import ApiList from './components/ApiList.svelte';
-  import RuleEditor from './components/RuleEditor.svelte';
+  import RuleEditor from './components/rule-editor/RuleEditor.svelte';
   import BatchPanel from './components/BatchPanel.svelte';
   import Toast from './components/Toast.svelte';
 
