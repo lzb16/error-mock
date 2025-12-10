@@ -113,4 +113,52 @@ describe('applyDirtyFields', () => {
     expect(result.method).toBe('POST');
     expect(result.enabled).toBe(true);
   });
+
+  it('should not apply identity fields even if marked dirty', () => {
+    const existingRule: MockRule = {
+      ...createDefaultRule({ module: 'test', name: 'api', url: '/test', method: 'GET' }),
+      id: 'original-id',
+      url: '/original',
+      method: 'GET'
+    };
+
+    const draft: RuleDraft = {
+      ...existingRule,
+      id: 'changed-id',
+      url: '/changed',
+      method: 'DELETE',
+      enabled: true
+    };
+
+    const dirtyFields = new Set(['id', 'url', 'method', 'enabled']);
+
+    const result = applyDirtyFields(draft, dirtyFields, existingRule);
+
+    // Identity fields should NOT be applied even if marked dirty
+    expect(result.id).toBe('original-id');
+    expect(result.url).toBe('/original');
+    expect(result.method).toBe('GET');
+    // Non-identity field should apply
+    expect(result.enabled).toBe(true);
+  });
+
+  it('should filter out values with nested MIXED at any depth', () => {
+    const existingRule: MockRule = createDefaultRule({
+      module: 'test', name: 'api', url: '/test', method: 'GET'
+    });
+
+    const draft: RuleDraft = {
+      ...existingRule,
+      response: { useDefault: true, customResult: MIXED },
+      network: { delay: 100, timeout: MIXED, offline: false, failRate: 0 }
+    };
+
+    const dirtyFields = new Set(['response', 'network']);
+
+    const result = applyDirtyFields(draft, dirtyFields, existingRule);
+
+    // Containers with nested MIXED should not be applied
+    expect(result.response).toEqual(existingRule.response);
+    expect(result.network).toEqual(existingRule.network);
+  });
 });

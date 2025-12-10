@@ -3,6 +3,28 @@ import type { RuleDraft } from '../ruleEditor';
 import type { MockRule, ApiMeta } from '@error-mock/core';
 
 /**
+ * Identity fields that must never be overwritten from draft
+ */
+const IDENTITY_FIELDS = new Set(['id', 'url', 'method']);
+
+/**
+ * Recursively check if a value contains MIXED at any depth
+ */
+function containsMixed(value: any): boolean {
+  if (value === MIXED) return true;
+
+  if (Array.isArray(value)) {
+    return value.some(item => containsMixed(item));
+  }
+
+  if (typeof value === 'object' && value !== null) {
+    return Object.values(value).some(v => containsMixed(v));
+  }
+
+  return false;
+}
+
+/**
  * Safely apply dirty fields from draft to a clean rule, filtering out MIXED values.
  *
  * This prevents MIXED symbols from being persisted to localStorage, which would
@@ -36,12 +58,17 @@ export function applyDirtyFields(
     result.method = existingRule.method;
   }
 
-  // Apply each dirty field (skipping MIXED values)
+  // Apply each dirty field (skipping identity fields and MIXED values)
   for (const fieldPath of dirtyFields) {
+    // Skip identity fields - they must never be overwritten
+    if (IDENTITY_FIELDS.has(fieldPath)) {
+      continue;
+    }
+
     const value = getNestedValue(draft, fieldPath);
 
-    // Skip MIXED values - they should not be persisted
-    if (value === MIXED) {
+    // Skip values containing MIXED at any depth
+    if (containsMixed(value)) {
       continue;
     }
 
