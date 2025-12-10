@@ -33,6 +33,9 @@
   import { activeRuleDraft, editorUiState, initEditor, resetEditor } from '../../stores/ruleEditor';
   import RuleControlBar from './controls/RuleControlBar.svelte';
   import BatchControlBar from './controls/BatchControlBar.svelte';
+  import NetworkTab from './tabs/NetworkTab.svelte';
+  import ResponseTab from './tabs/ResponseTab.svelte';
+  import AdvancedTab from './tabs/AdvancedTab.svelte';
 
   // Props (to maintain compatibility with App.svelte)
   export let rule: MockRule | null = null;
@@ -108,24 +111,15 @@
     <RuleControlBar />
   {/if}
 
-  <!-- Tab Content Area (Scrollable) -->
-  <div class="em-flex-1 em-overflow-auto em-px-6 em-py-4">
+  <!-- TAB CONTENT AREA (Scrollable) -->
+  <div class="em-flex-1 em-overflow-y-auto">
     {#if draft}
       {#if activeTab === 'network'}
-        <!-- Network Tab (Phase 2) -->
-        <div class="em-text-sm em-text-[#656D76]">
-          Network Tab Content
-        </div>
+        <NetworkTab />
       {:else if activeTab === 'response'}
-        <!-- Response Tab (Phase 2) -->
-        <div class="em-text-sm em-text-[#656D76]">
-          Response Tab Content
-        </div>
+        <ResponseTab />
       {:else if activeTab === 'advanced'}
-        <!-- Advanced Tab (Phase 2) -->
-        <div class="em-text-sm em-text-[#656D76]">
-          Advanced Tab Content
-        </div>
+        <AdvancedTab />
       {/if}
     {:else}
       <!-- Empty State -->

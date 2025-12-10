@@ -213,7 +213,8 @@ describe('RuleEditor Container', () => {
 
       // Default tab should be network
       expect(get(editorUiState).activeTab).toBe('network');
-      expect(screen.getByText('Network Tab Content')).toBeInTheDocument();
+      expect(screen.getByLabelText('Delay')).toBeInTheDocument();
+      expect(screen.getByLabelText('Failure Rate')).toBeInTheDocument();
     });
 
     it('renders response tab content when switched', async () => {
@@ -224,7 +225,7 @@ describe('RuleEditor Container', () => {
       await rerender({});
 
       expect(get(editorUiState).activeTab).toBe('response');
-      expect(screen.getByText('Response Tab Content')).toBeInTheDocument();
+      expect(screen.getByText('Success Mode Active')).toBeInTheDocument();
     });
 
     it('renders advanced tab content when switched', async () => {
@@ -235,7 +236,7 @@ describe('RuleEditor Container', () => {
       await rerender({});
 
       expect(get(editorUiState).activeTab).toBe('advanced');
-      expect(screen.getByText('Advanced Tab Content')).toBeInTheDocument();
+      expect(screen.getByText('Field Omission')).toBeInTheDocument();
     });
   });
 
@@ -268,7 +269,7 @@ describe('RuleEditor Container', () => {
       setActiveTab('response');
       await rerender({});
 
-      expect(screen.getByText('Response Tab Content')).toBeInTheDocument();
+      expect(screen.getByText('Success Mode Active')).toBeInTheDocument();
     });
   });
 
@@ -302,8 +303,8 @@ describe('RuleEditor Container', () => {
       initEditor(mockRule, false);
       const { container } = render(RuleEditor);
 
-      // Should have overflow-auto content area
-      const contentArea = container.querySelector('.em-flex-1.em-overflow-auto');
+      // Should have overflow-y-auto content area
+      const contentArea = container.querySelector('.em-flex-1.em-overflow-y-auto');
       expect(contentArea).toBeTruthy();
     });
   });
@@ -326,7 +327,7 @@ describe('RuleEditor Container', () => {
       await rerender({});
 
       expect(get(editorUiState).activeTab).toBe('network');
-      expect(screen.getByText('Network Tab Content')).toBeInTheDocument();
+      expect(screen.getByLabelText('Delay')).toBeInTheDocument();
     });
 
     it('handles mode switching with tab preservation', async () => {

@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">70% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>42/60</span>
+                <span class='fraction'>0/60</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>0/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">25% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/4</span>
+                <span class='fraction'>0/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">70% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>42/60</span>
+                <span class='fraction'>0/60</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -123,42 +123,7 @@
 <a name='L58'></a><a href='#L58'>58</a>
 <a name='L59'></a><a href='#L59'>59</a>
 <a name='L60'></a><a href='#L60'>60</a>
-<a name='L61'></a><a href='#L61'>61</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<a name='L61'></a><a href='#L61'>61</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -173,52 +138,87 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { writable, type Writable } from 'svelte/store';
-import type { GlobalConfig } from '@error-mock/core';
-&nbsp;
-// Default global configuration
-const DEFAULT_CONFIG: GlobalConfig = {
-  enabled: true,
-  defaultDelay: 0,
-  position: 'bottom-right',
-  theme: 'system',
-  keyboardShortcuts: true,
-};
-&nbsp;
-// Global configuration store
-export const globalConfig: Writable&lt;GlobalConfig&gt; = writable(DEFAULT_CONFIG);
-&nbsp;
-// Modal state stores
-export const isModalOpen = writable(false);
-export const isMinimized = writable(false);
-&nbsp;
-// Toast notification interface
-export interface Toast {
-  id: string;
-  message: string;
-  type: 'success' | 'error' | 'info' | 'warning';
-  duration?: number;
-}
-&nbsp;
-// Toast store with helper functions
-function createToastStore() {
-  const { subscribe, update } = writable&lt;Toast[]&gt;([]);
-&nbsp;
-  let nextId = 0;
-&nbsp;
-  return {
-    subscribe,
-    add: <span class="fstat-no" title="function not covered" >(message: string, type: Toast['type'] = 'info', duration = 3000) =&gt; {</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { writable, type Writable } from 'svelte/store';</span></span></span>
+<span class="cstat-no" title="statement not covered" >import type { GlobalConfig } from '@error-mock/core';</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >// Default global configuration</span>
+<span class="cstat-no" title="statement not covered" >const DEFAULT_CONFIG: GlobalConfig = {</span>
+<span class="cstat-no" title="statement not covered" >  enabled: true,</span>
+<span class="cstat-no" title="statement not covered" >  defaultDelay: 0,</span>
+<span class="cstat-no" title="statement not covered" >  position: 'bottom-right',</span>
+<span class="cstat-no" title="statement not covered" >  theme: 'system',</span>
+<span class="cstat-no" title="statement not covered" >  keyboardShortcuts: true,</span>
+<span class="cstat-no" title="statement not covered" >};</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >// Global configuration store</span>
+<span class="cstat-no" title="statement not covered" >export const globalConfig: Writable&lt;GlobalConfig&gt; = writable(DEFAULT_CONFIG);</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >// Modal state stores</span>
+<span class="cstat-no" title="statement not covered" >export const isModalOpen = writable(false);</span>
+<span class="cstat-no" title="statement not covered" >export const isMinimized = writable(false);</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >// Toast notification interface</span>
+<span class="cstat-no" title="statement not covered" >export interface Toast {</span>
+<span class="cstat-no" title="statement not covered" >  id: string;</span>
+<span class="cstat-no" title="statement not covered" >  message: string;</span>
+<span class="cstat-no" title="statement not covered" >  type: 'success' | 'error' | 'info' | 'warning';</span>
+<span class="cstat-no" title="statement not covered" >  duration?: number;</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >// Toast store with helper functions</span>
+<span class="cstat-no" title="statement not covered" >function createToastStore() {</span>
+<span class="cstat-no" title="statement not covered" >  const { subscribe, update } = writable&lt;Toast[]&gt;([]);</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >  let nextId = 0;</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >  return {</span>
+<span class="cstat-no" title="statement not covered" >    subscribe,</span>
+<span class="cstat-no" title="statement not covered" >    add: (message: string, type: Toast['type'] = 'info', duration = 3000) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >      const id = `toast-${nextId++}`;</span>
 <span class="cstat-no" title="statement not covered" >      const toast: Toast = { id, message, type, duration };</span>
 <span class="cstat-no" title="statement not covered" ></span>
@@ -233,16 +233,16 @@ function createToastStore() {
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >      return id;</span>
 <span class="cstat-no" title="statement not covered" >    },</span>
-    dismiss: <span class="fstat-no" title="function not covered" >(id: string) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    dismiss: (id: string) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >      update((toasts) =&gt; toasts.filter((t) =&gt; t.id !== id));</span>
 <span class="cstat-no" title="statement not covered" >    },</span>
-    clear: <span class="fstat-no" title="function not covered" >() =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    clear: () =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >      update(() =&gt; []);</span>
 <span class="cstat-no" title="statement not covered" >    },</span>
-  };
-}
-&nbsp;
-export const toasts = createToastStore();
+<span class="cstat-no" title="statement not covered" >  };</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >export const toasts = createToastStore();</span>
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -250,7 +250,7 @@ export const toasts = createToastStore();
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-10T10:23:53.163Z
+                at 2025-12-10T20:36:54.002Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
