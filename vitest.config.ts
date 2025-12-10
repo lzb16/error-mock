@@ -1,9 +1,18 @@
 import { defineConfig } from 'vitest/config';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import sveltePreprocess from 'svelte-preprocess';
 
 export default defineConfig({
+  plugins: [
+    svelte({
+      hot: !process.env.VITEST,
+      preprocess: sveltePreprocess(),
+    }),
+  ],
   test: {
     globals: true,
     environment: 'jsdom',
+    setupFiles: ['./vitest.setup.ts'],
     include: ['packages/*/src/**/*.test.ts'],
     coverage: {
       provider: 'v8',
@@ -12,6 +21,7 @@ export default defineConfig({
         'packages/core/src/**/*.ts',
         'packages/parser/src/**/*.ts',
         'packages/ui/src/**/*.ts',
+        'packages/ui/src/**/*.svelte',
       ],
       exclude: [
         '**/*.d.ts',
