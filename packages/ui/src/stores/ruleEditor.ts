@@ -3,6 +3,15 @@ import type { MockRule } from '@error-mock/core';
 import fastDeepEqual from 'fast-deep-equal';
 import { MIXED, type MixedValue } from './rules';
 
+// Recursive partial type for deep updates
+type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends Array<unknown>
+    ? T[K]
+    : T[K] extends object
+      ? DeepPartial<T[K]>
+      : T[K];
+};
+
 // Draft type that supports MIXED values for batch editing
 export type RuleDraft = Omit<
   MockRule,
@@ -158,6 +167,96 @@ function cloneRule(rule: MockRule): RuleDraft {
   return deepCloneValue(rule) as RuleDraft;
 }
 
+// Helper: Resolve value for deep merge, handling MIXED and undefined
+function resolveValue<T>(original: T, updated: T | undefined | typeof MIXED): T {
+  // If update is undefined, keep original
+  if (updated === undefined) return original;
+  // If update is MIXED (batch mode), keep original variance
+  if (updated === MIXED) return original;
+  // Otherwise use updated value
+  return updated;
+}
+
+// Deep merge helpers for nested objects
+function mergeNetwork(
+  current: RuleDraft['network'],
+  updates?: DeepPartial<RuleDraft['network']>
+): RuleDraft['network'] {
+  if (!updates) return current;
+  return {
+    delay: resolveValue(current.delay, updates.delay),
+    timeout: resolveValue(current.timeout, updates.timeout),
+    offline: resolveValue(current.offline, updates.offline),
+    failRate: resolveValue(current.failRate, updates.failRate)
+  };
+}
+
+function mergeBusiness(
+  current: RuleDraft['business'],
+  updates?: DeepPartial<RuleDraft['business']>
+): RuleDraft['business'] {
+  if (!updates) return current;
+  return {
+    errNo: resolveValue(current.errNo, updates.errNo),
+    errMsg: resolveValue(current.errMsg, updates.errMsg),
+    detailErrMsg: resolveValue(current.detailErrMsg, updates.detailErrMsg)
+  };
+}
+
+function mergeResponse(
+  current: RuleDraft['response'],
+  updates?: DeepPartial<RuleDraft['response']>
+): RuleDraft['response'] {
+  if (!updates) return current;
+  return {
+    useDefault: resolveValue(current.useDefault, updates.useDefault),
+    customResult: resolveValue(current.customResult, updates.customResult)
+  };
+}
+
+function mergeFieldOmitRandom(
+  current: RuleDraft['fieldOmit']['random'],
+  updates?: DeepPartial<RuleDraft['fieldOmit']['random']>
+): RuleDraft['fieldOmit']['random'] {
+  if (!updates) return current;
+  return {
+    probability: resolveValue(current.probability, updates.probability),
+    maxOmitCount: resolveValue(current.maxOmitCount, updates.maxOmitCount),
+    excludeFields: resolveValue(current.excludeFields, updates.excludeFields),
+    depthLimit: resolveValue(current.depthLimit, updates.depthLimit),
+    omitMode: resolveValue(current.omitMode, updates.omitMode),
+    seed: resolveValue(current.seed, updates.seed)
+  };
+}
+
+function mergeFieldOmit(
+  current: RuleDraft['fieldOmit'],
+  updates?: DeepPartial<RuleDraft['fieldOmit']>
+): RuleDraft['fieldOmit'] {
+  if (!updates) return current;
+  return {
+    enabled: resolveValue(current.enabled, updates.enabled),
+    mode: resolveValue(current.mode, updates.mode),
+    fields: resolveValue(current.fields, updates.fields),
+    random: mergeFieldOmitRandom(current.random, updates.random)
+  };
+}
+
+// Deep merge draft with updates
+function mergeRuleDraft(current: RuleDraft, updates: DeepPartial<RuleDraft>): RuleDraft {
+  return {
+    id: resolveValue(current.id, updates.id),
+    url: resolveValue(current.url, updates.url),
+    method: resolveValue(current.method, updates.method),
+    enabled: resolveValue(current.enabled, updates.enabled),
+    mockType: resolveValue(current.mockType, updates.mockType),
+    network: mergeNetwork(current.network, updates.network),
+    business: mergeBusiness(current.business, updates.business),
+    response: mergeResponse(current.response, updates.response),
+    fieldOmit: mergeFieldOmit(current.fieldOmit, updates.fieldOmit)
+  };
+}
+
 // 初始化Editor
 export function initEditor(rule: MockRule, isBatch: boolean, selectedCount = 0, batchRules?: MockRule[]) {
   // 批量模式下传入所有选中的规则以检测MIXED值
@@ -182,10 +281,10 @@ export function initEditor(rule: MockRule, isBatch: boolean, selectedCount = 0, 
 }
 
 // 更新草稿
-export function updateDraft(updates: Partial<RuleDraft>) {
+export function updateDraft(updates: DeepPartial<RuleDraft>) {
   activeRuleDraft.update(draft => {
     if (!draft) return draft;
-    return { ...draft, ...updates };
+    return mergeRuleDraft(draft, updates);
   });
 }
 

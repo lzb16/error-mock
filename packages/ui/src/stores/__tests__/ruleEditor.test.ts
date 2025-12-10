@@ -168,6 +168,173 @@ describe('ruleEditor Store', () => {
     expect(get(activeRuleDraft)).toBeNull();
   });
 
+  describe('deep merge updates', () => {
+    it('deep merges network updates without dropping sibling fields', () => {
+      initEditor(mockRule, false);
+
+      updateDraft({ network: { delay: 250 } });
+
+      const draft = get(activeRuleDraft);
+      expect(draft?.network.delay).toBe(250);
+      expect(draft?.network.timeout).toBe(mockRule.network.timeout);
+      expect(draft?.network.offline).toBe(mockRule.network.offline);
+      expect(draft?.network.failRate).toBe(mockRule.network.failRate);
+    });
+
+    it('deep merges business updates without losing other fields', () => {
+      initEditor(mockRule, false);
+
+      updateDraft({ business: { errNo: 400 } });
+
+      const draft = get(activeRuleDraft);
+      expect(draft?.business.errNo).toBe(400);
+      expect(draft?.business.errMsg).toBe(mockRule.business.errMsg);
+      expect(draft?.business.detailErrMsg).toBe(mockRule.business.detailErrMsg);
+    });
+
+    it('deep merges response updates while keeping sibling fields', () => {
+      initEditor(mockRule, false);
+
+      updateDraft({ response: { customResult: { foo: 'bar' } } });
+
+      const draft = get(activeRuleDraft);
+      expect(draft?.response.customResult).toEqual({ foo: 'bar' });
+      expect(draft?.response.useDefault).toBe(mockRule.response.useDefault);
+    });
+
+    it('deep merges fieldOmit random updates without wiping other random values', () => {
+      const seededRule: MockRule = {
+        ...mockRule,
+        fieldOmit: {
+          ...mockRule.fieldOmit,
+          random: { ...mockRule.fieldOmit.random, seed: 7, excludeFields: ['existing'] }
+        }
+      };
+
+      initEditor(seededRule, false);
+
+      updateDraft({ fieldOmit: { random: { probability: 0.5 } } });
+
+      const draft = get(activeRuleDraft);
+      expect(draft?.fieldOmit.random.probability).toBe(0.5);
+      expect(draft?.fieldOmit.random.maxOmitCount).toBe(seededRule.fieldOmit.random.maxOmitCount);
+      expect(draft?.fieldOmit.random.excludeFields).toEqual(['existing']);
+      expect(draft?.fieldOmit.random.seed).toBe(7);
+    });
+
+    it('preserves MIXED values when merging nested updates in batch mode', () => {
+      const ruleWithOffline: MockRule = {
+        ...mockRule,
+        network: { ...mockRule.network, offline: true }
+      };
+
+      initEditor(mockRule, true, 2, [mockRule, ruleWithOffline]);
+
+      const before = get(activeRuleDraft);
+      expect(before && isMixed(before.network.offline)).toBe(true);
+
+      updateDraft({ network: { delay: 300 } });
+
+      const after = get(activeRuleDraft);
+      expect(after?.network.delay).toBe(300);
+      expect(after && isMixed(after.network.offline)).toBe(true);
+      expect(after?.network.timeout).toBe(mockRule.network.timeout);
+      expect(after?.network.failRate).toBe(mockRule.network.failRate);
+    });
+
+    it('replaces array fields completely (fields array)', () => {
+      const ruleWithFields: MockRule = {
+        ...mockRule,
+        fieldOmit: {
+          ...mockRule.fieldOmit,
+          fields: ['field1', 'field2']
+        }
+      };
+
+      initEditor(ruleWithFields, false);
+
+      updateDraft({ fieldOmit: { fields: ['field3'] } });
+
+      const draft = get(activeRuleDraft);
+      expect(draft?.fieldOmit.fields).toEqual(['field3']);
+      expect(draft?.fieldOmit.enabled).toBe(ruleWithFields.fieldOmit.enabled);
+      expect(draft?.fieldOmit.mode).toBe(ruleWithFields.fieldOmit.mode);
+    });
+
+    it('replaces array fields completely (excludeFields array)', () => {
+      const ruleWithExcludes: MockRule = {
+        ...mockRule,
+        fieldOmit: {
+          ...mockRule.fieldOmit,
+          random: {
+            ...mockRule.fieldOmit.random,
+            excludeFields: ['exclude1', 'exclude2']
+          }
+        }
+      };
+
+      initEditor(ruleWithExcludes, false);
+
+      updateDraft({ fieldOmit: { random: { excludeFields: ['exclude3'] } } });
+
+      const draft = get(activeRuleDraft);
+      expect(draft?.fieldOmit.random.excludeFields).toEqual(['exclude3']);
+      expect(draft?.fieldOmit.random.probability).toBe(ruleWithExcludes.fieldOmit.random.probability);
+    });
+
+    it('handles optional seed field correctly when undefined', () => {
+      const ruleWithoutSeed: MockRule = {
+        ...mockRule,
+        fieldOmit: {
+          ...mockRule.fieldOmit,
+          random: {
+            ...mockRule.fieldOmit.random,
+            seed: undefined
+          }
+        }
+      };
+
+      initEditor(ruleWithoutSeed, false);
+
+      updateDraft({ fieldOmit: { random: { probability: 0.8 } } });
+
+      const draft = get(activeRuleDraft);
+      expect(draft?.fieldOmit.random.probability).toBe(0.8);
+      expect(draft?.fieldOmit.random.seed).toBeUndefined();
+    });
+
+    it('handles multiple nested updates in single call', () => {
+      initEditor(mockRule, false);
+
+      updateDraft({
+        network: { delay: 300, timeout: true },
+        business: { errNo: 500 },
+        response: { useDefault: false }
+      });
+
+      const draft = get(activeRuleDraft);
+      expect(draft?.network.delay).toBe(300);
+      expect(draft?.network.timeout).toBe(true);
+      expect(draft?.network.offline).toBe(mockRule.network.offline);
+      expect(draft?.business.errNo).toBe(500);
+      expect(draft?.business.errMsg).toBe(mockRule.business.errMsg);
+      expect(draft?.response.useDefault).toBe(false);
+    });
+
+    it('preserves top-level fields when updating nested objects', () => {
+      initEditor(mockRule, false);
+
+      updateDraft({ network: { delay: 500 } });
+
+      const draft = get(activeRuleDraft);
+      expect(draft?.id).toBe(mockRule.id);
+      expect(draft?.url).toBe(mockRule.url);
+      expect(draft?.method).toBe(mockRule.method);
+      expect(draft?.enabled).toBe(mockRule.enabled);
+      expect(draft?.mockType).toBe(mockRule.mockType);
+    });
+  });
+
   describe('MIXED value support', () => {
     const mockRule2: MockRule = {
       id: 'test-module-test-api2',
