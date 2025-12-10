@@ -17,6 +17,7 @@
     getRuleForApi,
   } from './stores/rules';
   import { isModalOpen, toasts } from './stores/config';
+  import { applyDirtyFields } from './stores/utils/applyDirtyFields';
   import type { ApiMeta, MockRule } from '@error-mock/core';
   import type { RuleDraft } from './stores/ruleEditor';
   import { RuleStorage, install, updateRules } from '@error-mock/core';
@@ -155,9 +156,7 @@
   }
 
   function handleApply(event: CustomEvent<{ rule: MockRule | RuleDraft; editedFields: Set<string> }>) {
-    const { rule: incomingRule, editedFields } = event.detail;
-    // Convert RuleDraft to MockRule if needed (in batch mode, rule may have MIXED values)
-    const rule = incomingRule as MockRule;
+    const { rule: incomingDraft, editedFields } = event.detail;
 
     mockRules.update((rules) => {
       const newRules = new Map(rules);
@@ -170,62 +169,43 @@
       // Apply to all selected rules
       for (const id of $selectedIds) {
         const existingRule = newRules.get(id);
+
         if (existingRule) {
-          // Update existing rule - only merge changed fields in batch mode
+          // Update existing rule using safe utility
           if (isBatch && editedFields.size > 0) {
-            // Batch mode: apply only edited fields
-            const updatedRule = { ...existingRule };
-
-            for (const field of editedFields) {
-              if (field.startsWith('network.')) {
-                const networkField = field.split('.')[1] as keyof typeof rule.network;
-                updatedRule.network = { ...updatedRule.network, [networkField]: rule.network[networkField] };
-              } else if (field.startsWith('business.')) {
-                const businessField = field.split('.')[1] as keyof typeof rule.business;
-                updatedRule.business = { ...updatedRule.business, [businessField]: rule.business[businessField] };
-              } else if (field.startsWith('fieldOmit.')) {
-                if (field === 'fieldOmit.enabled' || field === 'fieldOmit.mode' || field === 'fieldOmit.fields') {
-                  const fieldOmitField = field.split('.')[1] as 'enabled' | 'mode' | 'fields';
-                  updatedRule.fieldOmit = { ...updatedRule.fieldOmit, [fieldOmitField]: rule.fieldOmit[fieldOmitField] };
-                } else if (field.startsWith('fieldOmit.random.')) {
-                  const randomField = field.split('.')[2] as keyof typeof rule.fieldOmit.random;
-                  updatedRule.fieldOmit = {
-                    ...updatedRule.fieldOmit,
-                    random: { ...updatedRule.fieldOmit.random, [randomField]: rule.fieldOmit.random[randomField] }
-                  };
-                }
-              } else {
-                // Top-level fields
-                (updatedRule as any)[field] = (rule as any)[field];
-              }
-            }
-
-            newRules.set(id, updatedRule);
+            // Batch mode: apply only dirty fields, filtering MIXED values
+            const updated = applyDirtyFields(incomingDraft as RuleDraft, editedFields, existingRule);
+            newRules.set(id, updated);
           } else {
-            // Single mode: update all fields except id, url, method
+            // Single mode: update all fields except identity
             newRules.set(id, {
-              ...rule,
+              ...(incomingDraft as MockRule),
               id: existingRule.id,
               url: existingRule.url,
               method: existingRule.method,
             });
           }
         } else {
-          // Create new rule
+          // Create new rule from draft (filters MIXED if any)
           const meta = $apiMetas.find((m) => `${m.module}-${m.name}` === id);
           if (meta) {
+            const newRule = applyDirtyFields(
+              incomingDraft as RuleDraft,
+              editedFields.size > 0 ? editedFields : new Set(Object.keys(incomingDraft)),
+              null // null means create from default
+            );
+
+            // Override identity with correct values
+            newRule.id = id;
+            newRule.url = meta.url;
+
             // Validate and normalize HTTP method
             const validMethods: MockRule['method'][] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
-            const method = validMethods.includes(meta.method.toUpperCase() as MockRule['method'])
+            newRule.method = validMethods.includes(meta.method.toUpperCase() as MockRule['method'])
               ? (meta.method.toUpperCase() as MockRule['method'])
               : 'GET';
 
-            newRules.set(id, {
-              ...rule,
-              id,
-              url: meta.url,
-              method,
-            });
+            newRules.set(id, newRule);
           }
         }
       }
@@ -233,7 +213,7 @@
       return newRules;
     });
 
-    // Save to localStorage
+    // Save to localStorage (now safe from MIXED symbols)
     const allRules = Array.from($mockRules.values());
     storage.saveRules(allRules);
 
