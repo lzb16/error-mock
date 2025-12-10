@@ -11,6 +11,7 @@ export default defineConfig({
       include: [
         'packages/core/src/**/*.ts',
         'packages/parser/src/**/*.ts',
+        'packages/ui/src/**/*.ts',
       ],
       exclude: [
         '**/*.d.ts',
