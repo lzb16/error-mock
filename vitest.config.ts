@@ -1,12 +1,13 @@
 import { defineConfig } from 'vitest/config';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import sveltePreprocess from 'svelte-preprocess';
+import { preprocessMeltUI } from '@melt-ui/pp';
 
 export default defineConfig({
   plugins: [
     svelte({
       hot: !process.env.VITEST,
-      preprocess: sveltePreprocess(),
+      preprocess: [sveltePreprocess(), preprocessMeltUI()],
     }),
   ],
   test: {

@@ -4,11 +4,12 @@ import { resolve } from 'path';
 import { writeFileSync } from 'fs';
 import dts from 'vite-plugin-dts';
 import sveltePreprocess from 'svelte-preprocess';
+import { preprocessMeltUI } from '@melt-ui/pp';
 
 export default defineConfig({
   plugins: [
     svelte({
-      preprocess: sveltePreprocess(),
+      preprocess: [sveltePreprocess(), preprocessMeltUI()],
       compilerOptions: {
         customElement: false,
       },
