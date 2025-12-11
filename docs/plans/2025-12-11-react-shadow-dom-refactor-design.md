@@ -1,6 +1,6 @@
 # UI 重构设计文档：React 18 + Shadow DOM + shadcn/ui
 
-> **版本**: v1.2
+> **版本**: v1.3
 > **创建日期**: 2025-12-11
 > **状态**: 🚧 Phase 0 完成，Phase 1 待开始
 > **审核**: Codex 审核通过（2025-12-11）
@@ -317,77 +317,112 @@ const DialogPortal = ({ children, ...props }) => {
 
 ```css
 /* packages/ui/src/styles/globals.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" prefix(em);
 
-/* Shadow DOM 样式变量 + 基础重置 */
+/* Shadow DOM 样式变量定义在 :host */
 :host {
-  --background: 0 0% 100%;
-  --foreground: 240 10% 3.9%;
-  --primary: 240 5.9% 10%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 240 4.8% 95.9%;
-  --secondary-foreground: 240 5.9% 10%;
-  --muted: 240 4.8% 95.9%;
-  --muted-foreground: 240 3.8% 46.1%;
-  --accent: 240 4.8% 95.9%;
-  --accent-foreground: 240 5.9% 10%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 5.9% 90%;
-  --input: 240 5.9% 90%;
-  --ring: 240 5.9% 10%;
-  --radius: 0.5rem;
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 3.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 3.9%;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.3211 0 0);
+  /* ... 其他颜色变量 ... */
 
   /* 基础样式 */
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   line-height: 1.5;
-  color: hsl(var(--foreground));
+  color: var(--foreground);
   background-color: transparent;
 }
 
-/* Shadow DOM 内的 preflight 重置 */
-#error-mock-app {
-  all: initial;
+/* 容器样式 - 必须显式设置，Tailwind preflight 会打断继承链 */
+#error-mock-app,
+#error-mock-portal {
   display: block;
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-  color: inherit;
-}
-
-#error-mock-app *,
-#error-mock-app *::before,
-#error-mock-app *::after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
-  border-color: hsl(var(--border));
-}
-
-#error-mock-app button,
-#error-mock-app input,
-#error-mock-app select,
-#error-mock-app textarea {
-  font-family: inherit;
-  font-size: 100%;
-  line-height: inherit;
-  color: inherit;
-  margin: 0;
-  padding: 0;
-}
-
-#error-mock-app button {
-  background-color: transparent;
-  cursor: pointer;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
 }
 ```
+
+### 7.4 Tailwind v4 @property 规则处理
+
+**问题**：Tailwind v4 使用 `@property` CSS 规则定义动画和阴影相关变量（如 `--tw-shadow`、`--tw-ring-*`、`--tw-enter-*` 等）。根据 CSS 规范，`@property` 规则**只在文档级别生效**，在 Shadow DOM 内部无法访问。
+
+这导致以下 utilities 在 Shadow DOM 中失效：
+- `shadow-*` / `ring-*`
+- `animate-in` / `animate-out`
+- `fade-in-*` / `zoom-in-*` 等动画
+
+**参考**：
+- https://github.com/tailwindlabs/tailwindcss/issues/15005
+- https://github.com/tailwindlabs/tailwindcss/discussions/16772
+
+**解决方案**：在 mount 时提取 `@property` 规则并注入到 `document.head`
+
+```tsx
+// packages/ui/src/react/mount.tsx
+
+const GLOBAL_STYLE_ID = 'error-mock-global-properties';
+
+/**
+ * Extract @property rules from CSS.
+ * @property rules must be in document scope to work.
+ */
+function extractAtPropertyRules(css: string): string {
+  const matches = css.match(/@property\s+--[\w-]+\s*\{[^}]+\}/g);
+  return matches ? matches.join('\n') : '';
+}
+
+/**
+ * Process CSS for Shadow DOM:
+ * - Remove selectors that would leak to host page (html, body)
+ */
+function processCSSForShadowDOM(css: string): string {
+  return css
+    .replace(/html\s*,\s*:host\s*\{/g, ':host{')
+    .replace(/:root\s*,\s*:host\s*\{/g, ':host{');
+}
+
+/**
+ * Inject @property rules to document.head
+ */
+function injectGlobalPropertyRules(css: string): void {
+  if (document.getElementById(GLOBAL_STYLE_ID)) return;
+
+  const atProperties = extractAtPropertyRules(css);
+  if (!atProperties) return;
+
+  const style = document.createElement('style');
+  style.id = GLOBAL_STYLE_ID;
+  style.textContent = atProperties;
+  document.head.appendChild(style);
+}
+
+export function mount(options: MountOptions): void {
+  // ... 幂等性检查 ...
+
+  // Inject @property rules to document.head for Shadow DOM compatibility
+  injectGlobalPropertyRules(rawStyles);
+
+  // ... 创建 Shadow DOM 并注入处理后的 CSS ...
+}
+
+export function unmount(): void {
+  // ... 清理 React ...
+
+  // Clean up global @property rules
+  document.getElementById(GLOBAL_STYLE_ID)?.remove();
+}
+```
+
+**对宿主页面的影响**：
+
+| 注入内容 | 位置 | 影响 |
+|----------|------|------|
+| `@property --tw-*` 规则 | `document.head` | **最小** - 仅注册 CSS 属性类型和默认值，不设置实际样式值 |
+| 主题 CSS 变量 | Shadow DOM 内 | **无** - 完全隔离 |
+| Utility classes | Shadow DOM 内 | **无** - 完全隔离 |
 
 ---
 
@@ -536,8 +571,10 @@ export const useConfigStore = create<ConfigState>()(
 
 | 风险 | 严重程度 | 对策 |
 |------|---------|------|
+| **Tailwind v4 @property 规则不生效** | 🔴 高 | mount 时提取 @property 规则并注入 document.head（已实现） |
 | **Radix UI 弹层默认挂载到 body** | 🟡 中 | 所有 Portal 组件配置 `container`，使用 `usePortalContainer` hook 统一处理 |
 | **Tailwind preflight 不生效** | 🟡 中 | 在 globals.css 中为 `#error-mock-app` 重写关键重置样式 |
+| **html/:root 选择器泄漏到宿主** | 🟡 中 | CSS 注入前处理，移除 html/:root 选择器（已实现） |
 | **重复挂载/HMR 问题** | 🟡 中 | mount() 添加幂等性检查，暴露 unmount() API |
 | **旧配置数据迁移** | 🟡 中 | Zustand persist middleware 添加 migrate 函数，自动填充 defaults |
 | **scroll-lock 作用于 body** | 🟢 低 | 弹窗关闭时自动恢复，实际影响有限 |
@@ -583,3 +620,4 @@ export const useConfigStore = create<ConfigState>()(
 | 2025-12-11 | v1.0 | 初始设计文档 |
 | 2025-12-11 | v1.1 | Codex 审核后更新：<br>- 添加 mount 幂等性处理<br>- 完善弹层组件清单<br>- 添加 CSS preflight 重写方案<br>- 新增数据迁移计划<br>- 完善风险列表 |
 | 2025-12-11 | v1.2 | Phase 0 完成：<br>- 升级到 Tailwind CSS v4 + OKLCH<br>- 修复 dark mode 变体选择器<br>- 添加 Phase 0 审核记录 |
+| 2025-12-12 | v1.3 | Tailwind v4 Shadow DOM 兼容性修复：<br>- 新增 7.4 节：@property 规则处理<br>- mount 时提取 @property 规则注入 document.head<br>- CSS 注入前处理移除 html/:root 泄漏选择器<br>- 更新风险列表 |
