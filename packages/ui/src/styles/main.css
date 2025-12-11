@@ -11,10 +11,10 @@
 }
 
 @layer base {
-  [data-error-mock-ui] button,
-  [data-error-mock-ui] [type='button'],
-  [data-error-mock-ui] [type='reset'],
-  [data-error-mock-ui] [type='submit'] {
+  :where([data-error-mock-ui]) button,
+  :where([data-error-mock-ui]) [type='button'],
+  :where([data-error-mock-ui]) [type='reset'],
+  :where([data-error-mock-ui]) [type='submit'] {
     background-color: transparent;
     color: inherit;
     border: none;
