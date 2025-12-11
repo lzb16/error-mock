@@ -1,8 +1,8 @@
 # UI 重构设计文档：React 18 + Shadow DOM + shadcn/ui
 
-> **版本**: v1.1
+> **版本**: v1.2
 > **创建日期**: 2025-12-11
-> **状态**: ✅ 已确认，待实施
+> **状态**: 🚧 Phase 0 完成，Phase 1 待开始
 > **审核**: Codex 审核通过（2025-12-11）
 
 ---
@@ -30,7 +30,7 @@
 | UI 框架 | React | 18.x | 事件系统与 Shadow DOM 兼容 |
 | 组件库 | shadcn/ui | latest | 源码可控，基于 Radix UI |
 | 底层组件 | Radix UI | latest | headless 组件 |
-| 样式 | Tailwind CSS | 3.x | 注入到 Shadow Root |
+| 样式 | Tailwind CSS | 4.x | OKLCH 颜色，CSS-first 配置，注入 Shadow Root |
 | 样式隔离 | Shadow DOM | - | 原生 Web API |
 | 状态管理 | Zustand | 4.x | 轻量，接近 Svelte store 心智模型 |
 | 语言 | TypeScript | 5.x | 类型安全 |
@@ -419,15 +419,18 @@ const DialogPortal = ({ children, ...props }) => {
 
 ## 9. 渐进式迁移计划
 
-### Phase 0：骨架验证
+### Phase 0：骨架验证 ✅ 已完成
 
 **目标**：验证技术栈可行性
 
-- [ ] React 18 + Shadow DOM 基础挂载
-- [ ] shadcn/ui Button 样式验证
-- [ ] shadcn/ui Dialog 弹层验证
-- [ ] Tailwind 样式注入 Shadow Root
-- [ ] 样式隔离测试
+- [x] React 18 + Shadow DOM 基础挂载
+- [x] shadcn/ui Button 样式验证
+- [x] shadcn/ui Dialog 弹层验证
+- [x] Tailwind 样式注入 Shadow Root
+- [x] 样式隔离测试
+
+> **完成日期**: 2025-12-11
+> **技术变更**: 升级到 Tailwind CSS v4 + OKLCH 颜色空间，前缀改为 `em:`
 
 ### Phase 1：核心容器迁移
 
