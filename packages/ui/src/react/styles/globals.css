@@ -27,15 +27,14 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  /* GitHub Primer semantic colors */
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -46,137 +45,82 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/*
- * GitHub Primer Design System - OKLCH Color Mapping
- *
- * Original HEX → OKLCH conversions:
- * #FFFFFF (white)      → oklch(1 0 0)
- * #F6F8FA (bg-subtle)  → oklch(0.975 0.002 240)
- * #F3F4F6 (bg-hover)   → oklch(0.965 0.002 240)
- * #D0D7DE (border)     → oklch(0.87 0.01 240)
- * #1F2328 (text-primary) → oklch(0.21 0.02 250)
- * #656D76 (text-secondary) → oklch(0.5 0.02 250)
- * #9CA3AF (text-muted) → oklch(0.7 0.015 250)
- * #0969DA (primary/blue) → oklch(0.55 0.18 250)
- * #1F883D (success/green) → oklch(0.55 0.16 145)
- * #CF222E (danger/red) → oklch(0.5 0.2 25)
- * #9A6700 (warning/yellow) → oklch(0.55 0.14 80)
- */
-
-/* Shadow DOM CSS Variables - GitHub Primer Light Theme */
+/* Shadow DOM CSS Variables - using :host for Shadow DOM */
 :host {
-  --radius: 0.375rem; /* 6px - GitHub standard */
-
-  /* Backgrounds */
-  --background: oklch(1 0 0); /* #FFFFFF */
-  --foreground: oklch(0.21 0.02 250); /* #1F2328 */
-  --card: oklch(1 0 0); /* #FFFFFF */
-  --card-foreground: oklch(0.21 0.02 250); /* #1F2328 */
-  --popover: oklch(1 0 0); /* #FFFFFF */
-  --popover-foreground: oklch(0.21 0.02 250); /* #1F2328 */
-
-  /* Primary - GitHub Blue (#0969DA) */
-  --primary: oklch(0.55 0.18 250);
-  --primary-foreground: oklch(1 0 0); /* white */
-
-  /* Secondary - Subtle gray background (#F6F8FA) */
-  --secondary: oklch(0.975 0.002 240);
-  --secondary-foreground: oklch(0.21 0.02 250);
-
-  /* Muted - For disabled/secondary text */
-  --muted: oklch(0.975 0.002 240); /* #F6F8FA */
-  --muted-foreground: oklch(0.5 0.02 250); /* #656D76 */
-
-  /* Accent - Hover state (#F3F4F6) */
-  --accent: oklch(0.965 0.002 240);
-  --accent-foreground: oklch(0.21 0.02 250);
-
-  /* Destructive - GitHub Red (#CF222E) */
-  --destructive: oklch(0.5 0.2 25);
-  --destructive-foreground: oklch(1 0 0);
-
-  /* Success - GitHub Green (#1F883D) */
-  --success: oklch(0.55 0.16 145);
-  --success-foreground: oklch(1 0 0);
-
-  /* Warning - GitHub Yellow (#9A6700) */
-  --warning: oklch(0.55 0.14 80);
-  --warning-foreground: oklch(1 0 0);
-
-  /* Borders & Inputs - GitHub Border (#D0D7DE) */
-  --border: oklch(0.87 0.01 240);
-  --input: oklch(0.87 0.01 240);
-  --ring: oklch(0.55 0.18 250); /* Primary blue for focus ring */
-
-  /* Sidebar */
-  --sidebar: oklch(0.975 0.002 240); /* #F6F8FA */
-  --sidebar-foreground: oklch(0.21 0.02 250);
-  --sidebar-primary: oklch(0.55 0.18 250);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.965 0.002 240);
-  --sidebar-accent-foreground: oklch(0.21 0.02 250);
-  --sidebar-border: oklch(0.87 0.01 240);
-  --sidebar-ring: oklch(0.55 0.18 250);
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 
   /* Base styles for Shadow DOM host */
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
   line-height: 1.5;
   color: var(--foreground);
   background-color: transparent;
 }
 
-/* Dark mode variables - GitHub Dark Theme */
+/* Dark mode variables */
 :host(.dark) {
-  --background: oklch(0.16 0.015 250); /* #0D1117 */
-  --foreground: oklch(0.9 0.01 240); /* #E6EDF3 */
-  --card: oklch(0.2 0.015 250); /* #161B22 */
-  --card-foreground: oklch(0.9 0.01 240);
-  --popover: oklch(0.2 0.015 250);
-  --popover-foreground: oklch(0.9 0.01 240);
-
-  /* Primary - GitHub Blue (brighter for dark) */
-  --primary: oklch(0.65 0.18 250); /* #58A6FF */
-  --primary-foreground: oklch(0.16 0.015 250);
-
-  /* Secondary */
-  --secondary: oklch(0.25 0.015 250); /* #21262D */
-  --secondary-foreground: oklch(0.9 0.01 240);
-
-  /* Muted */
-  --muted: oklch(0.25 0.015 250);
-  --muted-foreground: oklch(0.6 0.02 250); /* #8B949E */
-
-  /* Accent */
-  --accent: oklch(0.3 0.015 250); /* #30363D */
-  --accent-foreground: oklch(0.9 0.01 240);
-
-  /* Destructive - Brighter red for dark */
-  --destructive: oklch(0.6 0.2 25); /* #F85149 */
-  --destructive-foreground: oklch(0.16 0.015 250);
-
-  /* Success - Brighter green for dark */
-  --success: oklch(0.65 0.16 145); /* #3FB950 */
-  --success-foreground: oklch(0.16 0.015 250);
-
-  /* Warning - Brighter yellow for dark */
-  --warning: oklch(0.7 0.14 80); /* #D29922 */
-  --warning-foreground: oklch(0.16 0.015 250);
-
-  /* Borders & Inputs */
-  --border: oklch(0.35 0.015 250); /* #30363D */
-  --input: oklch(0.35 0.015 250);
-  --ring: oklch(0.65 0.18 250);
-
-  /* Sidebar */
-  --sidebar: oklch(0.2 0.015 250);
-  --sidebar-foreground: oklch(0.9 0.01 240);
-  --sidebar-primary: oklch(0.65 0.18 250);
-  --sidebar-primary-foreground: oklch(0.16 0.015 250);
-  --sidebar-accent: oklch(0.3 0.015 250);
-  --sidebar-accent-foreground: oklch(0.9 0.01 240);
-  --sidebar-border: oklch(0.35 0.015 250);
-  --sidebar-ring: oklch(0.65 0.18 250);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
 }
 
 /* Shadow DOM preflight reset */
