@@ -24,15 +24,32 @@ export function mount(options: MountOptions): void {
     return;
   }
 
-  // 1. 创建或复用 Shadow Host
+  // 1. 创建或复用 Shadow Host (使用自定义标签避免被 div 规则命中)
   const existingHost = document.getElementById('error-mock-root');
   if (existingHost) {
-    hostElement = existingHost;
+    hostElement = existingHost as HTMLElement;
   } else {
-    hostElement = document.createElement('div');
+    // 使用自定义元素避免被宿主页面的 div { ... } 规则影响
+    hostElement = document.createElement('error-mock-root') as HTMLElement;
     hostElement.id = 'error-mock-root';
     document.body.appendChild(hostElement);
   }
+
+  // 定向重置 - 只重置可能被污染的属性，不用 all:initial 以保留 CSS 变量继承
+  hostElement.style.cssText = `
+    display: block !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    box-sizing: border-box !important;
+    font: inherit !important;
+    color: inherit !important;
+    line-height: normal !important;
+    text-decoration: none !important;
+    pointer-events: auto !important;
+  `.replace(/\s+/g, ' ').trim();
 
   // 2. 创建或复用 Shadow Root
   let shadowRoot = hostElement.shadowRoot;
