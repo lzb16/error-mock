@@ -16,14 +16,12 @@ const getStorage = () => {
   return storage;
 };
 
-// Track whether interceptors have been installed
-let interceptorsInstalled = false;
-
 type RulesState = {
   apiMetas: ApiMeta[];
   mockRules: Map<string, MockRule>;
   selectedId: string | null;
   searchQuery: string;
+  _interceptorsInstalled: boolean; // Private flag for interceptor lifecycle
   setApiMetas: (metas: ApiMeta[]) => void;
   setSelectedId: (id: string | null) => void;
   setSearchQuery: (query: string) => void;
@@ -78,6 +76,7 @@ export const useRulesStore = create<RulesState>()(
     mockRules: new Map<string, MockRule>(),
     selectedId: null,
     searchQuery: '',
+    _interceptorsInstalled: false,
 
     setApiMetas: (metas) => set({ apiMetas: metas }),
     setSelectedId: (id) => set({ selectedId: id }),
@@ -91,27 +90,29 @@ export const useRulesStore = create<RulesState>()(
       for (const rule of saved) map.set(rule.id, rule);
       set({ mockRules: map });
       if (saved.length > 0) {
+        // TODO: Consider moving interceptor logic to component useEffect
+        // for better testability and separation of concerns
         install(saved);
-        interceptorsInstalled = true;
+        set({ _interceptorsInstalled: true });
       }
     },
 
     createRule: (meta) => {
       const rule = createDefaultRule(meta);
       set((state) => {
-        const next = new Map(state.mockRules);
-        next.set(rule.id, rule);
-        state.mockRules = next;
+        // Immer automatically proxies Map mutations with enableMapSet()
+        state.mockRules.set(rule.id, rule);
         state.selectedId = rule.id;
       });
       // Save and refresh interceptors
       const allRules = Array.from(get().mockRules.values());
       const store = getStorage();
       if (store) store.saveRules(allRules);
-      // Ensure interceptors are installed
-      if (!interceptorsInstalled) {
+      // TODO: Consider moving interceptor logic to component useEffect
+      // for better testability and separation of concerns
+      if (!get()._interceptorsInstalled) {
         install(allRules);
-        interceptorsInstalled = true;
+        set({ _interceptorsInstalled: true });
       } else {
         refreshInterceptors(allRules);
       }
@@ -120,25 +121,24 @@ export const useRulesStore = create<RulesState>()(
 
     updateRule: (rule) =>
       set((state) => {
-        const next = new Map(state.mockRules);
-        next.set(rule.id, rule);
-        state.mockRules = next;
+        // Immer automatically proxies Map mutations with enableMapSet()
+        state.mockRules.set(rule.id, rule);
       }),
 
     applyRule: (rule) => {
       set((state) => {
-        const next = new Map(state.mockRules);
-        next.set(rule.id, rule);
-        state.mockRules = next;
+        // Immer automatically proxies Map mutations with enableMapSet()
+        state.mockRules.set(rule.id, rule);
       });
       // Save to storage and refresh interceptors
       const allRules = Array.from(get().mockRules.values());
       const store = getStorage();
       if (store) store.saveRules(allRules);
-      // Ensure interceptors are installed
-      if (!interceptorsInstalled) {
+      // TODO: Consider moving interceptor logic to component useEffect
+      // for better testability and separation of concerns
+      if (!get()._interceptorsInstalled) {
         install(allRules);
-        interceptorsInstalled = true;
+        set({ _interceptorsInstalled: true });
       } else {
         refreshInterceptors(allRules);
       }

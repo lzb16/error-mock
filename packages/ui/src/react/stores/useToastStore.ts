@@ -31,7 +31,7 @@ export const useToastStore = create<ToastState>((set, get) => ({
   toasts: [],
 
   addToast: (message, type = 'info', duration = 3000) => {
-    const id = `toast-${crypto.randomUUID?.() ?? Date.now()}`;
+    const id = `toast-${globalThis.crypto?.randomUUID?.() ?? Date.now()}`;
     const toast: Toast = { id, message, type, duration };
     set((state) => ({ toasts: [...state.toasts, toast] }));
 
