@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ApiMeta } from '@error-mock/core';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 
 export interface AppProps {
-  metas: Array<{ url: string; method: string }>;
+  metas: ApiMeta[];
 }
 
 export function App({ metas }: AppProps) {

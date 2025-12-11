@@ -31,9 +31,12 @@ export default defineConfig({
     },
     outDir: 'dist/react',
     rollupOptions: {
-      // For testing: bundle everything including React
-      // For production: uncomment external to reduce bundle size
-      // external: ['react', 'react-dom', '@error-mock/core'],
+      // React/ReactDOM are bundled (not externalized) by design:
+      // - Plugin must be self-contained and work in any environment
+      // - Host application may not have React installed
+      // - Host React version may be incompatible (e.g., React 17 vs 18)
+      // - Prevents "multiple React instances" runtime errors
+      // Only @error-mock/core is externalized to avoid duplication
       external: ['@error-mock/core'],
       output: {
         globals: {

@@ -1,4 +1,5 @@
 import { createRoot, type Root } from 'react-dom/client';
+import type { ApiMeta } from '@error-mock/core';
 import { App } from './App';
 import { ShadowRootProvider } from './context/ShadowRootContext';
 // @ts-expect-error Vite handles ?inline imports
@@ -8,7 +9,7 @@ let root: Root | null = null;
 let hostElement: HTMLElement | null = null;
 
 export interface MountOptions {
-  metas: Array<{ url: string; method: string }>;
+  metas: ApiMeta[];
 }
 
 const GLOBAL_STYLE_ID = 'error-mock-global-properties';
