@@ -552,9 +552,30 @@ export const useConfigStore = create<ConfigState>()(
 
 ---
 
-## 13. 更新日志
+## 13. Phase 0 审核记录
+
+### 13.1 Codex 审核建议（2025-12-11）
+
+| 建议 | 严重程度 | 采纳情况 | 说明 |
+|------|---------|---------|------|
+| **Dark mode 变体不生效** | 🔴 高 | ✅ 已修复 | `@custom-variant dark (&:is(.dark *))` 改为 `(:host(.dark) &)` |
+| **React/ReactDOM 应 externalize** | 🟡 中 | ❌ 不采纳 | 插件场景需自带 React，避免依赖宿主环境（宿主可能无 React 或版本不兼容） |
+| **强制 NODE_ENV=production** | 🟡 中 | ⏭️ 暂缓 | 当前对功能无影响，后续按需调整 |
+| **Mount 幂等性粗糙** | 🟡 中 | ❌ 不采纳 | 插件场景 metas 静态，无需动态更新；如需更新可通过 store |
+| **CSP nonce 支持** | 🟢 低 | ⏭️ 暂缓 | 后续按实际 CSP 需求添加 |
+
+### 13.2 审核确认正确的部分
+
+- ✅ Portal 容器创建和获取逻辑正确
+- ✅ Radix `DialogPortal` 正确传递 shadow-scoped 容器
+- ✅ CSS 隔离策略（`all: initial` + `data-error-mock-ui`）合理
+
+---
+
+## 14. 更新日志
 
 | 日期 | 版本 | 变更 |
 |------|------|------|
 | 2025-12-11 | v1.0 | 初始设计文档 |
 | 2025-12-11 | v1.1 | Codex 审核后更新：<br>- 添加 mount 幂等性处理<br>- 完善弹层组件清单<br>- 添加 CSS preflight 重写方案<br>- 新增数据迁移计划<br>- 完善风险列表 |
+| 2025-12-11 | v1.2 | Phase 0 完成：<br>- 升级到 Tailwind CSS v4 + OKLCH<br>- 修复 dark mode 变体选择器<br>- 添加 Phase 0 审核记录 |
