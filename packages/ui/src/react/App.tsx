@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ApiMeta } from '@error-mock/core';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +11,8 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+import { FloatButton } from '@/components/FloatButton';
+import { useRulesStore } from '@/stores/useRulesStore';
 
 export interface AppProps {
   metas: ApiMeta[];
@@ -18,9 +20,18 @@ export interface AppProps {
 
 export function App({ metas }: AppProps) {
   const [count, setCount] = useState(0);
+  const { setApiMetas, loadRules } = useRulesStore();
+
+  // Initialize stores on mount
+  useEffect(() => {
+    setApiMetas(metas);
+    loadRules();
+  }, [metas, setApiMetas, loadRules]);
 
   return (
-    <div className="em:p-4 em:space-y-4 em:font-sans">
+    <>
+      <FloatButton />
+      <div className="em:p-4 em:space-y-4 em:font-sans">
       <div className="em:text-lg em:font-bold em:text-foreground">
         React + Shadow DOM + Tailwind v4 Smoke Test
       </div>
@@ -71,6 +82,7 @@ export function App({ metas }: AppProps) {
           This box should have proper colors and spacing regardless of host page styles.
         </p>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
