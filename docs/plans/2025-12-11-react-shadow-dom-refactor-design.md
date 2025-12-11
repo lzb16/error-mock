@@ -434,10 +434,14 @@ const DialogPortal = ({ children, ...props }) => {
 
 ### Phase 1：核心容器迁移
 
-**目标**：基础 UI 框架可用
+**目标**：基础 UI 框架可用，可在示例项目中预览调试
 
+**1.1 最小可预览版本**（优先）
 - [ ] FloatButton 组件
-- [ ] Modal 外壳
+- [ ] Modal 外壳（Dialog）
+- [ ] vite-plugin 适配 React 挂载
+
+**1.2 完整布局**
 - [ ] 基础布局（Header + Sidebar + Content）
 - [ ] Zustand stores 骨架
 
