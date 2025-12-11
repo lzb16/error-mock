@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shadow DOM Style Isolation Test - Tailwind v4</title>
+  <style>
+    /* Host page styles that should NOT affect the plugin */
+    body {
+      font-family: "Comic Sans MS", cursive;
+      background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+      color: white;
+      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+    }
+    button {
+      background: yellow !important;
+      color: black !important;
+      border: 5px dashed purple !important;
+      font-size: 24px !important;
+      padding: 20px !important;
+      border-radius: 0 !important;
+    }
+    div {
+      background: orange !important;
+      padding: 50px !important;
+      color: blue !important;
+    }
+    p {
+      font-size: 30px !important;
+      color: cyan !important;
+    }
+  </style>
+</head>
+<body>
+  <h1>Host Page Content</h1>
+  <p>This text should be styled by the aggressive host page CSS (cyan, 30px).</p>
+  <button>Host Button (should be yellow with purple dashed border)</button>
+
+  <hr style="margin: 40px 0; border-color: white;">
+
+  <h2>Shadow DOM Plugin Test (Tailwind v4 + OKLCH)</h2>
+  <p>The plugin UI below should NOT be affected by the styles above.<br>
+     Click "Open Dialog" to test that the dialog portal also has correct styles.</p>
+
+  <script type="module">
+    import { mount } from './dist/react/index.js';
+
+    mount({
+      metas: [
+        { url: '/api/users', method: 'GET' },
+        { url: '/api/products', method: 'POST' },
+        { url: '/api/orders', method: 'PUT' },
+      ]
+    });
+
+    console.log('Error Mock React (Tailwind v4) mounted!');
+    console.log('Check #error-mock-root shadow DOM in DevTools');
+  </script>
+</body>
+</html>

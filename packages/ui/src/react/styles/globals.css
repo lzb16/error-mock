@@ -1,37 +1,11 @@
-
-@import "tw-animate-css";
+@import "tailwindcss" prefix(em);
+@import "tw-animate-css" prefix(em);
 
 @plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Scoped Reset - Only affects elements inside our plugin container */
-[data-error-mock-ui],
-[data-error-mock-ui] *,
-[data-error-mock-ui] *::before,
-[data-error-mock-ui] *::after {
-  box-sizing: border-box;
-}
-
-@layer base {
-  [data-error-mock-ui] button,
-  [data-error-mock-ui] [type='button'],
-  [data-error-mock-ui] [type='reset'],
-  [data-error-mock-ui] [type='submit'] {
-    background-color: transparent;
-    color: inherit;
-    border: none;
-    font: inherit;
-    padding: 0;
-    -webkit-appearance: none;
-    appearance: none;
-  }
-}
-
+/* Shadow DOM theme variables - applied to :host for Shadow DOM isolation */
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -70,7 +44,8 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-:root {
+/* Shadow DOM CSS Variables - using :host for Shadow DOM */
+:host {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -103,9 +78,17 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Base styles for Shadow DOM host */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--foreground);
+  background-color: transparent;
 }
 
-.dark {
+/* Dark mode variables */
+:host(.dark) {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -139,11 +122,54 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Shadow DOM preflight reset */
+#error-mock-app,
+#error-mock-portal {
+  all: initial;
+  display: block;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+#error-mock-app *,
+#error-mock-app *::before,
+#error-mock-app *::after,
+#error-mock-portal *,
+#error-mock-portal *::before,
+#error-mock-portal *::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--border);
+}
+
+#error-mock-app button,
+#error-mock-app input,
+#error-mock-app select,
+#error-mock-app textarea,
+#error-mock-portal button,
+#error-mock-portal input,
+#error-mock-portal select,
+#error-mock-portal textarea {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+#error-mock-app button,
+#error-mock-portal button {
+  background-color: transparent;
+  cursor: pointer;
+}
+
+/* Base layer styles */
 @layer base {
   * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
+    @apply em:border-border em:outline-ring/50;
   }
 }
