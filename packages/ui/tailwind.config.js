@@ -11,4 +11,5 @@ export default {
   corePlugins: {
     preflight: false,
   },
+  important: '[data-error-mock-ui]',
 };
