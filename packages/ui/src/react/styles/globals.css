@@ -124,15 +124,6 @@
   --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.08), 0 8px 10px -6px hsl(0 0% 0% / 0.08);
   --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.2);
 
-  /* Tailwind internal variables - required for utilities like border, shadow */
-  --tw-border-style: solid;
-  --tw-shadow: 0 0 #0000;
-  --tw-shadow-color: initial;
-  --tw-inset-shadow: 0 0 #0000;
-  --tw-inset-ring-shadow: 0 0 #0000;
-  --tw-ring-shadow: 0 0 #0000;
-  --tw-ring-offset-shadow: 0 0 #0000;
-
   /* Base styles - inherited by children */
   font-family: var(--font-sans);
   font-size: 14px;

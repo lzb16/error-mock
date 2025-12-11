@@ -2,7 +2,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { App } from './App';
 import { ShadowRootProvider } from './context/ShadowRootContext';
 // @ts-expect-error Vite handles ?inline imports
-import styles from './styles/globals.css?inline';
+import rawStyles from './styles/globals.css?inline';
 
 let root: Root | null = null;
 let hostElement: HTMLElement | null = null;
@@ -10,6 +10,57 @@ let hostElement: HTMLElement | null = null;
 export interface MountOptions {
   metas: Array<{ url: string; method: string }>;
 }
+
+const GLOBAL_STYLE_ID = 'error-mock-global-properties';
+
+/**
+ * Extract @property rules from CSS.
+ * @property rules must be in document scope to work, they don't work inside Shadow DOM.
+ * @see https://github.com/tailwindlabs/tailwindcss/issues/15005
+ */
+function extractAtPropertyRules(css: string): string {
+  const matches = css.match(/@property\s+--[\w-]+\s*\{[^}]+\}/g);
+  return matches ? matches.join('\n') : '';
+}
+
+/**
+ * Process CSS for Shadow DOM:
+ * - Remove selectors that would leak to host page (html, body)
+ * - Keep :host selectors intact
+ */
+function processCSSForShadowDOM(css: string): string {
+  return css
+    // "html,:host{...}" -> ":host{...}"
+    .replace(/html\s*,\s*:host\s*\{/g, ':host{')
+    // ":root,:host{...}" -> ":host{...}"
+    .replace(/:root\s*,\s*:host\s*\{/g, ':host{');
+}
+
+/**
+ * Inject @property rules to document.head (required for Shadow DOM compatibility).
+ * These rules are global by CSS spec, but needed for Tailwind utilities to work.
+ */
+function injectGlobalPropertyRules(css: string): void {
+  if (document.getElementById(GLOBAL_STYLE_ID)) return;
+
+  const atProperties = extractAtPropertyRules(css);
+  if (!atProperties) return;
+
+  const style = document.createElement('style');
+  style.id = GLOBAL_STYLE_ID;
+  style.textContent = atProperties;
+  document.head.appendChild(style);
+}
+
+/**
+ * Remove injected global styles (cleanup on unmount).
+ */
+function removeGlobalPropertyRules(): void {
+  document.getElementById(GLOBAL_STYLE_ID)?.remove();
+}
+
+// Process styles once at module load
+const styles = processCSSForShadowDOM(rawStyles);
 
 export function mount(options: MountOptions): void {
   // 幂等性检查：防止重复挂载
@@ -23,6 +74,10 @@ export function mount(options: MountOptions): void {
     console.error('[ErrorMock] document.body not available');
     return;
   }
+
+  // Inject @property rules to document.head for Shadow DOM compatibility
+  // @see https://github.com/tailwindlabs/tailwindcss/issues/15005
+  injectGlobalPropertyRules(rawStyles);
 
   // 1. 创建或复用 Shadow Host (使用自定义标签避免被 div 规则命中)
   const existingHost = document.getElementById('error-mock-root');
@@ -101,6 +156,8 @@ export function unmount(): void {
     hostElement.remove();
     hostElement = null;
   }
+  // Clean up global @property rules
+  removeGlobalPropertyRules();
 }
 
 export function isMounted(): boolean {
