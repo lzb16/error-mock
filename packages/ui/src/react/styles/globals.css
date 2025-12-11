@@ -3,7 +3,8 @@
 
 @plugin "tailwindcss-animate";
 
-@custom-variant dark (&:is(.dark *));
+/* Dark mode variant for Shadow DOM - triggers when :host has .dark class */
+@custom-variant dark (:host(.dark) &);
 
 /* Shadow DOM theme variables - applied to :host for Shadow DOM isolation */
 @theme inline {
