@@ -92,6 +92,9 @@ export const useRulesStore = create<RulesState>()(
       if (saved.length > 0) {
         // TODO: Consider moving interceptor logic to component useEffect
         // for better testability and separation of concerns
+        // Always update rules first (install() may no-op if already installed)
+        refreshInterceptors(saved);
+        // Then try to install (will no-op if already installed)
         install(saved);
         set({ _interceptorsInstalled: true });
       }
@@ -110,11 +113,12 @@ export const useRulesStore = create<RulesState>()(
       if (store) store.saveRules(allRules);
       // TODO: Consider moving interceptor logic to component useEffect
       // for better testability and separation of concerns
+      // Always update rules first (handles case where interceptors exist but store was reset)
+      refreshInterceptors(allRules);
       if (!get()._interceptorsInstalled) {
+        // Try to install (may no-op if already installed, but rules are already updated)
         install(allRules);
         set({ _interceptorsInstalled: true });
-      } else {
-        refreshInterceptors(allRules);
       }
       return rule;
     },
@@ -136,11 +140,12 @@ export const useRulesStore = create<RulesState>()(
       if (store) store.saveRules(allRules);
       // TODO: Consider moving interceptor logic to component useEffect
       // for better testability and separation of concerns
+      // Always update rules first (handles case where interceptors exist but store was reset)
+      refreshInterceptors(allRules);
       if (!get()._interceptorsInstalled) {
+        // Try to install (may no-op if already installed, but rules are already updated)
         install(allRules);
         set({ _interceptorsInstalled: true });
-      } else {
-        refreshInterceptors(allRules);
       }
     },
 
