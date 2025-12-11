@@ -6,7 +6,6 @@
   import Modal from './components/Modal.svelte';
   import ApiList from './components/ApiList.svelte';
   import RuleEditor from './components/rule-editor/RuleEditor.svelte';
-  import BatchPanel from './components/BatchPanel.svelte';
   import Toast from './components/Toast.svelte';
 
   import {
@@ -309,7 +308,7 @@
 
 <svelte:window on:keydown={handleKeydown} />
 
-<div class="em-font-sans em-text-gray-900 em-antialiased">
+<div class="em-font-sans em-text-gray-900 em-antialiased" data-error-mock-ui>
   <!-- Float Button - Always visible -->
   <FloatButton />
 
@@ -325,9 +324,8 @@
       on:minimize={handleMinimizeModal}
     >
       <!-- Left Sidebar: API List -->
-      <div slot="sidebar" class="em-h-full em-relative">
+      <div slot="sidebar" class="em-h-full">
         <ApiList rules={$mockRules} on:select={handleSelect} on:toggle={handleToggle} />
-        <BatchPanel selectedCount={$selectedIds.size} on:clear={handleClearSelection} />
       </div>
 
       <!-- Right Content: Rule Editor -->

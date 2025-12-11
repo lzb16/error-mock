@@ -133,12 +133,12 @@
     <!-- Content Body - Left/Right Split -->
     <div class="em-flex em-flex-1 em-overflow-hidden">
       <!-- Left Sidebar -->
-      <div class="em-w-1/3 em-min-w-[320px] em-border-r em-border-gray-200 em-flex em-flex-col em-bg-white">
+      <div class="em-w-[340px] em-min-w-[320px] em-shrink-0 em-border-r em-border-gray-200 em-flex em-flex-col em-bg-white em-relative">
         <slot name="sidebar" />
       </div>
 
       <!-- Right Content -->
-      <div class="em-w-2/3 em-flex em-flex-col em-bg-gray-50">
+      <div class="em-flex-1 em-flex em-flex-col em-bg-gray-50 em-min-w-0">
         <slot name="content" />
       </div>
     </div>

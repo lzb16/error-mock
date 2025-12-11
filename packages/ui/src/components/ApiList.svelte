@@ -12,6 +12,7 @@
 
   let expandedModules = new Set<string>();
   let lastSelectedIndex = -1;
+  let initializedModules = false;
 
   // Toggle module expansion
   function toggleModule(module: string) {
@@ -96,12 +97,18 @@
     }
   }
 
-  // Expand all modules on mount
+  // Expand modules on first load; preserve user collapse state afterward
   $: if ($groupedMetas) {
-    for (const module of $groupedMetas.keys()) {
-      expandedModules.add(module);
+    const moduleKeys = new Set($groupedMetas.keys());
+
+    if (!initializedModules) {
+      // First time: expand all modules
+      expandedModules = new Set(moduleKeys);
+      initializedModules = true;
+    } else {
+      // Keep user state, but remove modules that no longer exist (e.g., filtered out)
+      expandedModules = new Set([...expandedModules].filter((module) => moduleKeys.has(module)));
     }
-    expandedModules = expandedModules;
   }
 
   function clearSearch() {
@@ -109,15 +116,15 @@
   }
 </script>
 
-<div class="em-flex em-flex-col em-h-full">
+<div class="em-flex em-flex-col em-h-full em-min-w-0">
   <!-- Search Bar -->
-  <div class="em-p-4 em-border-b em-border-gray-200 em-bg-white">
-    <div class="em-relative">
+  <div class="em-p-4 em-border-b em-border-gray-200 em-bg-white em-w-full">
+    <div class="em-relative em-w-full">
       <input
         type="text"
         bind:value={$searchQuery}
         placeholder="Search APIs... (⌘K)"
-        class="em-w-full em-px-4 em-py-2 em-pl-10 em-pr-10 em-border em-border-gray-300 em-rounded-lg focus:em-ring-2 focus:em-ring-blue-500 focus:em-border-blue-500 focus:em-outline-none em-text-sm"
+        class="em-w-full em-max-w-full em-px-4 em-py-2 em-pl-10 em-pr-10 em-border em-border-gray-300 em-rounded-lg focus:em-ring-2 focus:em-ring-blue-500 focus:em-border-blue-500 focus:em-outline-none em-text-sm"
         aria-label="Search APIs"
       />
       <svg

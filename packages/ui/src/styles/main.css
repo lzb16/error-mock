@@ -1,3 +1,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Scoped Reset - Only affects elements inside our plugin container */
+[data-error-mock-ui],
+[data-error-mock-ui] *,
+[data-error-mock-ui] *::before,
+[data-error-mock-ui] *::after {
+  box-sizing: border-box;
+}
+
+@layer base {
+  [data-error-mock-ui] button,
+  [data-error-mock-ui] [type='button'],
+  [data-error-mock-ui] [type='reset'],
+  [data-error-mock-ui] [type='submit'] {
+    background-color: transparent;
+    color: inherit;
+    border: none;
+    font: inherit;
+    padding: 0;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+}

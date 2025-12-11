@@ -55,12 +55,19 @@
       <button
         use:melt={$trigger(tab.value)}
         disabled={tab.disabled}
+        type="button"
         class="
+          em-inline-flex
+          em-items-center
           em-rounded-md
+          em-border-b-2
+          em-border-transparent
+          em-bg-transparent
           em-px-3
           em-py-1.5
           em-text-sm
           em-font-medium
+          em-text-[#656D76]
           em-transition-colors
           focus:em-outline-none
           focus:em-ring-2
@@ -70,8 +77,9 @@
           disabled:em-opacity-50
         "
         class:em-bg-[#F6F8FA]={isActive}
+        class:em-border-[#0969DA]={isActive}
         class:em-text-[#1F2328]={isActive}
-        class:em-text-[#656D76]={!isActive}
+        class:hover:em-border-[#D0D7DE]={!isActive}
         class:hover:em-bg-[#F6F8FA]={!isActive}
         class:hover:em-text-[#1F2328]={!isActive}
       >
