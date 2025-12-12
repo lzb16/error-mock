@@ -23,14 +23,6 @@ export function Modal() {
         onPointerDownOutside={handleInteractOutside}
         onInteractOutside={handleInteractOutside}
       >
-        {/*
-          DialogTitle for screen reader accessibility
-          Note: Radix UI may still warn about missing DialogTitle in Shadow DOM
-          This is a known issue: https://github.com/radix-ui/primitives/issues/3484
-          The title IS present and accessible, but Radix's detection fails in Shadow DOM
-        */}
-        <DialogTitle className="em:sr-only">Error Mock Control Panel</DialogTitle>
-
         {/* Header */}
         <DialogHeader className="em:flex em:flex-row em:items-center em:justify-between em:px-6 em:py-4 em:border-b em:border-gray-200 em:bg-gradient-to-r em:from-blue-50 em:to-indigo-50 em:space-y-0">
           <div className="em:flex em:items-center em:gap-2">
@@ -49,9 +41,9 @@ export function Modal() {
                 d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
               />
             </svg>
-            <h2 className="em:text-xl em:font-bold em:text-gray-800" aria-hidden="true">
+            <DialogTitle className="em:text-xl em:font-bold em:text-gray-800">
               Error Mock Control Panel
-            </h2>
+            </DialogTitle>
           </div>
 
           {/* Close Button */}
