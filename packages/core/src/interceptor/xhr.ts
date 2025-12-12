@@ -3,6 +3,7 @@ import type { MockRule, BypassConfig, GlobalConfig, ApiResponse } from '../types
 import { matchRule } from '../engine/matcher';
 import { omitFields } from '../engine/field-omit';
 import { PROFILE_DELAYS, DEFAULT_GLOBAL_CONFIG } from '../constants';
+import { getStatusText, generateTraceId } from '../utils/http-utils';
 
 let OriginalXHR: typeof XMLHttpRequest | null = null;
 let currentRules: MockRule[] = [];
@@ -82,32 +83,6 @@ function shouldBypass(url: string, method: string, contentType?: string): boolea
   return false;
 }
 
-/**
- * Get HTTP status text for common status codes
- */
-function getStatusText(status: number): string {
-  const statusTexts: Record<number, string> = {
-    200: 'OK',
-    201: 'Created',
-    204: 'No Content',
-    400: 'Bad Request',
-    401: 'Unauthorized',
-    403: 'Forbidden',
-    404: 'Not Found',
-    500: 'Internal Server Error',
-    502: 'Bad Gateway',
-    503: 'Service Unavailable',
-  };
-  return statusTexts[status] || 'Unknown';
-}
-
-/**
- * Generate trace ID for response
- */
-function generateTraceId(): string {
-  const hex = Math.random().toString(16).slice(2, 12).padStart(10, '0');
-  return `[${hex}]`;
-}
 
 class NotImplementedError extends Error {
   constructor(message: string) {
