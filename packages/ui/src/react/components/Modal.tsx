@@ -7,6 +7,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { ApiList } from './ApiList';
+import { RuleEditor } from './RuleEditor';
 
 export function Modal() {
   const { isModalOpen, setModalOpen } = useConfigStore();
@@ -82,11 +83,7 @@ export function Modal() {
 
           {/* Content */}
           <div className="em:w-2/3 em:flex em:flex-col em:bg-gray-50">
-            {/* TODO Phase 2: Rule Editor component */}
-            <div className="em:p-4 em:text-gray-500">
-              <div className="em:text-sm em:font-medium em:mb-2">Rule Editor</div>
-              <div className="em:text-xs em:text-gray-400">Placeholder - will be implemented in Phase 2</div>
-            </div>
+            <RuleEditor />
           </div>
         </div>
       </DialogContent>
