@@ -109,26 +109,15 @@ export class ErrorMockWebpackPlugin {
   private generateRuntimeCode(apiMetas: ApiMeta[]): string {
     return `
 // Error Mock Runtime - Auto-injected by webpack plugin
-import { App } from '@error-mock/ui';
-import '@error-mock/ui/style.css';
+import { mount } from '@error-mock/ui/react';
 
 // API metadata from build time
 const apiMetas = ${JSON.stringify(apiMetas, null, 2)};
 
 function initErrorMock() {
   try {
-    // Create container
-    const container = document.createElement('div');
-    container.id = 'error-mock-root';
-    document.body.appendChild(container);
-
-    // Mount Svelte app (it will handle install with saved rules)
-    new App({
-      target: container,
-      props: {
-        metas: apiMetas
-      }
-    });
+    // Mount React app with Shadow DOM
+    mount({ metas: apiMetas });
 
     console.log('[ErrorMock] Initialized with', apiMetas.length, 'APIs');
   } catch (error) {
