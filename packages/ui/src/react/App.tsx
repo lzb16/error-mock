@@ -15,7 +15,9 @@ export function App({ metas }: AppProps) {
   useEffect(() => {
     setApiMetas(metas);
     loadRules();
-  }, [metas, setApiMetas, loadRules]);
+    // Zustand actions are stable references, safe to omit from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metas]);
 
   return (
     <>
