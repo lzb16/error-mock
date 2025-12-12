@@ -60,11 +60,12 @@ function savePosition(x: number, y: number): void {
 }
 
 export function FloatButton() {
-  const { globalConfig, toggleModal } = useConfigStore();
+  const { globalConfig, toggleModal, isModalOpen } = useConfigStore();
   const activeMockCount = useRulesStore((state) => state.activeMockCount());
 
   const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const draggingRef = useRef(false); // Sync dragging state to avoid stale closure
   const dragStartRef = useRef<DragStart>({ x: 0, y: 0, time: 0 });
 
   // Initialize position from localStorage or config
@@ -95,7 +96,8 @@ export function FloatButton() {
   // Drag handlers using Pointer Events (supports touch and mouse)
   const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setIsDragging(true);
+    draggingRef.current = true; // Set sync flag
+    setIsDragging(true); // Set async state for UI
 
     dragStartRef.current = {
       x: e.clientX - position.x,
@@ -108,7 +110,7 @@ export function FloatButton() {
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
-    if (!isDragging) return;
+    if (!draggingRef.current) return; // Use ref for sync check
 
     const newPos = {
       x: e.clientX - dragStartRef.current.x,
@@ -119,9 +121,10 @@ export function FloatButton() {
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLButtonElement>) => {
-    if (!isDragging) return;
+    if (!draggingRef.current) return;
 
-    setIsDragging(false);
+    draggingRef.current = false; // Clear sync flag
+    setIsDragging(false); // Clear async state
 
     // Calculate movement distance and time
     const dist = Math.hypot(
@@ -132,14 +135,26 @@ export function FloatButton() {
 
     // Click detection: <5px movement and <300ms duration
     if (dist < 5 && time < 300) {
-      toggleModal();
+      toggleModal(); // Click → open Modal (only called when Modal is closed due to pointerEvents: none)
     } else {
       // Save position after drag
       savePosition(position.x, position.y);
     }
 
     // Release pointer capture
-    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    const target = e.target as HTMLElement;
+    if (target.hasPointerCapture?.(e.pointerId)) {
+      target.releasePointerCapture(e.pointerId);
+    }
+  };
+
+  const handlePointerCancel = (e: React.PointerEvent<HTMLButtonElement>) => {
+    draggingRef.current = false;
+    setIsDragging(false);
+    const target = e.target as HTMLElement;
+    if (target.hasPointerCapture?.(e.pointerId)) {
+      target.releasePointerCapture(e.pointerId);
+    }
   };
 
   // Keyboard support
@@ -156,22 +171,27 @@ export function FloatButton() {
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
         willChange: isDragging ? 'transform' : 'auto',
+        pointerEvents: isModalOpen ? 'none' : 'auto', // Disable when Modal is open
+        opacity: isModalOpen ? 0.5 : 1, // Visual feedback
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
       onKeyDown={handleKeyDown}
       role="button"
       aria-label="Toggle Error Mock Panel"
-      tabIndex={0}
+      aria-disabled={isModalOpen}
+      tabIndex={isModalOpen ? -1 : 0}
       type="button"
     >
       {/* Settings icon */}
       <svg
-        className="em:h-8 em:w-8"
+        className="em:h-8 em:w-8 em:pointer-events-none"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
+        aria-hidden="true"
       >
         <path
           strokeLinecap="round"

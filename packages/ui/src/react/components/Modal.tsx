@@ -9,12 +9,19 @@ import {
 export function Modal() {
   const { isModalOpen, setModalOpen } = useConfigStore();
 
+  // Prevent closing on outside click to avoid data loss
+  const handleInteractOutside = (e: Event) => {
+    e.preventDefault();
+  };
+
   return (
     <Dialog open={isModalOpen} onOpenChange={setModalOpen}>
       <DialogContent
         showCloseButton={false}
         className="em:w-11/12 em:max-w-7xl em:h-5/6 em:max-h-[90vh] em:p-0 em:gap-0 em:flex em:flex-col"
         aria-describedby={undefined}
+        onPointerDownOutside={handleInteractOutside}
+        onInteractOutside={handleInteractOutside}
       >
         {/* Header */}
         <DialogHeader className="em:flex em:flex-row em:items-center em:justify-between em:px-6 em:py-4 em:border-b em:border-gray-200 em:bg-gradient-to-r em:from-blue-50 em:to-indigo-50 em:space-y-0">

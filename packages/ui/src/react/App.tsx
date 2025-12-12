@@ -33,8 +33,8 @@ export function App({ metas }: AppProps) {
 
   return (
     <>
-      <FloatButton />
       <Modal />
+      <FloatButton />
     </>
   );
 }

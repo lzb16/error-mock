@@ -31,16 +31,12 @@ export const useConfigStore = create<ConfigState>()(
       storage: createJSONStorage(() =>
         typeof window !== 'undefined' ? localStorage : ({} as Storage)
       ),
-      migrate: (persistedState: unknown): ConfigState | undefined => {
-        const state = (persistedState || {}) as Partial<ConfigState>;
-        const persistedConfig = state.globalConfig as (Partial<GlobalConfig> & { defaultDelay?: number }) | undefined;
+      migrate: (persistedState: unknown) => {
+        const state = (persistedState || {}) as { globalConfig?: Partial<GlobalConfig> & { defaultDelay?: number } };
+        const persistedConfig = state.globalConfig;
 
         if (!persistedConfig) {
-          return {
-            globalConfig: DEFAULT_GLOBAL_CONFIG,
-            isModalOpen: false,
-            isMinimized: false,
-          };
+          return { globalConfig: DEFAULT_GLOBAL_CONFIG };
         }
 
         // Handle legacy defaultDelay field
@@ -71,12 +67,7 @@ export const useConfigStore = create<ConfigState>()(
         // Remove legacy field
         delete (migratedConfig as any).defaultDelay;
 
-        return {
-          ...state,
-          globalConfig: migratedConfig,
-          isModalOpen: false,
-          isMinimized: false,
-        };
+        return { globalConfig: migratedConfig };
       },
     }
   )
