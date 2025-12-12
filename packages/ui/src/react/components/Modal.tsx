@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from '@/components/ui/dialog';
 
 export function Modal() {
@@ -46,28 +47,29 @@ export function Modal() {
             </DialogTitle>
           </div>
 
-          {/* Close Button */}
-          <button
-            onClick={() => setModalOpen(false)}
-            className="em:rounded-sm em:opacity-70 em:transition-opacity hover:em:opacity-100 focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:ring-offset-2"
-            aria-label="Close modal"
-            type="button"
-          >
-            <svg
-              className="em:w-5 em:h-5 em:text-gray-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
+          {/* Close Button - Custom positioned in Header for perfect alignment */}
+          <DialogClose asChild>
+            <button
+              className="em:rounded-sm em:opacity-70 em:transition-opacity hover:em:opacity-100 focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:ring-offset-2"
+              aria-label="Close"
+              type="button"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+              <svg
+                className="em:w-5 em:h-5 em:text-gray-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </DialogClose>
         </DialogHeader>
 
         {/* Body: Sidebar + Content */}
