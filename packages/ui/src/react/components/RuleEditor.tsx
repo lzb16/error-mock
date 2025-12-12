@@ -112,6 +112,52 @@ export function RuleEditor() {
         </div>
       </div>
 
+      {/* Mock Type Selector and Enable Toggle */}
+      <div className="em:px-6 em:py-4 em:border-b em:border-gray-200 em:bg-gray-50 em:space-y-4">
+        {/* Mock Type */}
+        <div>
+          <label className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-2">
+            Mock Type
+          </label>
+          <div className="em:grid em:grid-cols-2 em:gap-3">
+            {(['none', 'success', 'businessError', 'networkError'] as const).map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => handleFieldChange('mockType', type)}
+                className={
+                  rule.mockType === type
+                    ? 'em:px-4 em:py-3 em:text-sm em:font-medium em:rounded-lg em:border em:bg-blue-600 em:text-white em:border-blue-600 em:shadow-md em:transition-all'
+                    : 'em:px-4 em:py-3 em:text-sm em:font-medium em:rounded-lg em:border em:bg-white em:text-gray-700 em:border-gray-300 hover:em:bg-gray-50 hover:em:border-gray-400 em:transition-all'
+                }
+              >
+                {type === 'none' && '🚫 None'}
+                {type === 'success' && '✅ Success'}
+                {type === 'businessError' && '⚠️ Business Error'}
+                {type === 'networkError' && '❌ Network Error'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Enable Toggle */}
+        <div className="em:flex em:items-center em:p-4 em:bg-white em:rounded-lg em:border em:border-gray-200">
+          <input
+            id="enable-mocking"
+            type="checkbox"
+            checked={rule.enabled}
+            onChange={(e) => handleFieldChange('enabled', e.target.checked)}
+            className="em:h-5 em:w-5 em:text-blue-600 focus:em:ring-blue-500 em:border-gray-300 em:rounded em:cursor-pointer"
+          />
+          <label
+            htmlFor="enable-mocking"
+            className="em:ml-3 em:block em:text-sm em:font-medium em:text-gray-900 em:cursor-pointer"
+          >
+            Enable Mocking
+          </label>
+        </div>
+      </div>
+
       {/* Tabs */}
       <Tabs defaultValue="network" className="em:flex-1 em:flex em:flex-col em:overflow-hidden">
         <div className="em:px-6 em:pt-4">
