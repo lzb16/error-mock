@@ -115,10 +115,21 @@ describe('RuleStorage', () => {
     const config = storage.getGlobalConfig();
     expect(config).toEqual({
       enabled: true,
-      defaultDelay: 0,
       position: 'bottom-right',
       theme: 'system',
       keyboardShortcuts: true,
+      defaults: {
+        delay: 0,
+        mockType: 'none',
+        failRate: 0,
+        timeout: false,
+        offline: false,
+        business: {
+          errNo: 0,
+          errMsg: '',
+          detailErrMsg: '',
+        },
+      },
     });
   });
 
@@ -164,5 +175,101 @@ describe('RuleStorage', () => {
     const retrieved = storage.getRules();
     expect(retrieved).toHaveLength(1);
     expect(retrieved[0].method).toBe('GET');
+  });
+
+  it('migrates legacy GlobalConfig (defaultDelay) to new format', () => {
+    // Store old format config with defaultDelay
+    const legacyConfig = {
+      enabled: false,
+      defaultDelay: 500,
+      position: 'top-left',
+      theme: 'dark',
+      keyboardShortcuts: false,
+    };
+
+    localStorage.setItem('test-prefix:config', JSON.stringify(legacyConfig));
+
+    // getGlobalConfig should auto-migrate to new format
+    const config = storage.getGlobalConfig();
+
+    expect(config.enabled).toBe(false);
+    expect(config.position).toBe('top-left');
+    expect(config.theme).toBe('dark');
+    expect(config.keyboardShortcuts).toBe(false);
+
+    // Should have migrated defaultDelay to defaults.delay
+    expect(config.defaults).toBeDefined();
+    expect(config.defaults.delay).toBe(500);
+    expect(config.defaults.mockType).toBe('none');
+    expect(config.defaults.failRate).toBe(0);
+
+    // Should have persisted migrated config (no more defaultDelay)
+    const stored = JSON.parse(localStorage.getItem('test-prefix:config') || '{}');
+    expect(stored.defaultDelay).toBeUndefined();
+    expect(stored.defaults).toBeDefined();
+    expect(stored.defaults.delay).toBe(500);
+  });
+
+  it('handles invalid defaultDelay during migration', () => {
+    // Store config with invalid defaultDelay
+    const legacyConfig = {
+      enabled: true,
+      defaultDelay: '300' as any, // Invalid: string instead of number
+      position: 'bottom-right',
+      theme: 'system',
+      keyboardShortcuts: true,
+    };
+
+    localStorage.setItem('test-prefix:config', JSON.stringify(legacyConfig));
+
+    // Should fallback to default delay (0)
+    const config = storage.getGlobalConfig();
+    expect(config.defaults.delay).toBe(0); // Falls back to DEFAULT_RULE_DEFAULTS.delay
+  });
+
+  it('removes defaultDelay from saved config', () => {
+    // Save a config with legacy defaultDelay
+    storage.saveGlobalConfig({ enabled: false, defaultDelay: 123 } as any);
+
+    // Stored config should not have defaultDelay
+    const stored = JSON.parse(localStorage.getItem('test-prefix:config') || '{}');
+    expect(stored.defaultDelay).toBeUndefined();
+    expect(stored.defaults.delay).toBe(123); // Migrated to defaults.delay
+  });
+
+  it('handles new GlobalConfig format correctly', () => {
+    // Store new format config with defaults
+    const newConfig = {
+      enabled: true,
+      position: 'bottom-left',
+      theme: 'light',
+      keyboardShortcuts: true,
+      defaults: {
+        delay: 1000,
+        mockType: 'networkError',
+        failRate: 50,
+        timeout: true,
+        offline: false,
+        business: {
+          errNo: 500,
+          errMsg: 'Test error',
+          detailErrMsg: 'Detailed test error',
+        },
+      },
+    };
+
+    localStorage.setItem('test-prefix:config', JSON.stringify(newConfig));
+
+    // getGlobalConfig should return it as-is
+    const config = storage.getGlobalConfig();
+
+    expect(config.enabled).toBe(true);
+    expect(config.position).toBe('bottom-left');
+    expect(config.theme).toBe('light');
+    expect(config.defaults.delay).toBe(1000);
+    expect(config.defaults.mockType).toBe('networkError');
+    expect(config.defaults.failRate).toBe(50);
+    expect(config.defaults.timeout).toBe(true);
+    expect(config.defaults.business.errNo).toBe(500);
   });
 });

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { get } from 'svelte/store';
+import { DEFAULT_GLOBAL_CONFIG } from '@error-mock/core';
 import FloatButton from '../FloatButton.svelte';
 import { activeMockCount, mockRules } from '../../stores/rules';
 import { isModalOpen, globalConfig } from '../../stores/config';
@@ -14,13 +15,7 @@ describe('FloatButton', () => {
     // Reset stores
     mockRules.set(new Map());
     isModalOpen.set(false);
-    globalConfig.set({
-      enabled: true,
-      defaultDelay: 0,
-      position: 'bottom-right',
-      theme: 'system',
-      keyboardShortcuts: true,
-    });
+    globalConfig.set(DEFAULT_GLOBAL_CONFIG);
 
     // Mock window dimensions
     Object.defineProperty(window, 'innerWidth', { value: 1024, writable: true });
@@ -73,7 +68,7 @@ describe('FloatButton', () => {
           url: '/api/test',
           method: 'GET',
           enabled: true,
-          mockType: 'network',
+          mockType: 'networkError',
           network: { delay: 100, timeout: false, offline: false, failRate: 0 },
           business: { errNo: 0, errMsg: '', detailErrMsg: '' },
           response: { useDefault: true, customResult: null },
@@ -110,7 +105,7 @@ describe('FloatButton', () => {
           url: '/api/test',
           method: 'GET',
           enabled: true,
-          mockType: 'network',
+          mockType: 'networkError',
           network: { delay: 100, timeout: false, offline: false, failRate: 0 },
           business: { errNo: 0, errMsg: '', detailErrMsg: '' },
           response: { useDefault: true, customResult: null },
@@ -145,7 +140,7 @@ describe('FloatButton', () => {
           url: '/api/test1',
           method: 'GET',
           enabled: true,
-          mockType: 'network',
+          mockType: 'networkError',
           network: { delay: 100, timeout: false, offline: false, failRate: 0 },
           business: { errNo: 0, errMsg: '', detailErrMsg: '' },
           response: { useDefault: true, customResult: null },
@@ -167,7 +162,7 @@ describe('FloatButton', () => {
           url: '/api/test2',
           method: 'POST',
           enabled: true,
-          mockType: 'business',
+          mockType: 'businessError',
           network: { delay: 0, timeout: false, offline: false, failRate: 0 },
           business: { errNo: 1001, errMsg: 'Error', detailErrMsg: '' },
           response: { useDefault: true, customResult: null },
@@ -189,7 +184,7 @@ describe('FloatButton', () => {
           url: '/api/test3',
           method: 'PUT',
           enabled: true,
-          mockType: 'response',
+          mockType: 'success',
           network: { delay: 0, timeout: false, offline: false, failRate: 0 },
           business: { errNo: 0, errMsg: '', detailErrMsg: '' },
           response: { useDefault: false, customResult: { data: 'test' } },
@@ -307,7 +302,7 @@ describe('FloatButton', () => {
           url: '/api/test',
           method: 'GET',
           enabled: true,
-          mockType: 'network',
+          mockType: 'networkError',
           network: { delay: 100, timeout: false, offline: false, failRate: 0 },
           business: { errNo: 0, errMsg: '', detailErrMsg: '' },
           response: { useDefault: true, customResult: null },
@@ -346,7 +341,7 @@ describe('FloatButton', () => {
           url: '/api/test',
           method: 'GET',
           enabled: true,
-          mockType: 'network',
+          mockType: 'networkError',
           network: { delay: 100, timeout: false, offline: false, failRate: 0 },
           business: { errNo: 0, errMsg: '', detailErrMsg: '' },
           response: { useDefault: true, customResult: null },
@@ -398,7 +393,7 @@ describe('FloatButton', () => {
           url: '/api/test',
           method: 'GET',
           enabled: true,
-          mockType: 'network',
+          mockType: 'networkError',
           network: { delay: 100, timeout: false, offline: false, failRate: 0 },
           business: { errNo: 0, errMsg: '', detailErrMsg: '' },
           response: { useDefault: true, customResult: null },
@@ -492,7 +487,7 @@ describe('FloatButton', () => {
           url: '/api/test',
           method: 'GET',
           enabled: true,
-          mockType: 'network',
+          mockType: 'networkError',
           network: { delay: 100, timeout: false, offline: false, failRate: 0 },
           business: { errNo: 0, errMsg: '', detailErrMsg: '' },
           response: { useDefault: true, customResult: null },
@@ -532,7 +527,7 @@ describe('FloatButton', () => {
           url: '/api/test',
           method: 'GET',
           enabled: true,
-          mockType: 'network',
+          mockType: 'networkError',
           network: { delay: 100, timeout: false, offline: false, failRate: 0 },
           business: { errNo: 0, errMsg: '', detailErrMsg: '' },
           response: { useDefault: true, customResult: null },
@@ -571,7 +566,7 @@ describe('FloatButton', () => {
           url: '/api/test',
           method: 'GET',
           enabled: true,
-          mockType: 'network',
+          mockType: 'networkError',
           network: { delay: 100, timeout: false, offline: false, failRate: 0 },
           business: { errNo: 0, errMsg: '', detailErrMsg: '' },
           response: { useDefault: true, customResult: null },
@@ -621,7 +616,7 @@ describe('FloatButton', () => {
           url: '/api/test',
           method: 'GET',
           enabled: true,
-          mockType: 'network',
+          mockType: 'networkError',
           network: { delay: 100, timeout: false, offline: false, failRate: 0 },
           business: { errNo: 0, errMsg: '', detailErrMsg: '' },
           response: { useDefault: true, customResult: null },
@@ -656,7 +651,7 @@ describe('FloatButton', () => {
           url: '/api/test',
           method: 'GET',
           enabled: true,
-          mockType: 'network',
+          mockType: 'networkError',
           network: { delay: 100, timeout: false, offline: false, failRate: 0 },
           business: { errNo: 0, errMsg: '', detailErrMsg: '' },
           response: { useDefault: true, customResult: null },

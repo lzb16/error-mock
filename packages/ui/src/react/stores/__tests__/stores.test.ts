@@ -2,18 +2,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useConfigStore } from '../useConfigStore';
 import { useRulesStore } from '../useRulesStore';
 import { useToastStore } from '../useToastStore';
-import type { ApiMeta } from '@error-mock/core';
+import { DEFAULT_GLOBAL_CONFIG, type ApiMeta } from '@error-mock/core';
 
 describe('useConfigStore', () => {
   beforeEach(() => {
     useConfigStore.setState({
-      globalConfig: {
-        enabled: true,
-        defaultDelay: 0,
-        position: 'bottom-right',
-        theme: 'system',
-        keyboardShortcuts: true,
-      },
+      globalConfig: DEFAULT_GLOBAL_CONFIG,
       isModalOpen: false,
       isMinimized: false,
     });

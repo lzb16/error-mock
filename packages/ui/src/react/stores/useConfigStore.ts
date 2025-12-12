@@ -1,14 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { GlobalConfig } from '@error-mock/core';
-
-const DEFAULT_CONFIG: GlobalConfig = {
-  enabled: true,
-  defaultDelay: 0,
-  position: 'bottom-right',
-  theme: 'system',
-  keyboardShortcuts: true,
-};
+import { DEFAULT_GLOBAL_CONFIG, type GlobalConfig } from '@error-mock/core';
 
 interface ConfigState {
   globalConfig: GlobalConfig;
@@ -23,7 +15,7 @@ interface ConfigState {
 export const useConfigStore = create<ConfigState>()(
   persist(
     (set) => ({
-      globalConfig: DEFAULT_CONFIG,
+      globalConfig: DEFAULT_GLOBAL_CONFIG,
       isModalOpen: false,
       isMinimized: false,
       setConfig: (config) =>

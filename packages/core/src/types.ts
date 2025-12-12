@@ -1,3 +1,13 @@
+export type FloatButtonPosition =
+  | 'bottom-right'
+  | 'bottom-left'
+  | 'top-right'
+  | 'top-left';
+
+export type ThemeMode = 'dark' | 'light' | 'system';
+
+export type MockType = 'none' | 'success' | 'businessError' | 'networkError';
+
 export interface NetworkConfig {
   delay: number;
   timeout: boolean;
@@ -30,7 +40,7 @@ export interface MockRule {
   url: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   enabled: boolean;
-  mockType: 'none' | 'success' | 'businessError' | 'networkError';
+  mockType: MockType;
   network: NetworkConfig;
   business: BusinessConfig;
   response: {
@@ -61,12 +71,21 @@ export interface ApiResponse<T = unknown> {
   trace_id: string;
 }
 
+export interface RuleDefaults {
+  delay: number;
+  mockType: MockType;
+  failRate: number;
+  timeout: boolean;
+  offline: boolean;
+  business: BusinessConfig;
+}
+
 export interface GlobalConfig {
   enabled: boolean;
-  defaultDelay: number;
-  position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
-  theme: 'dark' | 'light' | 'system';
+  position: FloatButtonPosition;
+  theme: ThemeMode;
   keyboardShortcuts: boolean;
+  defaults: RuleDefaults;
 }
 
 export interface BypassConfig {

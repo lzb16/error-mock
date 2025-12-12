@@ -1,17 +1,8 @@
 import { writable, type Writable } from 'svelte/store';
-import type { GlobalConfig } from '@error-mock/core';
-
-// Default global configuration
-const DEFAULT_CONFIG: GlobalConfig = {
-  enabled: true,
-  defaultDelay: 0,
-  position: 'bottom-right',
-  theme: 'system',
-  keyboardShortcuts: true,
-};
+import { DEFAULT_GLOBAL_CONFIG, type GlobalConfig } from '@error-mock/core';
 
 // Global configuration store
-export const globalConfig: Writable<GlobalConfig> = writable(DEFAULT_CONFIG);
+export const globalConfig: Writable<GlobalConfig> = writable(DEFAULT_GLOBAL_CONFIG);
 
 // Modal state stores
 export const isModalOpen = writable(false);
