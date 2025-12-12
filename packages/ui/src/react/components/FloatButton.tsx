@@ -167,10 +167,11 @@ export function FloatButton() {
 
   return (
     <button
-      className="em:fixed em:z-[9999] em:touch-none em:top-0 em:left-0 em:bg-blue-600 em:text-white em:rounded-full em:w-14 em:h-14 em:shadow-lg em:flex em:items-center em:justify-center em:cursor-pointer hover:em:bg-blue-700 hover:em:scale-105 em:transition-transform em:duration-200 focus:em:outline-none focus:em:ring-2 focus:em:ring-offset-2 focus:em:ring-blue-500"
+      className="em:fixed em:touch-none em:top-0 em:left-0 em:bg-blue-600 em:text-white em:rounded-full em:w-14 em:h-14 em:shadow-lg em:flex em:items-center em:justify-center em:cursor-pointer hover:em:bg-blue-700 hover:em:scale-105 em:transition-transform em:duration-200 focus:em:outline-none focus:em:ring-2 focus:em:ring-offset-2 focus:em:ring-blue-500"
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
         willChange: isDragging ? 'transform' : 'auto',
+        zIndex: isModalOpen ? 49 : 9999, // Lower z-index when Modal open to prevent overlapping
         pointerEvents: isModalOpen ? 'none' : 'auto', // Disable when Modal is open
         opacity: isModalOpen ? 0.5 : 1, // Visual feedback
       }}
