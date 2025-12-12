@@ -4,6 +4,7 @@ import { FloatButton } from '@/components/FloatButton';
 import { Modal } from '@/components/Modal';
 import { useRulesStore } from '@/stores/useRulesStore';
 import { useToastStore } from '@/stores/useToastStore';
+import { useInterceptor } from '@/hooks/useInterceptor';
 
 export interface AppProps {
   metas: ApiMeta[];
@@ -11,6 +12,9 @@ export interface AppProps {
 
 export function App({ metas }: AppProps) {
   const { setApiMetas, loadRules } = useRulesStore();
+
+  // Manage interceptor lifecycle
+  useInterceptor();
 
   // Initialize stores on mount
   useEffect(() => {

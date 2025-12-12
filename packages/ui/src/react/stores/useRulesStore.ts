@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { enableMapSet } from 'immer';
 import type { ApiMeta, MockRule } from '@error-mock/core';
-import { RuleStorage, install, updateRules as refreshInterceptors } from '@error-mock/core';
+import { RuleStorage } from '@error-mock/core';
 
 // Enable Map/Set support in Immer
 enableMapSet();
@@ -21,7 +21,6 @@ type RulesState = {
   mockRules: Map<string, MockRule>;
   selectedId: string | null;
   searchQuery: string;
-  _interceptorsInstalled: boolean; // Private flag for interceptor lifecycle
   setApiMetas: (metas: ApiMeta[]) => void;
   setSelectedId: (id: string | null) => void;
   setSearchQuery: (query: string) => void;
@@ -76,7 +75,6 @@ export const useRulesStore = create<RulesState>()(
     mockRules: new Map<string, MockRule>(),
     selectedId: null,
     searchQuery: '',
-    _interceptorsInstalled: false,
 
     setApiMetas: (metas) => set({ apiMetas: metas }),
     setSelectedId: (id) => set({ selectedId: id }),
@@ -89,15 +87,7 @@ export const useRulesStore = create<RulesState>()(
       const map = new Map<string, MockRule>();
       for (const rule of saved) map.set(rule.id, rule);
       set({ mockRules: map });
-      if (saved.length > 0) {
-        // TODO: Consider moving interceptor logic to component useEffect
-        // for better testability and separation of concerns
-        // Always update rules first (install() may no-op if already installed)
-        refreshInterceptors(saved);
-        // Then try to install (will no-op if already installed)
-        install(saved);
-        set({ _interceptorsInstalled: true });
-      }
+      // Interceptor lifecycle is now managed by useInterceptor hook
     },
 
     createRule: (meta) => {
@@ -107,19 +97,10 @@ export const useRulesStore = create<RulesState>()(
         state.mockRules.set(rule.id, rule);
         state.selectedId = rule.id;
       });
-      // Save and refresh interceptors
+      // Persist to storage; interceptor updates handled by useInterceptor hook
       const allRules = Array.from(get().mockRules.values());
       const store = getStorage();
       if (store) store.saveRules(allRules);
-      // TODO: Consider moving interceptor logic to component useEffect
-      // for better testability and separation of concerns
-      // Always update rules first (handles case where interceptors exist but store was reset)
-      refreshInterceptors(allRules);
-      if (!get()._interceptorsInstalled) {
-        // Try to install (may no-op if already installed, but rules are already updated)
-        install(allRules);
-        set({ _interceptorsInstalled: true });
-      }
       return rule;
     },
 
@@ -134,19 +115,10 @@ export const useRulesStore = create<RulesState>()(
         // Immer automatically proxies Map mutations with enableMapSet()
         state.mockRules.set(rule.id, rule);
       });
-      // Save to storage and refresh interceptors
+      // Persist to storage; interceptor updates handled by useInterceptor hook
       const allRules = Array.from(get().mockRules.values());
       const store = getStorage();
       if (store) store.saveRules(allRules);
-      // TODO: Consider moving interceptor logic to component useEffect
-      // for better testability and separation of concerns
-      // Always update rules first (handles case where interceptors exist but store was reset)
-      refreshInterceptors(allRules);
-      if (!get()._interceptorsInstalled) {
-        // Try to install (may no-op if already installed, but rules are already updated)
-        install(allRules);
-        set({ _interceptorsInstalled: true });
-      }
     },
 
     getRuleForApi: (meta) => {
