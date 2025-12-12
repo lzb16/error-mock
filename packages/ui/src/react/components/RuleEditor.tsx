@@ -1,5 +1,6 @@
 import { useRulesStore } from '@/stores/useRulesStore';
 import { useToastStore } from '@/stores/useToastStore';
+import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -83,20 +84,7 @@ export function RuleEditor() {
     return (
       <div className="em:flex em:items-center em:justify-center em:h-full em:text-gray-400">
         <div className="em:text-center">
-          <svg
-            className="em:w-16 em:h-16 em:mx-auto em:mb-4 em:text-gray-300"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
+          <FileText className="em:w-16 em:h-16 em:mx-auto em:mb-4 em:text-gray-300" />
           <p className="em:text-base em:font-medium">Select an API to configure</p>
           <p className="em:text-sm em:mt-1 em:text-gray-400">
             Choose from the list on the left to get started
