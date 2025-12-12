@@ -6,6 +6,7 @@ import {
   DialogTitle,
   DialogClose,
 } from '@/components/ui/dialog';
+import { ApiList } from './ApiList';
 
 export function Modal() {
   const { isModalOpen, setModalOpen } = useConfigStore();
@@ -75,12 +76,8 @@ export function Modal() {
         {/* Body: Sidebar + Content */}
         <div className="em:flex em:flex-1 em:overflow-hidden">
           {/* Sidebar */}
-          <div className="em:w-1/3 em:min-w-[320px] em:border-r em:border-gray-200 em:flex em:flex-col em:bg-white">
-            {/* TODO Phase 2: API List component */}
-            <div className="em:p-4 em:text-gray-500">
-              <div className="em:text-sm em:font-medium em:mb-2">API List</div>
-              <div className="em:text-xs em:text-gray-400">Placeholder - will be implemented in Phase 2</div>
-            </div>
+          <div className="em:w-1/3 em:min-w-[320px] em:flex em:flex-col">
+            <ApiList />
           </div>
 
           {/* Content */}
