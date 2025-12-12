@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { XIcon } from "lucide-react"
+import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { usePortalContainer } from "@/context/ShadowRootContext"
@@ -58,7 +58,7 @@ function DialogOverlay({
 function DialogContent({
   className,
   children,
-  showCloseButton = true,
+  showCloseButton = false, // Change default to false, let DialogHeader handle it
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
@@ -75,12 +75,13 @@ function DialogContent({
         {...props}
       >
         {children}
+        {/* Only show absolute-positioned close button if explicitly enabled */}
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
             className="em:ring-offset-background em:focus:ring-ring em:data-[state=open]:bg-accent em:data-[state=open]:text-muted-foreground em:absolute em:top-4 em:right-4 em:rounded-xs em:opacity-70 em:transition-opacity em:hover:opacity-100 em:focus:ring-2 em:focus:ring-offset-2 em:focus:outline-hidden em:disabled:pointer-events-none em:[&_svg]:pointer-events-none em:[&_svg]:shrink-0 em:[&_svg:not([class*=size-])]:size-4"
           >
-            <XIcon />
+            <X />
             <span className="em:sr-only">Close</span>
           </DialogPrimitive.Close>
         )}
@@ -89,13 +90,36 @@ function DialogContent({
   )
 }
 
-function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
+function DialogHeader({
+  className,
+  showCloseButton = false,
+  ...props
+}: React.ComponentProps<"div"> & {
+  showCloseButton?: boolean
+}) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("em:flex em:flex-col em:gap-2 em:text-center em:sm:text-left", className)}
+      className={cn(
+        "em:flex em:gap-2",
+        showCloseButton ? "em:flex-row em:items-center em:justify-between" : "em:flex-col em:text-center em:sm:text-left",
+        className
+      )}
       {...props}
-    />
+    >
+      {props.children}
+      {showCloseButton && (
+        <DialogPrimitive.Close asChild>
+          <button
+            className="em:rounded-sm em:opacity-70 em:transition-opacity hover:em:opacity-100 focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:ring-offset-2"
+            aria-label="Close"
+            type="button"
+          >
+            <X className="em:w-5 em:h-5 em:text-gray-600" />
+          </button>
+        </DialogPrimitive.Close>
+      )}
+    </div>
   )
 }
 

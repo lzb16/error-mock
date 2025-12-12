@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { WandSparkles } from 'lucide-react';
 import { useConfigStore } from '@/stores/useConfigStore';
 import { useRulesStore } from '@/stores/useRulesStore';
 import type { GlobalConfig } from '@error-mock/core';
@@ -186,21 +187,8 @@ export function FloatButton() {
       tabIndex={isModalOpen ? -1 : 0}
       type="button"
     >
-      {/* Settings icon */}
-      <svg
-        className="em:h-8 em:w-8 em:pointer-events-none"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-        />
-      </svg>
+      {/* Wand Sparkles icon */}
+      <WandSparkles className="em:h-8 em:w-8" />
 
       {/* Active mock count badge */}
       {activeMockCount > 0 && (
