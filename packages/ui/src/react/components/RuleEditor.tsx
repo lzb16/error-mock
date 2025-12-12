@@ -3,6 +3,9 @@ import { useToastStore } from '@/stores/useToastStore';
 import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { NetworkTab } from './RuleEditor/NetworkTab';
+import { ResponseTab } from './RuleEditor/ResponseTab';
+import { AdvancedTab } from './RuleEditor/AdvancedTab';
 
 export function RuleEditor() {
   const { selectedId, getRuleForApi, updateRule, applyRule, apiMetas, appliedRules } =
@@ -121,66 +124,15 @@ export function RuleEditor() {
 
         <div className="em:flex-1 em:overflow-y-auto em:px-6 em:py-4">
           <TabsContent value="network" className="em:mt-0">
-            {/* TODO Phase 2.1: NetworkTab component */}
-            <div className="em:space-y-4">
-              <div className="em:bg-blue-50 em:border em:border-blue-200 em:rounded-lg em:p-4">
-                <h4 className="em:text-sm em:font-medium em:text-blue-900 em:mb-2">
-                  Network Tab (Coming Soon)
-                </h4>
-                <p className="em:text-xs em:text-blue-700">
-                  Will contain: delay, timeout, offline, failRate configuration
-                </p>
-              </div>
-
-              {/* Placeholder showing current rule data */}
-              <div className="em:bg-gray-100 em:rounded em:p-3 em:text-xs em:font-mono">
-                <div>Delay: {rule.network.delay}ms</div>
-                <div>Timeout: {rule.network.timeout ? 'Yes' : 'No'}</div>
-                <div>Offline: {rule.network.offline ? 'Yes' : 'No'}</div>
-                <div>Fail Rate: {rule.network.failRate}%</div>
-              </div>
-            </div>
+            <NetworkTab rule={rule} onChange={handleFieldChange} />
           </TabsContent>
 
           <TabsContent value="response" className="em:mt-0">
-            {/* TODO Phase 2.2: ResponseTab component */}
-            <div className="em:space-y-4">
-              <div className="em:bg-green-50 em:border em:border-green-200 em:rounded-lg em:p-4">
-                <h4 className="em:text-sm em:font-medium em:text-green-900 em:mb-2">
-                  Response Tab (Coming Soon)
-                </h4>
-                <p className="em:text-xs em:text-green-700">
-                  Will contain: useDefault toggle, customResult editor
-                </p>
-              </div>
-
-              {/* Placeholder showing current rule data */}
-              <div className="em:bg-gray-100 em:rounded em:p-3 em:text-xs em:font-mono">
-                <div>Use Default: {rule.response.useDefault ? 'Yes' : 'No'}</div>
-                <div>Custom Result: {rule.response.customResult ? 'Set' : 'Not set'}</div>
-              </div>
-            </div>
+            <ResponseTab rule={rule} onChange={handleFieldChange} />
           </TabsContent>
 
           <TabsContent value="advanced" className="em:mt-0">
-            {/* TODO Phase 2.3: AdvancedTab component */}
-            <div className="em:space-y-4">
-              <div className="em:bg-purple-50 em:border em:border-purple-200 em:rounded-lg em:p-4">
-                <h4 className="em:text-sm em:font-medium em:text-purple-900 em:mb-2">
-                  Advanced Tab (Coming Soon)
-                </h4>
-                <p className="em:text-xs em:text-purple-700">
-                  Will contain: fieldOmit configuration (manual/random modes)
-                </p>
-              </div>
-
-              {/* Placeholder showing current rule data */}
-              <div className="em:bg-gray-100 em:rounded em:p-3 em:text-xs em:font-mono">
-                <div>Field Omit Enabled: {rule.fieldOmit.enabled ? 'Yes' : 'No'}</div>
-                <div>Mode: {rule.fieldOmit.mode}</div>
-                <div>Fields: {rule.fieldOmit.fields.length} configured</div>
-              </div>
-            </div>
+            <AdvancedTab rule={rule} onChange={handleFieldChange} />
           </TabsContent>
         </div>
       </Tabs>
