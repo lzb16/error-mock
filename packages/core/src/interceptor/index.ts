@@ -1,5 +1,5 @@
 // packages/core/src/interceptor/index.ts
-import type { MockRule, BypassConfig } from '../types';
+import type { MockRule, BypassConfig, GlobalConfig } from '../types';
 import {
   installFetchInterceptor,
   uninstallFetchInterceptor,
@@ -11,9 +11,13 @@ import {
   updateRules as updateXHRRules,
 } from './xhr';
 
-export function install(rules: MockRule[], bypass?: Partial<BypassConfig>): void {
-  installFetchInterceptor(rules, bypass);
-  installXHRInterceptor(rules, bypass);
+export function install(
+  rules: MockRule[],
+  config?: GlobalConfig,
+  bypass?: Partial<BypassConfig>
+): void {
+  installFetchInterceptor(rules, config, bypass);
+  installXHRInterceptor(rules, config, bypass);
 }
 
 export function uninstall(): void {

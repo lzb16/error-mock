@@ -1,11 +1,12 @@
 // packages/core/src/interceptor/xhr.ts
-import type { MockRule, BypassConfig } from '../types';
+import type { MockRule, BypassConfig, GlobalConfig, ApiResponse } from '../types';
 import { matchRule } from '../engine/matcher';
-import { generateSuccessResponse, generateBusinessErrorResponse } from '../engine/response';
 import { omitFields } from '../engine/field-omit';
+import { PROFILE_DELAYS, DEFAULT_GLOBAL_CONFIG } from '../constants';
 
 let OriginalXHR: typeof XMLHttpRequest | null = null;
 let currentRules: MockRule[] = [];
+let globalConfig: GlobalConfig = { ...DEFAULT_GLOBAL_CONFIG };
 const defaultBypassConfig: BypassConfig = {
   origins: [],
   methods: ['OPTIONS'],
@@ -16,12 +17,14 @@ let bypassConfig: BypassConfig = { ...defaultBypassConfig };
 
 export function installXHRInterceptor(
   rules: MockRule[],
+  config?: GlobalConfig,
   bypass?: Partial<BypassConfig>
 ): void {
   if (OriginalXHR) return;
 
   OriginalXHR = globalThis.XMLHttpRequest;
   currentRules = rules;
+  globalConfig = config ? { ...config } : { ...DEFAULT_GLOBAL_CONFIG };
   // Reset bypass config each install to avoid leaking state across re-installs/tests
   bypassConfig = { ...defaultBypassConfig, ...(bypass || {}) };
 
@@ -34,6 +37,7 @@ export function uninstallXHRInterceptor(): void {
     globalThis.XMLHttpRequest = OriginalXHR;
     OriginalXHR = null;
     currentRules = [];
+    globalConfig = { ...DEFAULT_GLOBAL_CONFIG };
     bypassConfig = { ...defaultBypassConfig };
   }
 }
@@ -76,6 +80,33 @@ function shouldBypass(url: string, method: string, contentType?: string): boolea
   }
 
   return false;
+}
+
+/**
+ * Get HTTP status text for common status codes
+ */
+function getStatusText(status: number): string {
+  const statusTexts: Record<number, string> = {
+    200: 'OK',
+    201: 'Created',
+    204: 'No Content',
+    400: 'Bad Request',
+    401: 'Unauthorized',
+    403: 'Forbidden',
+    404: 'Not Found',
+    500: 'Internal Server Error',
+    502: 'Bad Gateway',
+    503: 'Service Unavailable',
+  };
+  return statusTexts[status] || 'Unknown';
+}
+
+/**
+ * Generate trace ID for response
+ */
+function generateTraceId(): string {
+  const hex = Math.random().toString(16).slice(2, 12).padStart(10, '0');
+  return `[${hex}]`;
 }
 
 class NotImplementedError extends Error {
@@ -197,7 +228,7 @@ class MockXMLHttpRequest {
 
     const rule = matchRule(currentRules, urlForMatching, this._method);
 
-    if (!rule || rule.mockType === 'none' || shouldBypass(this._url, this._method, contentType)) {
+    if (!rule || shouldBypass(this._url, this._method, contentType)) {
       this._passthrough(body);
       return;
     }
@@ -205,38 +236,40 @@ class MockXMLHttpRequest {
     const execute = () => {
       if (this._aborted) return;
 
-      const { network, mockType } = rule;
-
-      // Timeout check
-      if (network.timeout) {
+      // 1. Network Error Mode - check timeout
+      if (rule.network.errorMode === 'timeout') {
         this._handleTimeout();
         return;
       }
 
-      // Offline check
-      if (network.offline) {
+      // 2. Network Error Mode - check offline
+      if (rule.network.errorMode === 'offline') {
         this._handleError();
         return;
       }
 
-      // Random failure
-      if (network.failRate > 0 && Math.random() * 100 < network.failRate) {
+      // 3. Random failure
+      if (rule.network.failRate && Math.random() * 100 < rule.network.failRate) {
         this._handleError();
         return;
       }
 
-      // Handle networkError mockType - always fail with network error
-      if (mockType === 'networkError') {
-        this._handleError();
-        return;
-      }
-
-      // Generate success response
+      // 4. Generate response
       this._handleSuccess(rule);
     };
 
+    // Calculate delay
+    let delay = 0;
+    if (rule.network.customDelay !== undefined) {
+      delay = rule.network.customDelay;
+    } else if (rule.network.profile) {
+      delay = PROFILE_DELAYS[rule.network.profile];
+    } else {
+      delay = PROFILE_DELAYS[globalConfig.networkProfile];
+    }
+
     if (this._async) {
-      this._timeoutId = setTimeout(execute, rule.network.delay);
+      this._timeoutId = setTimeout(execute, delay);
     } else {
       execute();
     }
@@ -293,25 +326,50 @@ class MockXMLHttpRequest {
 
   private _handleSuccess(rule: MockRule) {
     let responseData: unknown;
-    if (rule.mockType === 'businessError') {
-      responseData = generateBusinessErrorResponse(rule.business);
-    } else {
-      // Handle useDefault flag
-      const result = rule.response.useDefault
-        ? {}
-        : rule.response.customResult;
-      responseData = generateSuccessResponse(result);
-    }
+    let statusCode: number;
+    let statusText: string;
 
-    if (rule.fieldOmit.enabled) {
-      responseData = omitFields(responseData, rule.fieldOmit);
+    if (rule.response.status >= 400) {
+      // HTTP Error Response
+      const body = rule.response.errorBody || {
+        error: getStatusText(rule.response.status),
+        message: `HTTP ${rule.response.status}`,
+      };
+
+      responseData = rule.fieldOmit.enabled ? omitFields(body, rule.fieldOmit) : body;
+      statusCode = rule.response.status;
+      statusText = getStatusText(rule.response.status);
+    } else {
+      // ApiResponse structure (status=200-299)
+      // Convert camelCase to snake_case for API response
+      const apiResponse: ApiResponse = {
+        err_no: rule.response.errNo,
+        err_msg: rule.response.errMsg,
+        detail_err_msg: rule.response.detailErrMsg,
+        result: rule.response.result,
+        sync: true,
+        time_stamp: Date.now(),
+        time_zone_ID: 'Asia/Shanghai',
+        time_zone_offset: -480,
+        trace_id: generateTraceId(),
+      };
+
+      responseData = apiResponse;
+
+      // Apply field omission
+      if (rule.fieldOmit.enabled) {
+        responseData = omitFields(responseData, rule.fieldOmit);
+      }
+
+      statusCode = rule.response.status;
+      statusText = getStatusText(rule.response.status);
     }
 
     const jsonStr = JSON.stringify(responseData);
 
     this._responseHeaders['content-type'] = 'application/json';
-    this.status = 200;
-    this.statusText = 'OK';
+    this.status = statusCode;
+    this.statusText = statusText;
 
     // Set response based on responseType
     switch (this.responseType) {

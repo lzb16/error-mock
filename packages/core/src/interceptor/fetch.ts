@@ -1,11 +1,12 @@
 // packages/core/src/interceptor/fetch.ts
-import type { MockRule, BypassConfig } from '../types';
+import type { MockRule, BypassConfig, GlobalConfig, ApiResponse } from '../types';
 import { matchRule } from '../engine/matcher';
-import { generateSuccessResponse, generateBusinessErrorResponse } from '../engine/response';
 import { omitFields } from '../engine/field-omit';
+import { PROFILE_DELAYS, DEFAULT_GLOBAL_CONFIG } from '../constants';
 
 let originalFetch: typeof fetch | null = null;
 let currentRules: MockRule[] = [];
+let globalConfig: GlobalConfig = { ...DEFAULT_GLOBAL_CONFIG };
 const defaultBypassConfig: BypassConfig = {
   origins: [],
   methods: ['OPTIONS'],
@@ -19,12 +20,14 @@ let bypassConfig: BypassConfig = { ...defaultBypassConfig };
  */
 export function installFetchInterceptor(
   rules: MockRule[],
+  config?: GlobalConfig,
   bypass?: Partial<BypassConfig>
 ): void {
   if (originalFetch) return; // Already installed
 
   originalFetch = globalThis.fetch;
   currentRules = rules;
+  globalConfig = config ? { ...config } : { ...DEFAULT_GLOBAL_CONFIG };
   // Reset bypass config each install to avoid leaking state across re-installs/tests
   bypassConfig = { ...defaultBypassConfig, ...(bypass || {}) };
 
@@ -74,7 +77,7 @@ export function installFetchInterceptor(
     }
 
     const rule = matchRule(currentRules, urlForMatching, method);
-    if (!rule || rule.mockType === 'none') {
+    if (!rule) {
       return originalFetch!.call(globalThis, input, init);
     }
 
@@ -106,6 +109,7 @@ export function uninstallFetchInterceptor(): void {
     globalThis.fetch = originalFetch;
     originalFetch = null;
     currentRules = [];
+    globalConfig = { ...DEFAULT_GLOBAL_CONFIG };
     bypassConfig = { ...defaultBypassConfig };
   }
 }
@@ -157,9 +161,36 @@ function shouldBypass(url: string, method: string, contentType?: string): boolea
 }
 
 /**
- * Delay helper with abort support
+ * Get HTTP status text for common status codes
  */
-function delay(ms: number, signals: AbortSignal[]): Promise<void> {
+function getStatusText(status: number): string {
+  const statusTexts: Record<number, string> = {
+    200: 'OK',
+    201: 'Created',
+    204: 'No Content',
+    400: 'Bad Request',
+    401: 'Unauthorized',
+    403: 'Forbidden',
+    404: 'Not Found',
+    500: 'Internal Server Error',
+    502: 'Bad Gateway',
+    503: 'Service Unavailable',
+  };
+  return statusTexts[status] || 'Unknown';
+}
+
+/**
+ * Generate trace ID for response
+ */
+function generateTraceId(): string {
+  const hex = Math.random().toString(16).slice(2, 12).padStart(10, '0');
+  return `[${hex}]`;
+}
+
+/**
+ * Sleep helper with abort support
+ */
+function sleep(ms: number, signals: AbortSignal[]): Promise<void> {
   return new Promise((resolve, reject) => {
     const handlers: Array<{ signal: AbortSignal; handler: () => void }> = [];
 
@@ -197,11 +228,18 @@ function delay(ms: number, signals: AbortSignal[]): Promise<void> {
  * Handle mock response generation
  */
 async function handleMock(rule: MockRule, signals: AbortSignal[]): Promise<Response> {
-  const { network, mockType } = rule;
+  // 1. Calculate delay
+  let delay = 0;
+  if (rule.network.customDelay !== undefined) {
+    delay = rule.network.customDelay;
+  } else if (rule.network.profile) {
+    delay = PROFILE_DELAYS[rule.network.profile];
+  } else {
+    delay = PROFILE_DELAYS[globalConfig.networkProfile];
+  }
 
-  // Apply delay
-  if (network.delay > 0) {
-    await delay(network.delay, signals);
+  if (delay > 0) {
+    await sleep(delay, signals);
   }
 
   // Check abort after delay
@@ -211,46 +249,64 @@ async function handleMock(rule: MockRule, signals: AbortSignal[]): Promise<Respo
     }
   }
 
-  // Simulate timeout
-  if (network.timeout) {
+  // 2. Network Error Mode
+  if (rule.network.errorMode === 'timeout') {
     throw new DOMException('The operation timed out.', 'TimeoutError');
   }
 
-  // Simulate offline
-  if (network.offline) {
+  if (rule.network.errorMode === 'offline') {
     throw new TypeError('Failed to fetch');
   }
 
-  // Random failure
-  if (network.failRate > 0 && Math.random() * 100 < network.failRate) {
+  // 3. Random Failure
+  if (rule.network.failRate && Math.random() * 100 < rule.network.failRate) {
     throw new TypeError('Failed to fetch');
   }
 
-  // Handle networkError mockType - always fail with network error
-  if (mockType === 'networkError') {
-    throw new TypeError('Failed to fetch');
-  }
-
-  // Generate response data
+  // 4. Generate response based on status
   let responseData: unknown;
-  if (mockType === 'businessError') {
-    responseData = generateBusinessErrorResponse(rule.business);
+
+  if (rule.response.status >= 400) {
+    // HTTP Error Response
+    const body = rule.response.errorBody || {
+      error: getStatusText(rule.response.status),
+      message: `HTTP ${rule.response.status}`,
+    };
+
+    // Apply field omission before returning
+    const finalData = rule.fieldOmit.enabled ? omitFields(body, rule.fieldOmit) : body;
+
+    return new Response(JSON.stringify(finalData), {
+      status: rule.response.status,
+      statusText: getStatusText(rule.response.status),
+      headers: { 'Content-Type': 'application/json' },
+    });
   } else {
-    // Handle useDefault flag
-    const result = rule.response.useDefault
-      ? {}
-      : rule.response.customResult;
-    responseData = generateSuccessResponse(result);
-  }
+    // ApiResponse structure (status=200-299)
+    // Convert camelCase to snake_case for API response
+    const apiResponse: ApiResponse = {
+      err_no: rule.response.errNo,
+      err_msg: rule.response.errMsg,
+      detail_err_msg: rule.response.detailErrMsg,
+      result: rule.response.result,
+      sync: true,
+      time_stamp: Date.now(),
+      time_zone_ID: 'Asia/Shanghai',
+      time_zone_offset: -480,
+      trace_id: generateTraceId(),
+    };
 
-  // Apply field omission
-  if (rule.fieldOmit.enabled) {
-    responseData = omitFields(responseData, rule.fieldOmit);
-  }
+    responseData = apiResponse;
 
-  return new Response(JSON.stringify(responseData), {
-    status: 200,
-    statusText: 'OK',
-    headers: { 'Content-Type': 'application/json' },
-  });
+    // Apply field omission
+    if (rule.fieldOmit.enabled) {
+      responseData = omitFields(responseData, rule.fieldOmit);
+    }
+
+    return new Response(JSON.stringify(responseData), {
+      status: rule.response.status,
+      statusText: getStatusText(rule.response.status),
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 }

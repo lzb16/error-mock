@@ -1,5 +1,12 @@
 // packages/core/src/engine/response.ts
-import type { ApiResponse, BusinessConfig } from '../types';
+import type { ApiResponse } from '../types';
+
+// Legacy BusinessConfig for backward compatibility
+interface BusinessConfig {
+  errNo: number;
+  errMsg: string;
+  detailErrMsg: string;
+}
 
 function generateTraceId(): string {
   const hex = Math.random().toString(16).slice(2, 12).padStart(10, '0');
