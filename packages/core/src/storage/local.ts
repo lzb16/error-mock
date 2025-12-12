@@ -1,5 +1,13 @@
-import type { MockRule, GlobalConfig, RuleDefaults } from '../types';
-import { DEFAULT_GLOBAL_CONFIG, DEFAULT_RULE_DEFAULTS } from '../constants';
+import type { MockRule, GlobalConfig } from '../types';
+import {
+  DEFAULT_GLOBAL_CONFIG,
+  STORAGE_SCHEMA_VERSION,
+} from '../constants';
+
+interface StoredData {
+  version?: number;
+  rules: MockRule[];
+}
 
 export class RuleStorage {
   private prefix: string;
@@ -18,7 +26,11 @@ export class RuleStorage {
 
   saveRules(rules: MockRule[]): void {
     try {
-      localStorage.setItem(this.rulesKey, JSON.stringify(rules));
+      const data: StoredData = {
+        version: STORAGE_SCHEMA_VERSION,
+        rules,
+      };
+      localStorage.setItem(this.rulesKey, JSON.stringify(data));
     } catch (e) {
       console.error('[ErrorMock] Failed to save rules:', e);
     }
@@ -26,16 +38,37 @@ export class RuleStorage {
 
   getRules(): MockRule[] {
     try {
-      const data = localStorage.getItem(this.rulesKey);
-      if (!data) return [];
+      const raw = localStorage.getItem(this.rulesKey);
+      if (!raw) return [];
 
-      const rules = JSON.parse(data) as MockRule[];
+      const parsed = JSON.parse(raw);
 
-      // Validate and normalize methods
-      return rules.map((rule) => ({
-        ...rule,
-        method: this.normalizeMethod(rule.method),
-      }));
+      // Check version and clear if outdated
+      if (
+        typeof parsed === 'object' &&
+        parsed !== null &&
+        'version' in parsed &&
+        'rules' in parsed
+      ) {
+        const data = parsed as StoredData;
+        if (data.version !== STORAGE_SCHEMA_VERSION) {
+          // Clear outdated data
+          console.warn('[ErrorMock] Storage schema outdated, clearing data');
+          this.clear();
+          return [];
+        }
+
+        const rules = Array.isArray(data.rules) ? data.rules : [];
+        return rules.map((rule) => ({
+          ...rule,
+          method: this.normalizeMethod(rule.method),
+        }));
+      }
+
+      // Old format without version, clear it
+      console.warn('[ErrorMock] Storage schema outdated, clearing data');
+      this.clear();
+      return [];
     } catch (e) {
       console.error('[ErrorMock] Failed to read rules:', e);
       return [];
@@ -64,112 +97,69 @@ export class RuleStorage {
     localStorage.removeItem(this.configKey);
   }
 
-  private mergeRuleDefaults(overrides?: Partial<RuleDefaults>): RuleDefaults {
-    const businessOverrides = overrides?.business;
-    return {
-      ...DEFAULT_RULE_DEFAULTS,
-      ...overrides,
-      business: { ...DEFAULT_RULE_DEFAULTS.business, ...(businessOverrides || {}) },
-    };
-  }
-
-  private mergeGlobalConfig(config?: Partial<GlobalConfig>): GlobalConfig {
-    const { defaults, ...rest } = config || {};
-    return {
-      ...DEFAULT_GLOBAL_CONFIG,
-      ...rest,
-      defaults: this.mergeRuleDefaults(defaults),
-    };
-  }
-
-  private isLegacyConfig(config: unknown): config is { defaultDelay?: number } {
-    return typeof config === 'object' && config !== null && 'defaultDelay' in config;
-  }
-
-  private migrateLegacyConfig(config: { defaultDelay?: number } & Record<string, unknown>): GlobalConfig {
-    const { defaultDelay, ...rest } = config;
-    // Coerce defaultDelay to number, fall back to default if invalid
-    const delay = typeof defaultDelay === 'number' && !isNaN(defaultDelay)
-      ? defaultDelay
-      : DEFAULT_RULE_DEFAULTS.delay;
-
-    const legacyDefaults = this.mergeRuleDefaults({ delay });
-    return {
-      ...DEFAULT_GLOBAL_CONFIG,
-      ...rest,
-      defaults: legacyDefaults,
-    };
-  }
-
   getGlobalConfig(): GlobalConfig {
     try {
       const data = localStorage.getItem(this.configKey);
-      if (!data) return DEFAULT_GLOBAL_CONFIG;
+      if (!data) return { ...DEFAULT_GLOBAL_CONFIG };
 
-      const parsed = JSON.parse(data);
-      if (this.isLegacyConfig(parsed)) {
-        const migrated = this.migrateLegacyConfig(parsed);
-        // Persist migrated config to avoid repeated migration
-        try {
-          localStorage.setItem(this.configKey, JSON.stringify(migrated));
-        } catch {
-          // Ignore storage errors during auto-migration
-        }
-        return migrated;
-      }
+      const parsed = JSON.parse(data) as Partial<GlobalConfig>;
 
-      return this.mergeGlobalConfig(parsed);
+      // Merge with defaults to ensure all fields exist
+      return {
+        enabled: parsed.enabled ?? DEFAULT_GLOBAL_CONFIG.enabled,
+        position: parsed.position ?? DEFAULT_GLOBAL_CONFIG.position,
+        theme: parsed.theme ?? DEFAULT_GLOBAL_CONFIG.theme,
+        keyboardShortcuts: parsed.keyboardShortcuts ?? DEFAULT_GLOBAL_CONFIG.keyboardShortcuts,
+        networkProfile: parsed.networkProfile ?? DEFAULT_GLOBAL_CONFIG.networkProfile,
+      };
     } catch {
-      return DEFAULT_GLOBAL_CONFIG;
+      return { ...DEFAULT_GLOBAL_CONFIG };
     }
   }
 
   saveGlobalConfig(config: Partial<GlobalConfig>): void {
     try {
       const current = this.getGlobalConfig();
-      // Support legacy callers that might still pass defaultDelay
-      const legacyDelay = (config as unknown as { defaultDelay?: number }).defaultDelay;
-      const mergedDefaults =
-        config.defaults || legacyDelay !== undefined
-          ? this.mergeRuleDefaults({
-              ...config.defaults,
-              delay: legacyDelay ?? config.defaults?.delay
-            })
-          : current.defaults;
-
-      const next = this.mergeGlobalConfig({ ...config, defaults: mergedDefaults });
-
-      // Remove defaultDelay if it leaked through
-      const cleaned = { ...next };
-      delete (cleaned as any).defaultDelay;
-
-      localStorage.setItem(this.configKey, JSON.stringify(cleaned));
+      const next: GlobalConfig = { ...current, ...config };
+      localStorage.setItem(this.configKey, JSON.stringify(next));
     } catch (e) {
       console.error('[ErrorMock] Failed to save config:', e);
     }
   }
 
   exportConfig(): string {
-    return JSON.stringify({
-      rules: this.getRules(),
-      config: this.getGlobalConfig(),
-    }, null, 2);
+    return JSON.stringify(
+      {
+        version: STORAGE_SCHEMA_VERSION,
+        rules: this.getRules(),
+        config: this.getGlobalConfig(),
+      },
+      null,
+      2
+    );
   }
 
   importConfig(json: string): boolean {
     try {
       const data = JSON.parse(json);
-      if (data.rules) {
-        // Normalize methods before saving
+
+      // Import rules
+      if (data.rules && Array.isArray(data.rules)) {
         const normalizedRules = data.rules.map((rule: MockRule) => ({
           ...rule,
           method: this.normalizeMethod(rule.method),
         }));
         this.saveRules(normalizedRules);
       }
-      if (data.config) this.saveGlobalConfig(data.config);
+
+      // Import config
+      if (data.config) {
+        this.saveGlobalConfig(data.config);
+      }
+
       return true;
-    } catch {
+    } catch (e) {
+      console.error('[ErrorMock] Failed to import config:', e);
       return false;
     }
   }

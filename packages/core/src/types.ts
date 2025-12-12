@@ -6,19 +6,24 @@ export type FloatButtonPosition =
 
 export type ThemeMode = 'dark' | 'light' | 'system';
 
-export type MockType = 'none' | 'success' | 'businessError' | 'networkError';
+export type NetworkProfile = 'none' | 'fast4g' | 'slow3g' | '2g';
 
 export interface NetworkConfig {
-  delay: number;
-  timeout: boolean;
-  offline: boolean;
-  failRate: number;
+  profile?: NetworkProfile | null; // null = follow global
+  customDelay?: number; // Custom delay in ms
+  errorMode?: 'timeout' | 'offline' | null;
+  failRate?: number; // Random failure rate (0-100)
 }
 
-export interface BusinessConfig {
-  errNo: number;
+export interface ResponseConfig {
+  status: number; // HTTP status code (default 200)
+  // Business error config (used when status=200)
+  errNo: number; // 0 = success
   errMsg: string;
   detailErrMsg: string;
+  result: unknown; // Response data
+  // Custom error body (used when status>=400, optional)
+  errorBody?: unknown;
 }
 
 export interface FieldOmitConfig {
@@ -40,13 +45,8 @@ export interface MockRule {
   url: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   enabled: boolean;
-  mockType: MockType;
+  response: ResponseConfig;
   network: NetworkConfig;
-  business: BusinessConfig;
-  response: {
-    useDefault: boolean;
-    customResult: unknown;
-  };
   fieldOmit: FieldOmitConfig;
 }
 
@@ -71,21 +71,12 @@ export interface ApiResponse<T = unknown> {
   trace_id: string;
 }
 
-export interface RuleDefaults {
-  delay: number;
-  mockType: MockType;
-  failRate: number;
-  timeout: boolean;
-  offline: boolean;
-  business: BusinessConfig;
-}
-
 export interface GlobalConfig {
   enabled: boolean;
   position: FloatButtonPosition;
   theme: ThemeMode;
   keyboardShortcuts: boolean;
-  defaults: RuleDefaults;
+  networkProfile: NetworkProfile; // Global network profile (default 'none')
 }
 
 export interface BypassConfig {
