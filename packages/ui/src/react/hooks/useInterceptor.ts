@@ -7,7 +7,7 @@ import { useRulesStore } from '@/stores/useRulesStore';
  *
  * Handles:
  * - Initial interceptor installation on mount
- * - Rule updates when mockRules change (via updateRules)
+ * - Rule updates when appliedRules change (via updateRules)
  * - HMR scenarios where interceptors persist across store resets
  * - Cleanup on unmount
  *
@@ -15,14 +15,20 @@ import { useRulesStore } from '@/stores/useRulesStore';
  * - install() is idempotent but does NOT update rules if already installed
  * - updateRules() must be used for subsequent rule changes
  * - Two separate effects: one for sync, one for unmount cleanup
+ * - Skip installation when rules are empty to avoid unnecessary fetch/XHR patching
  */
 export function useInterceptor() {
-  const mockRules = useRulesStore((state) => state.mockRules);
+  const appliedRules = useRulesStore((state) => state.appliedRules);
   const isInstalled = useRef(false);
 
-  // Sync rules whenever mockRules Map changes
+  // Sync rules whenever appliedRules Map changes
   useEffect(() => {
-    const rules = Array.from(mockRules.values());
+    const rules = Array.from(appliedRules.values());
+
+    // Skip installation if no rules and not yet installed
+    if (rules.length === 0 && !isInstalled.current) {
+      return;
+    }
 
     // Always update rules first (handles HMR/store reset scenarios where
     // interceptors may already be installed but store was reset)
@@ -37,7 +43,7 @@ export function useInterceptor() {
 
     // Note: We don't uninstall here because we want interceptors
     // to persist across rule updates (only unmount should uninstall)
-  }, [mockRules]);
+  }, [appliedRules]);
 
   // Cleanup on unmount
   useEffect(() => {

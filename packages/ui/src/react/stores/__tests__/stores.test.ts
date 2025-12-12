@@ -47,6 +47,7 @@ describe('useRulesStore', () => {
     useRulesStore.setState({
       apiMetas: [],
       mockRules: new Map(),
+      appliedRules: new Map(),
       selectedId: null,
       searchQuery: '',
     });
@@ -78,9 +79,10 @@ describe('useRulesStore', () => {
   });
 
   it('should count active mocks', () => {
-    const { updateRule, activeMockCount, getRuleForApi } = useRulesStore.getState();
+    const { applyRule, activeMockCount, getRuleForApi } = useRulesStore.getState();
     const rule = getRuleForApi(mockApiMeta);
-    updateRule({ ...rule, enabled: true, mockType: 'networkError' });
+    // Apply the rule to sync to appliedRules
+    applyRule({ ...rule, enabled: true, mockType: 'networkError' });
     expect(activeMockCount()).toBe(1);
   });
 });

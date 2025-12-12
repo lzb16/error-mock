@@ -19,6 +19,7 @@ const getStorage = () => {
 type RulesState = {
   apiMetas: ApiMeta[];
   mockRules: Map<string, MockRule>;
+  appliedRules: Map<string, MockRule>;
   selectedId: string | null;
   searchQuery: string;
   setApiMetas: (metas: ApiMeta[]) => void;
@@ -73,6 +74,7 @@ export const useRulesStore = create<RulesState>()(
   immer((set, get) => ({
     apiMetas: [],
     mockRules: new Map<string, MockRule>(),
+    appliedRules: new Map<string, MockRule>(),
     selectedId: null,
     searchQuery: '',
 
@@ -86,7 +88,7 @@ export const useRulesStore = create<RulesState>()(
       const saved = store.getRules();
       const map = new Map<string, MockRule>();
       for (const rule of saved) map.set(rule.id, rule);
-      set({ mockRules: map });
+      set({ mockRules: map, appliedRules: new Map(map) });
       // Interceptor lifecycle is now managed by useInterceptor hook
     },
 
@@ -95,10 +97,11 @@ export const useRulesStore = create<RulesState>()(
       set((state) => {
         // Immer automatically proxies Map mutations with enableMapSet()
         state.mockRules.set(rule.id, rule);
+        state.appliedRules.set(rule.id, rule);
         state.selectedId = rule.id;
       });
       // Persist to storage; interceptor updates handled by useInterceptor hook
-      const allRules = Array.from(get().mockRules.values());
+      const allRules = Array.from(get().appliedRules.values());
       const store = getStorage();
       if (store) store.saveRules(allRules);
       return rule;
@@ -114,9 +117,10 @@ export const useRulesStore = create<RulesState>()(
       set((state) => {
         // Immer automatically proxies Map mutations with enableMapSet()
         state.mockRules.set(rule.id, rule);
+        state.appliedRules.set(rule.id, rule);
       });
       // Persist to storage; interceptor updates handled by useInterceptor hook
-      const allRules = Array.from(get().mockRules.values());
+      const allRules = Array.from(get().appliedRules.values());
       const store = getStorage();
       if (store) store.saveRules(allRules);
     },
@@ -128,7 +132,8 @@ export const useRulesStore = create<RulesState>()(
 
     activeMockCount: () => {
       let count = 0;
-      for (const rule of Array.from(get().mockRules.values())) {
+      // Count from appliedRules to match interceptor state
+      for (const rule of Array.from(get().appliedRules.values())) {
         if (rule.enabled && rule.mockType !== 'none') count++;
       }
       return count;
