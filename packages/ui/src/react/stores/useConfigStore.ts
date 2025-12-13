@@ -6,7 +6,6 @@ interface ConfigState {
   globalConfig: GlobalConfig;
   isModalOpen: boolean;
   isMinimized: boolean;
-  setConfig: (config: Partial<GlobalConfig>) => void;
   updateGlobalConfig: (config: Partial<GlobalConfig>) => void;
   toggleModal: () => void;
   setModalOpen: (isOpen: boolean) => void;
@@ -19,8 +18,6 @@ export const useConfigStore = create<ConfigState>()(
       globalConfig: DEFAULT_GLOBAL_CONFIG,
       isModalOpen: false,
       isMinimized: false,
-      setConfig: (config) =>
-        set((state) => ({ globalConfig: { ...state.globalConfig, ...config } })),
       updateGlobalConfig: (config) =>
         set((state) => ({ globalConfig: { ...state.globalConfig, ...config } })),
       toggleModal: () => set((state) => ({ isModalOpen: !state.isModalOpen })),

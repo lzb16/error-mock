@@ -6,7 +6,10 @@ export function NetworkProfileSelect() {
   const { globalConfig, updateGlobalConfig } = useConfigStore();
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    updateGlobalConfig({ networkProfile: e.target.value as NetworkProfile });
+    const value = e.target.value;
+    if (value === 'none' || value === 'fast4g' || value === 'slow3g' || value === '2g') {
+      updateGlobalConfig({ networkProfile: value });
+    }
   };
 
   return (

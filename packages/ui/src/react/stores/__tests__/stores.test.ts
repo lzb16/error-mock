@@ -29,8 +29,8 @@ describe('useConfigStore', () => {
   });
 
   it('should update config', () => {
-    const { setConfig } = useConfigStore.getState();
-    setConfig({ theme: 'dark' });
+    const { updateGlobalConfig } = useConfigStore.getState();
+    updateGlobalConfig({ theme: 'dark' });
     expect(useConfigStore.getState().globalConfig.theme).toBe('dark');
   });
 });
