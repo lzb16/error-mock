@@ -4,6 +4,7 @@ import { useConfigStore } from '@/stores/useConfigStore';
 import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { NetworkTab } from './RuleEditor/NetworkTab';
 import { ResponseTab } from './RuleEditor/ResponseTab';
 import { AdvancedTab } from './RuleEditor/AdvancedTab';
@@ -121,23 +122,12 @@ export function RuleEditor() {
           </div>
 
           <div className="em:flex em:items-center em:flex-shrink-0 em:border-l em:border-gray-200 em:pl-4">
-            <button
-              type="button"
-              role="switch"
+            <Switch
+              id="enable-mocking"
+              checked={rule.enabled}
+              onCheckedChange={(checked) => handleFieldChange('enabled', checked)}
               aria-label="Enable Mocking"
-              aria-checked={rule.enabled}
-              onClick={() => handleFieldChange('enabled', !rule.enabled)}
-              className={`em:relative em:inline-flex em:h-6 em:w-11 em:flex-shrink-0 em:cursor-pointer em:rounded-full em:border-2 em:border-transparent em:transition-colors focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:ring-offset-2 ${
-                rule.enabled ? 'em:bg-blue-600' : 'em:bg-gray-200'
-              }`}
-            >
-              <span
-                aria-hidden="true"
-                className={`em:pointer-events-none em:inline-block em:h-5 em:w-5 em:transform em:rounded-full em:bg-white em:shadow em:transition-transform ${
-                  rule.enabled ? 'em:translate-x-5' : 'em:translate-x-0'
-                }`}
-              />
-            </button>
+            />
           </div>
         </div>
       </div>
