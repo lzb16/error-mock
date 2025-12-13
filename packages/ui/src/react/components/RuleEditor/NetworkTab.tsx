@@ -93,7 +93,7 @@ export function NetworkTab({
                   type="number"
                   min="0"
                   max="10000"
-                  value={rule.network.customDelay || ''}
+                  value={rule.network.customDelay ?? ''}
                   onChange={(e) =>
                     onChange(
                       'network.customDelay',

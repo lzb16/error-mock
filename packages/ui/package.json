@@ -7,8 +7,8 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/react/index.js",
+      "types": "./dist/react/index.d.ts"
     },
     "./react": {
       "import": "./dist/react/index.js",
@@ -20,8 +20,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist && vite build",
-    "build:react": "vite build --config vite.react.config.ts",
+    "build": "rm -rf dist && vite build --config vite.react.config.ts",
+    "build:svelte": "vite build --config vite.config.ts",
     "dev": "nodemon --watch src --watch tailwind.config.* --watch postcss.config.* --watch tsconfig.* --ext svelte,ts,js,css --exec \"vite build\"",
     "dev:react": "nodemon --watch src/react --watch tailwind.config.* --ext ts,tsx,css --exec \"vite build --config vite.react.config.ts\"",
     "clean": "rm -rf dist"

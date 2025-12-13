@@ -51,6 +51,8 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
   const [errorBodyJsonError, setErrorBodyJsonError] = useState<string | null>(
     null
   );
+  const [resultDraft, setResultDraft] = useState<string>('');
+  const [errorBodyDraft, setErrorBodyDraft] = useState<string>('');
 
   const handleStatusChange = (status: number) => {
     onChange('response.status', status);
@@ -64,37 +66,37 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
   };
 
   const handleResultChange = (value: string) => {
+    setResultDraft(value);
     try {
       const parsed = JSON.parse(value);
       onChange('response.result', parsed);
       setResultJsonError(null);
     } catch (err) {
       setResultJsonError('Invalid JSON format');
-      // Still update the value so user can continue editing
-      onChange('response.result', value);
+      // Don't save invalid JSON - keep as draft only
     }
   };
 
   const handleErrorBodyChange = (value: string) => {
+    setErrorBodyDraft(value);
     try {
       const parsed = value.trim() ? JSON.parse(value) : undefined;
       onChange('response.errorBody', parsed);
       setErrorBodyJsonError(null);
     } catch (err) {
       setErrorBodyJsonError('Invalid JSON format');
-      // Still update the value so user can continue editing
-      onChange('response.errorBody', value);
+      // Don't save invalid JSON - keep as draft only
     }
   };
 
   // Format result for display in textarea
   const getResultValue = (): string => {
-    const { result } = rule.response;
-
-    // If it's already a string (during editing with invalid JSON), return as-is
-    if (typeof result === 'string') {
-      return result;
+    // If there's a draft being edited (with error), show the draft
+    if (resultJsonError && resultDraft) {
+      return resultDraft;
     }
+
+    const { result } = rule.response;
 
     // If it's null or undefined, return empty string
     if (result === null || result === undefined) {
@@ -107,12 +109,12 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
 
   // Format errorBody for display in textarea
   const getErrorBodyValue = (): string => {
-    const { errorBody } = rule.response;
-
-    // If it's already a string (during editing with invalid JSON), return as-is
-    if (typeof errorBody === 'string') {
-      return errorBody;
+    // If there's a draft being edited (with error), show the draft
+    if (errorBodyJsonError && errorBodyDraft) {
+      return errorBodyDraft;
     }
+
+    const { errorBody } = rule.response;
 
     // If it's null or undefined, return empty string
     if (errorBody === null || errorBody === undefined) {
@@ -158,8 +160,8 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
         </select>
       </div>
 
-      {/* Status = 200: Business Error Configuration */}
-      {rule.response.status === 200 && (
+      {/* Status 2xx-3xx: Business Error Configuration */}
+      {rule.response.status >= 200 && rule.response.status < 400 && (
         <div className="em:p-6 em:space-y-6">
           {/* Business Templates */}
           <div>
