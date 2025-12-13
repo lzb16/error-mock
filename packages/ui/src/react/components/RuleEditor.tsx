@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { NetworkTab } from './RuleEditor/NetworkTab';
 import { ResponseTab } from './RuleEditor/ResponseTab';
-import { AdvancedTab } from './RuleEditor/AdvancedTab';
 
 export function RuleEditor() {
   const { selectedId, getRuleForApi, updateRule, applyRule, apiMetas, appliedRules } =
@@ -22,7 +21,7 @@ export function RuleEditor() {
   const rule = selectedMeta ? getRuleForApi(selectedMeta) : null;
 
   // Handle rule field changes (draft updates)
-  // This will be used by NetworkTab, ResponseTab, and AdvancedTab components in Phase 2.1-2.3
+  // This will be used by NetworkTab and ResponseTab components
   const handleFieldChange = (field: string, value: unknown) => {
     if (!rule) return;
 
@@ -138,7 +137,6 @@ export function RuleEditor() {
           <TabsList>
             <TabsTrigger value="network">Network</TabsTrigger>
             <TabsTrigger value="response">Response</TabsTrigger>
-            <TabsTrigger value="advanced">Advanced</TabsTrigger>
           </TabsList>
         </div>
 
@@ -149,10 +147,6 @@ export function RuleEditor() {
 
           <TabsContent value="response" className="em:mt-0">
             <ResponseTab rule={rule} onChange={handleFieldChange} />
-          </TabsContent>
-
-          <TabsContent value="advanced" className="em:mt-0">
-            <AdvancedTab rule={rule} onChange={handleFieldChange} />
           </TabsContent>
         </div>
       </Tabs>
