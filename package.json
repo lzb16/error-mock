@@ -9,13 +9,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint": "eslint packages --ext .ts,.svelte",
+    "lint": "eslint packages --ext .ts,.tsx",
     "clean": "pnpm -r clean"
   },
   "devDependencies": {
-    "@melt-ui/pp": "^0.3.2",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/svelte": "^5.2.9",
     "@testing-library/user-event": "^14.6.1",
     "@types/jsdom": "^27.0.0",
     "@types/node": "^20.10.0",

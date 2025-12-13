@@ -5,11 +5,13 @@ import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import { useI18n } from '@/i18n';
 import { NetworkTab } from './RuleEditor/NetworkTab';
 import { ResponseTab } from './RuleEditor/ResponseTab';
 
 export function RuleEditor() {
-  const { selectedId, getRuleForApi, updateRule, applyRule, apiMetas, appliedRules } =
+  const { t } = useI18n();
+  const { selectedId, getRuleForApi, updateRule, applyRule, discardDraftRule, apiMetas } =
     useRulesStore();
   const { addToast } = useToastStore();
   const { globalConfig } = useConfigStore();
@@ -61,27 +63,15 @@ export function RuleEditor() {
     if (!rule || !selectedMeta) return;
 
     applyRule(rule);
-    addToast('Rule applied successfully', 'success', 3000);
+    addToast(t('ruleEditor.toast.applied'), 'success', 3000);
   };
 
   // Handle cancel button - reload original rule (discard draft)
   const handleCancel = () => {
     if (!selectedMeta) return;
 
-    // Reload the original rule from appliedRules (discarding draft changes)
-    const id = `${selectedMeta.module}-${selectedMeta.name}`;
-    const applied = appliedRules.get(id);
-
-    if (applied) {
-      // Restore from applied rules
-      updateRule(applied);
-    } else {
-      // If no applied rule exists, create a fresh default rule
-      const defaultRule = getRuleForApi(selectedMeta);
-      updateRule(defaultRule);
-    }
-
-    addToast('Changes discarded', 'info', 2000);
+    discardDraftRule(selectedMeta);
+    addToast(t('ruleEditor.toast.discarded'), 'info', 2000);
   };
 
   // Empty state when no API is selected
@@ -90,10 +80,8 @@ export function RuleEditor() {
       <div className="em:flex em:items-center em:justify-center em:h-full em:text-gray-400">
         <div className="em:text-center">
           <FileText className="em:w-16 em:h-16 em:mx-auto em:mb-4 em:text-gray-300" />
-          <p className="em:text-base em:font-medium">Select an API to configure</p>
-          <p className="em:text-sm em:mt-1 em:text-gray-400">
-            Choose from the list on the left to get started
-          </p>
+          <p className="em:text-base em:font-medium">{t('ruleEditor.empty.title')}</p>
+          <p className="em:text-sm em:mt-1 em:text-gray-400">{t('ruleEditor.empty.subtitle')}</p>
         </div>
       </div>
     );
@@ -125,7 +113,7 @@ export function RuleEditor() {
               id="enable-mocking"
               checked={rule.enabled}
               onCheckedChange={(checked) => handleFieldChange('enabled', checked)}
-              aria-label="Enable Mocking"
+              aria-label={t('ruleEditor.enableMocking')}
             />
           </div>
         </div>
@@ -135,8 +123,8 @@ export function RuleEditor() {
       <Tabs defaultValue="network" className="em:flex-1 em:flex em:flex-col em:overflow-hidden em:min-h-0">
         <div className="em:px-6 em:pt-4">
           <TabsList>
-            <TabsTrigger value="network">Network</TabsTrigger>
-            <TabsTrigger value="response">Response</TabsTrigger>
+            <TabsTrigger value="network">{t('common.network')}</TabsTrigger>
+            <TabsTrigger value="response">{t('common.response')}</TabsTrigger>
           </TabsList>
         </div>
 
@@ -154,9 +142,9 @@ export function RuleEditor() {
       {/* Footer Buttons */}
       <div className="em:flex em:gap-2 em:justify-end em:px-6 em:py-4 em:border-t em:border-gray-200 em:bg-white">
         <Button variant="outline" onClick={handleCancel}>
-          Cancel
+          {t('common.cancel')}
         </Button>
-        <Button onClick={handleApply}>Apply Changes</Button>
+        <Button onClick={handleApply}>{t('common.applyChanges')}</Button>
       </div>
     </div>
   );

@@ -85,6 +85,47 @@ describe('useRulesStore', () => {
     applyRule({ ...rule, enabled: true, response: { ...rule.response, status: 500 } });
     expect(activeMockCount()).toBe(1);
   });
+
+  it('should discard draft when no applied rule exists', () => {
+    const { getRuleForApi, updateRule, discardDraftRule } = useRulesStore.getState();
+
+    // Start from implicit default (not stored)
+    const rule = getRuleForApi(mockApiMeta);
+    // Create a draft entry
+    updateRule({ ...rule, enabled: true, response: { ...rule.response, status: 500 } });
+
+    expect(useRulesStore.getState().mockRules.get(rule.id)?.enabled).toBe(true);
+    expect(useRulesStore.getState().appliedRules.has(rule.id)).toBe(false);
+
+    // Discard should remove the draft entry entirely
+    discardDraftRule(mockApiMeta);
+    expect(useRulesStore.getState().mockRules.has(rule.id)).toBe(false);
+    // UI falls back to default again
+    expect(getRuleForApi(mockApiMeta).enabled).toBe(false);
+  });
+
+  it('should restore applied rule when discarding draft', () => {
+    const { applyRule, getRuleForApi, updateRule, discardDraftRule } = useRulesStore.getState();
+
+    // First apply a rule (creates both draft and applied)
+    const rule = getRuleForApi(mockApiMeta);
+    const id = rule.id;
+    applyRule({ ...rule, enabled: false, response: { ...rule.response, status: 200 } });
+
+    // Then modify the draft
+    const modified = getRuleForApi(mockApiMeta);
+    updateRule({ ...modified, enabled: true, response: { ...modified.response, status: 500 } });
+
+    expect(useRulesStore.getState().mockRules.get(id)?.enabled).toBe(true);
+    expect(useRulesStore.getState().mockRules.get(id)?.response.status).toBe(500);
+    expect(useRulesStore.getState().appliedRules.get(id)?.enabled).toBe(false);
+    expect(useRulesStore.getState().appliedRules.get(id)?.response.status).toBe(200);
+
+    // Discard should restore from applied
+    discardDraftRule(mockApiMeta);
+    expect(useRulesStore.getState().mockRules.get(id)?.enabled).toBe(false);
+    expect(useRulesStore.getState().mockRules.get(id)?.response.status).toBe(200);
+  });
 });
 
 describe('useToastStore', () => {

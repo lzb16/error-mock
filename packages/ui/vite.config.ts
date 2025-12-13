@@ -22,6 +22,9 @@ export default defineConfig({
       '@': resolve(__dirname, './src/react'),
     },
   },
+  esbuild: {
+    drop: ['console', 'debugger'], // Remove console.log and debugger in production
+  },
   build: {
     lib: {
       entry: resolve(__dirname, 'src/react/index.ts'),
@@ -31,9 +34,6 @@ export default defineConfig({
     },
     outDir: 'dist/react',
     minify: 'esbuild',
-    esbuildOptions: {
-      drop: ['console', 'debugger'], // Remove console.log and debugger in production
-    },
     rollupOptions: {
       // React/ReactDOM are bundled (not externalized) by design:
       // - Plugin must be self-contained and work in any environment

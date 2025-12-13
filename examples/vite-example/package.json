@@ -11,8 +11,7 @@
   "dependencies": {
     "@error-mock/core": "file:../../packages/core",
     "@error-mock/ui": "file:../../packages/ui",
-    "@error-mock/vite-plugin": "file:../../packages/vite-plugin",
-    "svelte": "^4.2.8"
+    "@error-mock/vite-plugin": "file:../../packages/vite-plugin"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

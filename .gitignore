@@ -8,6 +8,9 @@ node_modules/
 dist/
 build/
 
+# Vite generated timestamped config artifacts
+vite.*.timestamp-*.mjs
+
 # IDE
 .idea/
 .vscode/

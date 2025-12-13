@@ -25,6 +25,7 @@ type RulesState = {
   setApiMetas: (metas: ApiMeta[]) => void;
   setSelectedId: (id: string | null) => void;
   setSearchQuery: (query: string) => void;
+  discardDraftRule: (meta: ApiMeta) => void;
   loadRules: () => void;
   createRule: (meta: ApiMeta) => MockRule;
   updateRule: (rule: MockRule) => void;
@@ -68,6 +69,23 @@ export const useRulesStore = create<RulesState>()(
     setApiMetas: (metas) => set({ apiMetas: metas }),
     setSelectedId: (id) => set({ selectedId: id }),
     setSearchQuery: (query) => set({ searchQuery: query }),
+
+    discardDraftRule: (meta) =>
+      set((state) => {
+        const id = `${meta.module}-${meta.name}`;
+        const applied = state.appliedRules.get(id);
+        if (applied) {
+          // Create a deep copy to avoid Immer proxy issues
+          state.mockRules.set(id, {
+            ...applied,
+            response: { ...applied.response },
+            network: { ...applied.network },
+            fieldOmit: { ...applied.fieldOmit },
+          });
+        } else {
+          state.mockRules.delete(id);
+        }
+      }),
 
     loadRules: () => {
       const store = getStorage();
