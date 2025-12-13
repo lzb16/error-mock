@@ -102,34 +102,43 @@ export function RuleEditor() {
   // Main editor UI
   return (
     <div className="em:flex em:flex-col em:h-full">
-      {/* Rule Info Header */}
-      <div className="em:px-6 em:py-4 em:border-b em:border-gray-200">
-        <h3 className="em:text-base em:font-semibold em:text-gray-900">{selectedMeta.name}</h3>
-        <p className="em:text-sm em:text-gray-500 em:mt-1">{selectedMeta.url}</p>
-        <div className="em:flex em:items-center em:gap-2 em:mt-2">
-          <span className="em:inline-flex em:items-center em:px-2 em:py-0.5 em:rounded em:text-xs em:font-medium em:bg-blue-100 em:text-blue-800">
-            {selectedMeta.method}
-          </span>
-          <span className="em:text-xs em:text-gray-500">{selectedMeta.module}</span>
-        </div>
-      </div>
-
-      {/* Enable Toggle */}
+      {/* Rule Info Header + Enable Toggle */}
       <div className="em:px-6 em:py-4 em:border-b em:border-gray-200 em:bg-gray-50">
-        <div className="em:flex em:items-center em:p-4 em:bg-white em:rounded-lg em:border em:border-gray-200">
-          <input
-            id="enable-mocking"
-            type="checkbox"
-            checked={rule.enabled}
-            onChange={(e) => handleFieldChange('enabled', e.target.checked)}
-            className="em:h-5 em:w-5 em:text-blue-600 focus:em:ring-blue-500 em:border-gray-300 em:rounded em:cursor-pointer"
-          />
-          <label
-            htmlFor="enable-mocking"
-            className="em:ml-3 em:block em:text-sm em:font-medium em:text-gray-900 em:cursor-pointer"
-          >
-            Enable Mocking
-          </label>
+        <div className="em:flex em:items-center em:justify-between em:gap-4 em:p-4 em:bg-white em:rounded-lg em:border em:border-gray-200">
+          <div className="em:flex em:items-center em:gap-3 em:min-w-0 em:flex-1">
+            <span className="em:inline-flex em:items-center em:px-2 em:py-0.5 em:rounded em:text-xs em:font-medium em:bg-blue-100 em:text-blue-800">
+              {selectedMeta.method}
+            </span>
+            <div className="em:flex em:items-center em:gap-2 em:min-w-0">
+              <h3 className="em:text-base em:font-semibold em:text-gray-900 em:truncate em:min-w-0" title={selectedMeta.name}>
+                {selectedMeta.name}
+              </h3>
+              <span className="em:text-sm em:text-gray-400 em:flex-shrink-0">•</span>
+              <p className="em:text-sm em:text-gray-500 em:truncate em:min-w-0" title={selectedMeta.url}>
+                {selectedMeta.url}
+              </p>
+            </div>
+          </div>
+
+          <div className="em:flex em:items-center em:flex-shrink-0 em:border-l em:border-gray-200 em:pl-4">
+            <button
+              type="button"
+              role="switch"
+              aria-label="Enable Mocking"
+              aria-checked={rule.enabled}
+              onClick={() => handleFieldChange('enabled', !rule.enabled)}
+              className={`em:relative em:inline-flex em:h-6 em:w-11 em:flex-shrink-0 em:cursor-pointer em:rounded-full em:border-2 em:border-transparent em:transition-colors focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:ring-offset-2 ${
+                rule.enabled ? 'em:bg-blue-600' : 'em:bg-gray-200'
+              }`}
+            >
+              <span
+                aria-hidden="true"
+                className={`em:pointer-events-none em:inline-block em:h-5 em:w-5 em:transform em:rounded-full em:bg-white em:shadow em:transition-transform ${
+                  rule.enabled ? 'em:translate-x-5' : 'em:translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
         </div>
       </div>
 
