@@ -1,5 +1,6 @@
 import { useConfigStore } from '@/stores/useConfigStore';
 import { WandSparkles } from 'lucide-react';
+import { useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,22 @@ import { RuleEditor } from './RuleEditor';
 
 export function Modal() {
   const { isModalOpen, setModalOpen } = useConfigStore();
+
+  // Lock page scroll while modal is open (Shadow DOM-safe; avoids react-remove-scroll wheel issues)
+  useEffect(() => {
+    if (!isModalOpen) return;
+
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevBodyOverflow = document.body.style.overflow;
+
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+    };
+  }, [isModalOpen]);
 
   // Prevent closing on outside click to avoid data loss
   const handleInteractOutside = (e: Event) => {

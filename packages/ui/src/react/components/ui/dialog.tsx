@@ -41,15 +41,27 @@ function DialogClose({
 
 function DialogOverlay({
   className,
+  style,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
+}: React.ComponentPropsWithoutRef<"div">) {
   return (
-    <DialogPrimitive.Overlay
+    /**
+     * Avoid Radix `DialogPrimitive.Overlay` because it wraps `react-remove-scroll`.
+     *
+     * In Shadow DOM, `react-remove-scroll` relies on `event.target` containment checks
+     * against `shards`. Because `event.target` is retargeted to the shadow host at the
+     * document listener, wheel scrolling inside the dialog can be incorrectly blocked.
+     *
+     * We implement the backdrop as a plain element and lock scroll manually.
+     */
+    <div
       data-slot="dialog-overlay"
+      data-state="open"
       className={cn(
-        "em:data-[state=open]:animate-in em:data-[state=closed]:animate-out em:data-[state=closed]:fade-out-0 em:data-[state=open]:fade-in-0 em:fixed em:inset-0 em:z-50 em:bg-black/30 em:backdrop-blur-sm",
+        "em:fixed em:inset-0 em:z-50 em:bg-black/30 em:backdrop-blur-sm em:animate-in em:fade-in-0",
         className
       )}
+      style={{ ...style, pointerEvents: "auto" }}
       {...props}
     />
   )
