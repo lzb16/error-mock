@@ -67,6 +67,19 @@ function collectAllPaths(
 }
 
 /**
+ * Dangerous path segments that can lead to prototype pollution
+ */
+const DANGEROUS_PATH_SEGMENTS = ['__proto__', 'constructor', 'prototype'];
+
+/**
+ * Check if a path is safe (doesn't contain prototype pollution vectors)
+ */
+function isSafePath(path: string): boolean {
+  const parts = path.split('.');
+  return !parts.some(part => DANGEROUS_PATH_SEGMENTS.includes(part));
+}
+
+/**
  * Apply omission to a field by path
  */
 function applyOmit(
@@ -74,6 +87,12 @@ function applyOmit(
   path: string,
   mode: 'delete' | 'undefined' | 'null'
 ): void {
+  // Reject dangerous paths to prevent prototype pollution
+  if (!isSafePath(path)) {
+    console.warn(`[ErrorMock] Skipping dangerous field path: ${path}`);
+    return;
+  }
+
   const parts = path.split('.');
   let current = obj as Record<string, unknown>;
 
