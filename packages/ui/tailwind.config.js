@@ -2,7 +2,7 @@
 export default {
   prefix: 'em-',
   content: [
-    './src/**/*.{svelte,js,ts,tsx}',
+    './src/**/*.{ts,tsx}',
   ],
   theme: {
     extend: {},
