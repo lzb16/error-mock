@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { DEFAULT_GLOBAL_CONFIG, DEFAULT_RULE_DEFAULTS, type GlobalConfig } from '@error-mock/core';
+import { DEFAULT_GLOBAL_CONFIG, type GlobalConfig } from '@error-mock/core';
 
 interface ConfigState {
   globalConfig: GlobalConfig;
@@ -32,40 +32,18 @@ export const useConfigStore = create<ConfigState>()(
         typeof window !== 'undefined' ? localStorage : ({} as Storage)
       ),
       migrate: (persistedState: unknown) => {
-        const state = (persistedState || {}) as { globalConfig?: Partial<GlobalConfig> & { defaultDelay?: number } };
+        const state = (persistedState || {}) as { globalConfig?: Partial<GlobalConfig> };
         const persistedConfig = state.globalConfig;
 
         if (!persistedConfig) {
           return { globalConfig: DEFAULT_GLOBAL_CONFIG };
         }
 
-        // Handle legacy defaultDelay field
-        const persistedDefaults = (persistedConfig as any).defaults as Partial<GlobalConfig['defaults']> | undefined;
-        const legacyDelay = (persistedConfig as any).defaultDelay;
-
-        const mergedDefaults = {
-          ...DEFAULT_RULE_DEFAULTS,
-          ...(persistedDefaults || {}),
-          delay:
-            typeof legacyDelay === 'number' && !Number.isNaN(legacyDelay)
-              ? legacyDelay
-              : typeof persistedDefaults?.delay === 'number' && !Number.isNaN(persistedDefaults.delay)
-                ? persistedDefaults.delay
-                : DEFAULT_RULE_DEFAULTS.delay,
-          business: {
-            ...DEFAULT_RULE_DEFAULTS.business,
-            ...(persistedDefaults?.business ?? {}),
-          },
-        };
-
+        // Simply merge persisted config with defaults, removing any legacy fields
         const migratedConfig: GlobalConfig = {
           ...DEFAULT_GLOBAL_CONFIG,
           ...persistedConfig,
-          defaults: mergedDefaults,
         };
-
-        // Remove legacy field
-        delete (migratedConfig as any).defaultDelay;
 
         return { globalConfig: migratedConfig };
       },

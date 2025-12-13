@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useRulesStore } from '../useRulesStore';
 import type { ApiMeta, MockRule } from '@error-mock/core';
+import { DEFAULT_RESPONSE_CONFIG, DEFAULT_NETWORK_CONFIG, DEFAULT_FIELD_OMIT_CONFIG } from '@error-mock/core';
 
 describe('appliedRules separation', () => {
   const mockApiMeta: ApiMeta = {
@@ -30,17 +31,17 @@ describe('appliedRules separation', () => {
     expect(useRulesStore.getState().mockRules.get(rule.id)).toEqual(rule);
     expect(useRulesStore.getState().appliedRules.get(rule.id)).toEqual(rule);
 
-    // Update rule (draft edit)
-    const draftRule: MockRule = { ...rule, enabled: true, mockType: 'networkError' };
+    // Update rule (draft edit) - modify status code
+    const draftRule: MockRule = { ...rule, enabled: true, response: { ...rule.response, status: 500 } };
     updateRule(draftRule);
 
     // mockRules should have the draft
     expect(useRulesStore.getState().mockRules.get(rule.id)?.enabled).toBe(true);
-    expect(useRulesStore.getState().mockRules.get(rule.id)?.mockType).toBe('networkError');
+    expect(useRulesStore.getState().mockRules.get(rule.id)?.response.status).toBe(500);
 
     // appliedRules should still have the original
     expect(useRulesStore.getState().appliedRules.get(rule.id)?.enabled).toBe(false);
-    expect(useRulesStore.getState().appliedRules.get(rule.id)?.mockType).toBe('none');
+    expect(useRulesStore.getState().appliedRules.get(rule.id)?.response.status).toBe(200);
   });
 
   it('should sync both maps on applyRule', () => {
@@ -50,7 +51,7 @@ describe('appliedRules separation', () => {
     const rule = createRule(mockApiMeta);
 
     // Update rule (draft)
-    const draftRule: MockRule = { ...rule, enabled: true, mockType: 'networkError' };
+    const draftRule: MockRule = { ...rule, enabled: true, response: { ...rule.response, status: 500 } };
     updateRule(draftRule);
 
     // Apply the draft
@@ -59,8 +60,8 @@ describe('appliedRules separation', () => {
     // Both maps should now have the applied version
     expect(useRulesStore.getState().mockRules.get(rule.id)?.enabled).toBe(true);
     expect(useRulesStore.getState().appliedRules.get(rule.id)?.enabled).toBe(true);
-    expect(useRulesStore.getState().mockRules.get(rule.id)?.mockType).toBe('networkError');
-    expect(useRulesStore.getState().appliedRules.get(rule.id)?.mockType).toBe('networkError');
+    expect(useRulesStore.getState().mockRules.get(rule.id)?.response.status).toBe(500);
+    expect(useRulesStore.getState().appliedRules.get(rule.id)?.response.status).toBe(500);
   });
 
   it('should sync both maps on createRule', () => {
@@ -77,28 +78,15 @@ describe('appliedRules separation', () => {
   it('should load rules into both maps', () => {
     const { loadRules, setApiMetas } = useRulesStore.getState();
 
-    // Mock localStorage with a saved rule
+    // Mock localStorage with a saved rule using new structure
     const savedRule: MockRule = {
       id: 'test-getUser',
       url: '/api/user',
       method: 'GET',
       enabled: true,
-      mockType: 'success',
-      network: { delay: 0, timeout: false, offline: false, failRate: 0 },
-      business: { errNo: 0, errMsg: '', detailErrMsg: '' },
-      response: { useDefault: true, customResult: null },
-      fieldOmit: {
-        enabled: false,
-        mode: 'manual',
-        fields: [],
-        random: {
-          probability: 0,
-          maxOmitCount: 0,
-          excludeFields: [],
-          depthLimit: 5,
-          omitMode: 'delete',
-        },
-      },
+      response: { ...DEFAULT_RESPONSE_CONFIG },
+      network: { ...DEFAULT_NETWORK_CONFIG },
+      fieldOmit: { ...DEFAULT_FIELD_OMIT_CONFIG },
     };
 
     localStorage.setItem('error-mock:rules', JSON.stringify([savedRule]));
@@ -122,7 +110,7 @@ describe('appliedRules separation', () => {
     expect(activeMockCount()).toBe(0);
 
     // Update to enable (draft only)
-    const draftRule: MockRule = { ...rule, enabled: true, mockType: 'networkError' };
+    const draftRule: MockRule = { ...rule, enabled: true, response: { ...rule.response, status: 500 } };
     updateRule(draftRule);
 
     // Active count should NOT include draft edits (only reflects appliedRules)

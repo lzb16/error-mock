@@ -57,7 +57,7 @@ describe('useRulesStore', () => {
     const { getRuleForApi } = useRulesStore.getState();
     const rule = getRuleForApi(mockApiMeta);
     expect(rule.id).toBe('test-getUser');
-    expect(rule.mockType).toBe('none');
+    expect(rule.response.status).toBe(200);
     expect(rule.enabled).toBe(false);
   });
 
@@ -82,7 +82,7 @@ describe('useRulesStore', () => {
     const { applyRule, activeMockCount, getRuleForApi } = useRulesStore.getState();
     const rule = getRuleForApi(mockApiMeta);
     // Apply the rule to sync to appliedRules
-    applyRule({ ...rule, enabled: true, mockType: 'networkError' });
+    applyRule({ ...rule, enabled: true, response: { ...rule.response, status: 500 } });
     expect(activeMockCount()).toBe(1);
   });
 });

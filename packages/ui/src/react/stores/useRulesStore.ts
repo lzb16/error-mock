@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { enableMapSet } from 'immer';
 import type { ApiMeta, MockRule } from '@error-mock/core';
-import { RuleStorage } from '@error-mock/core';
+import { RuleStorage, DEFAULT_RESPONSE_CONFIG, DEFAULT_NETWORK_CONFIG, DEFAULT_FIELD_OMIT_CONFIG } from '@error-mock/core';
 
 // Enable Map/Set support in Immer
 enableMapSet();
@@ -51,22 +51,9 @@ function createDefaultRule(meta: ApiMeta): MockRule {
     url: meta.url,
     method: normalizeMethod(meta.method),
     enabled: false,
-    mockType: 'none',
-    network: { delay: 0, timeout: false, offline: false, failRate: 0 },
-    business: { errNo: 0, errMsg: '', detailErrMsg: '' },
-    response: { useDefault: true, customResult: null },
-    fieldOmit: {
-      enabled: false,
-      mode: 'manual',
-      fields: [],
-      random: {
-        probability: 0,
-        maxOmitCount: 0,
-        excludeFields: [],
-        depthLimit: 5,
-        omitMode: 'delete',
-      },
-    },
+    response: { ...DEFAULT_RESPONSE_CONFIG },
+    network: { ...DEFAULT_NETWORK_CONFIG },
+    fieldOmit: { ...DEFAULT_FIELD_OMIT_CONFIG },
   };
 }
 
@@ -134,7 +121,7 @@ export const useRulesStore = create<RulesState>()(
       let count = 0;
       // Count from appliedRules to match interceptor state
       for (const rule of Array.from(get().appliedRules.values())) {
-        if (rule.enabled && rule.mockType !== 'none') count++;
+        if (rule.enabled) count++;
       }
       return count;
     },
