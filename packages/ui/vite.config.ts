@@ -30,6 +30,10 @@ export default defineConfig({
       fileName: () => 'index.js',
     },
     outDir: 'dist/react',
+    minify: 'esbuild',
+    esbuildOptions: {
+      drop: ['console', 'debugger'], // Remove console.log and debugger in production
+    },
     rollupOptions: {
       // React/ReactDOM are bundled (not externalized) by design:
       // - Plugin must be self-contained and work in any environment
