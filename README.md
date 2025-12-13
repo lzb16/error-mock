@@ -18,7 +18,9 @@
 ### 技术特点
 
 - **拦截方式**: XHR/Fetch 劫持（支持绝对/相对 URL）
-- **UI 框架**: Svelte + Tailwind CSS（em- 前缀避免样式冲突）
+- **UI 框架**: React 18 + Shadow DOM（样式隔离）+ shadcn/ui 组件库
+- **状态管理**: Zustand
+- **样式系统**: Tailwind CSS v4（em- 前缀避免样式冲突）
 - **构建插件**: Webpack (umi3) + Vite
 - **项目结构**: pnpm monorepo
 - **测试**: Vitest，90%+ 覆盖率，137 个测试
@@ -138,7 +140,7 @@ error-mock-plugin/
 ├── packages/
 │   ├── core/          # 核心逻辑（拦截器、引擎、存储）
 │   ├── parser/        # API 文件解析
-│   ├── ui/            # Svelte + Tailwind UI
+│   ├── ui/            # React 18 + shadcn/ui + Tailwind CSS v4
 │   ├── webpack-plugin/
 │   └── vite-plugin/
 ├── examples/
@@ -335,9 +337,8 @@ if (import.meta.env.DEV) {
 
 插件状态可以通过组件开发工具查看：
 
-- **Vue DevTools**: 查看 Svelte 组件状态（如果使用 Svelte DevTools）
-- **React DevTools**: 不适用（插件使用 Svelte）
-- **浏览器 Elements**: 检查 `.em-` 前缀的样式元素
+- **React DevTools**: 查看 React 组件状态和 props
+- **浏览器 Elements**: 检查 Shadow DOM 中的 `.em-` 前缀样式元素
 
 ## 技术细节
 
