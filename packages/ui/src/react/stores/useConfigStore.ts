@@ -32,11 +32,15 @@ export const useConfigStore = create<ConfigState>()(
         typeof window !== 'undefined' ? localStorage : ({} as Storage)
       ),
       migrate: (persistedState: unknown) => {
-        const state = (persistedState || {}) as { globalConfig?: Partial<GlobalConfig> };
+        const state = (persistedState || {}) as Partial<ConfigState>;
         const persistedConfig = state.globalConfig;
 
         if (!persistedConfig) {
-          return { globalConfig: DEFAULT_GLOBAL_CONFIG };
+          return {
+            globalConfig: DEFAULT_GLOBAL_CONFIG,
+            isModalOpen: false,
+            isMinimized: false,
+          };
         }
 
         // Simply merge persisted config with defaults, removing any legacy fields
@@ -45,7 +49,11 @@ export const useConfigStore = create<ConfigState>()(
           ...persistedConfig,
         };
 
-        return { globalConfig: migratedConfig };
+        return {
+          globalConfig: migratedConfig,
+          isModalOpen: state.isModalOpen ?? false,
+          isMinimized: state.isMinimized ?? false,
+        };
       },
     }
   )
