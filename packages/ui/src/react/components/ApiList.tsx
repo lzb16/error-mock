@@ -55,13 +55,10 @@ export const ApiList: React.FC = () => {
 
   const getStatusColor = (id: string) => {
     const rule = mockRules.get(id);
-    if (!rule || !rule.enabled || rule.mockType === 'none') {
+    if (!rule || !rule.enabled) {
       return 'em:bg-gray-300';
     }
-    if (rule.mockType === 'success') {
-      return 'em:bg-green-500';
-    }
-    return 'em:bg-red-500';
+    return 'em:bg-green-500';
   };
 
   const sortedModules = useMemo(() => Array.from(groups.keys()).sort(), [groups]);
