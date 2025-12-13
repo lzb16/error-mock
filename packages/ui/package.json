@@ -20,8 +20,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist && vite build --config vite.react.config.ts",
-    "dev": "vite build --config vite.react.config.ts --watch",
+    "build": "rm -rf dist && vite build",
+    "dev": "vite build --watch",
     "clean": "rm -rf dist"
   },
   "dependencies": {

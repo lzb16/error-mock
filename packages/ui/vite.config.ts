@@ -1,48 +1,50 @@
 import { defineConfig } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import { resolve } from 'path';
-import { writeFileSync } from 'fs';
 import dts from 'vite-plugin-dts';
-import sveltePreprocess from 'svelte-preprocess';
-import { preprocessMeltUI } from '@melt-ui/pp';
 
 export default defineConfig({
   plugins: [
-    svelte({
-      preprocess: [sveltePreprocess(), preprocessMeltUI()],
-      compilerOptions: {
-        customElement: false,
-      },
-    }),
+    react(),
+    tailwindcss(),
     dts({
       insertTypesEntry: true,
-      exclude: ['**/*.test.ts', '**/*.spec.ts'],
+      include: ['src/react/**/*'],
+      outDir: 'dist/react',
     }),
-    // 构建完成标记插件
-    {
-      name: 'build-complete-marker',
-      writeBundle() {
-        // 构建完成后写入标记文件
-        const markerPath = resolve(__dirname, 'dist/.build-complete');
-        writeFileSync(markerPath, Date.now().toString());
-      },
-    },
   ],
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src/react'),
+    },
+  },
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'ErrorMockUI',
+      entry: resolve(__dirname, 'src/react/index.ts'),
+      name: 'ErrorMockUIReact',
       formats: ['es'],
       fileName: () => 'index.js',
     },
+    outDir: 'dist/react',
     rollupOptions: {
+      // React/ReactDOM are bundled (not externalized) by design:
+      // - Plugin must be self-contained and work in any environment
+      // - Host application may not have React installed
+      // - Host React version may be incompatible (e.g., React 17 vs 18)
+      // - Prevents "multiple React instances" runtime errors
+      // Only @error-mock/core is externalized to avoid duplication
       external: ['@error-mock/core'],
       output: {
         globals: {
-          '@error-mock/core': 'ErrorMockCore',
+          react: 'React',
+          'react-dom': 'ReactDOM',
         },
       },
     },
-    emptyOutDir: false, // 避免删除-重建窗口
+    emptyOutDir: false,
   },
 });
