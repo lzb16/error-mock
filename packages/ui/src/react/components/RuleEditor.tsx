@@ -134,7 +134,7 @@ export function RuleEditor() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="network" className="em:flex-1 em:flex em:flex-col em:overflow-hidden">
+      <Tabs defaultValue="network" className="em:flex-1 em:flex em:flex-col em:overflow-hidden em:min-h-0">
         <div className="em:px-6 em:pt-4">
           <TabsList>
             <TabsTrigger value="network">Network</TabsTrigger>
@@ -143,7 +143,7 @@ export function RuleEditor() {
           </TabsList>
         </div>
 
-        <div className="em:flex-1 em:overflow-y-auto em:px-6 em:py-4">
+        <div className="em:flex-1 em:overflow-y-auto em:px-6 em:py-4 em:min-h-0">
           <TabsContent value="network" className="em:mt-0">
             <NetworkTab rule={rule} globalConfig={globalConfig} onChange={handleFieldChange} />
           </TabsContent>

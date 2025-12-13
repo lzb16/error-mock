@@ -20,7 +20,7 @@ export function Modal() {
   return (
     <Dialog open={isModalOpen} onOpenChange={setModalOpen}>
       <DialogContent
-        className="em:w-11/12 em:max-w-7xl em:h-5/6 em:max-h-[90vh] em:p-0 em:gap-0 em:flex em:flex-col"
+        className="em:w-11/12 em:max-w-7xl em:h-5/6 em:max-h-[90vh] em:p-0 em:gap-0 em:flex em:flex-col em:overflow-hidden em:min-h-0"
         aria-describedby={undefined}
         onPointerDownOutside={handleInteractOutside}
         onInteractOutside={handleInteractOutside}
@@ -39,14 +39,14 @@ export function Modal() {
         </DialogHeader>
 
         {/* Body: Sidebar + Content */}
-        <div className="em:flex em:flex-1 em:overflow-hidden">
+        <div className="em:flex em:flex-1 em:overflow-hidden em:min-h-0">
           {/* Sidebar */}
           <div className="em:w-1/3 em:min-w-[320px] em:flex em:flex-col">
             <ApiList />
           </div>
 
           {/* Content */}
-          <div className="em:w-2/3 em:flex em:flex-col em:bg-gray-50">
+          <div className="em:w-2/3 em:flex em:flex-col em:bg-gray-50 em:min-h-0">
             <RuleEditor />
           </div>
         </div>

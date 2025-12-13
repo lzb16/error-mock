@@ -14,7 +14,7 @@ export function NetworkTab({
   onChange,
 }: NetworkTabProps) {
   return (
-    <div className="em:h-full em:overflow-y-auto">
+    <div className="em:space-y-0">
       <div className="em:p-6 em:space-y-6">
         {/* Delay Configuration */}
         <div>

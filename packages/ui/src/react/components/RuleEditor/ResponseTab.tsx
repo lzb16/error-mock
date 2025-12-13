@@ -126,7 +126,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
   };
 
   return (
-    <div className="em:h-full em:overflow-y-auto">
+    <div className="em:space-y-0">
       {/* Status Code Selection */}
       <div className="em:p-4 em:bg-white em:border-b">
         <label
