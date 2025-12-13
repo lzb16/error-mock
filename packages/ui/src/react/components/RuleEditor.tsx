@@ -1,5 +1,6 @@
 import { useRulesStore } from '@/stores/useRulesStore';
 import { useToastStore } from '@/stores/useToastStore';
+import { useConfigStore } from '@/stores/useConfigStore';
 import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,6 +12,7 @@ export function RuleEditor() {
   const { selectedId, getRuleForApi, updateRule, applyRule, apiMetas, appliedRules } =
     useRulesStore();
   const { addToast } = useToastStore();
+  const { globalConfig } = useConfigStore();
 
   // Get selected API meta
   const selectedMeta = apiMetas.find((meta) => `${meta.module}-${meta.name}` === selectedId);
@@ -170,7 +172,7 @@ export function RuleEditor() {
 
         <div className="em:flex-1 em:overflow-y-auto em:px-6 em:py-4">
           <TabsContent value="network" className="em:mt-0">
-            <NetworkTab rule={rule} onChange={handleFieldChange} />
+            <NetworkTab rule={rule} globalConfig={globalConfig} onChange={handleFieldChange} />
           </TabsContent>
 
           <TabsContent value="response" className="em:mt-0">

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { ApiMeta } from '@error-mock/core';
 import { FloatButton } from '@/components/FloatButton';
 import { Modal } from '@/components/Modal';
+import { Toast } from '@/components/Toast';
 import { useRulesStore } from '@/stores/useRulesStore';
 import { useToastStore } from '@/stores/useToastStore';
 import { useInterceptor } from '@/hooks/useInterceptor';
@@ -35,6 +36,7 @@ export function App({ metas }: AppProps) {
     <>
       <Modal />
       <FloatButton />
+      <Toast />
     </>
   );
 }
