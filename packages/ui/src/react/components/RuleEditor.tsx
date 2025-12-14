@@ -27,9 +27,11 @@ export function RuleEditor() {
   const handleFieldChange = (field: string, value: unknown) => {
     if (!rule) return;
 
+    const latestRule = useRulesStore.getState().mockRules.get(rule.id) ?? rule;
+
     // Create a deep copy and update the specific field
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updated: any = { ...rule };
+    const updated: any = { ...latestRule };
 
     // Parse field path and update nested property
     const parts = field.split('.');

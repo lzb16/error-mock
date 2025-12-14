@@ -3,11 +3,20 @@ interface RequestConfig {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
 }
 
-interface ResponseWrapper<T> {
-  code: number;
-  message: string;
-  result: T;
-}
+type ResponseWrapper<T> =
+  | {
+      // Typical backend shape
+      code: number;
+      message: string;
+      result: T;
+    }
+  | {
+      // @error-mock/core default response shape
+      err_no: number;
+      err_msg: string;
+      detail_err_msg: string;
+      result: T;
+    };
 
 export function createRequest<TRes, TReq = void>(config: RequestConfig) {
   return async (params?: TReq): Promise<TRes> => {
@@ -36,8 +45,15 @@ export function createRequest<TRes, TReq = void>(config: RequestConfig) {
 
     const data: ResponseWrapper<TRes> = await response.json();
 
-    if (data.code !== 0) {
-      throw new Error(data.message || 'Request failed');
+    if ('code' in data) {
+      if (data.code !== 0) {
+        throw new Error(data.message || 'Request failed');
+      }
+      return data.result;
+    }
+
+    if (data.err_no !== 0) {
+      throw new Error(data.detail_err_msg || data.err_msg || 'Request failed');
     }
 
     return data.result;
