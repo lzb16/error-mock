@@ -1,26 +1,26 @@
 import { useI18n } from '@/i18n';
 import type { Locale } from '@/i18n';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export function LanguageSwitch() {
   const { locale, setLocale, t } = useI18n();
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    if (value === 'zh' || value === 'en') {
-      setLocale(value as Locale);
-    }
-  };
-
   return (
-    <select
+    <Select
       value={locale}
-      onChange={handleChange}
-      className="em:px-2 em:py-1.5 em:text-sm em:border em:border-gray-300 em:rounded-md em:bg-white focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:border-blue-500"
-      aria-label={t('language.ariaLabel')}
+      onValueChange={(value) => {
+        if (value === 'zh' || value === 'en') {
+          setLocale(value as Locale);
+        }
+      }}
     >
-      <option value="zh">{t('language.zh')}</option>
-      <option value="en">{t('language.en')}</option>
-    </select>
+      <SelectTrigger className="em:w-[110px]" aria-label={t('language.ariaLabel')}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="zh">{t('language.zh')}</SelectItem>
+        <SelectItem value="en">{t('language.en')}</SelectItem>
+      </SelectContent>
+    </Select>
   );
 }
-

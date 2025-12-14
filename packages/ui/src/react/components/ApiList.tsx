@@ -4,6 +4,9 @@ import { cn } from '@/lib/utils';
 import { useRulesStore } from '@/stores/useRulesStore';
 import type { ApiMeta } from '@error-mock/core';
 import { useI18n } from '@/i18n';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const METHOD_COLORS: Record<string, string> = {
   GET: 'em:bg-blue-100 em:text-blue-800',
@@ -68,27 +71,29 @@ export const ApiList: React.FC = () => {
   return (
     <div className="em:flex em:h-full em:flex-col em:bg-white em:border-r em:border-gray-200">
       {/* Search Header */}
-      <div className="em:p-4 em:border-b em:border-gray-200">
+      <div className="em:p-3 em:border-b em:border-gray-200">
         <div className="em:relative">
           <Search className="em:absolute em:left-3 em:top-2.5 em:h-4 em:w-4 em:text-gray-400" />
-          <input
+          <Input
             id="api-search-input"
             type="text"
             placeholder={t('apiList.search.placeholder')}
             aria-label={t('apiList.search.ariaLabel')}
-            className="em:h-9 em:w-full em:rounded-md em:border em:border-gray-200 em:bg-gray-50 em:pl-9 em:pr-8 em:text-sm em:outline-none focus:em:border-blue-500 focus:em:ring-1 focus:em:ring-blue-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            className="em:bg-gray-50 em:pl-9 em:pr-8"
           />
           {searchQuery && (
-            <button
+            <Button
               onClick={() => setSearchQuery('')}
-              className="em:absolute em:right-2.5 em:top-2.5 em:text-gray-400 hover:em:text-gray-600"
+              variant="ghost"
+              size="icon-sm"
+              className="em:absolute em:right-2 em:top-2"
               aria-label={t('apiList.search.clear')}
               type="button"
             >
               <X className="em:h-4 em:w-4" />
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -109,9 +114,11 @@ export const ApiList: React.FC = () => {
 
               return (
                 <div key={moduleName}>
-                  <button
+                  <Button
                     onClick={() => toggleModule(moduleName)}
-                    className="em:flex em:w-full em:items-center em:justify-between em:bg-gray-50/50 em:px-4 em:py-2 em:text-xs em:font-semibold em:text-gray-500 hover:em:bg-gray-100"
+                    variant="ghost"
+                    size="sm"
+                    className="em:flex em:w-full em:items-center em:justify-between em:bg-gray-50/50 em:px-4 em:py-2 em:text-xs em:font-semibold em:text-gray-500 hover:em:bg-gray-100 em:h-auto"
                     type="button"
                     aria-expanded={!isCollapsed}
                   >
@@ -124,10 +131,10 @@ export const ApiList: React.FC = () => {
                       />
                       <span className="em:uppercase em:tracking-wider">{moduleName}</span>
                     </div>
-                    <span className="em:rounded-full em:bg-gray-200 em:px-1.5 em:py-0.5 em:text-[10px]">
+                    <Badge variant="secondary" className="em:text-[10px]">
                       {moduleApis.length}
-                    </span>
-                  </button>
+                    </Badge>
+                  </Button>
 
                   {!isCollapsed && (
                     <div>
@@ -136,33 +143,28 @@ export const ApiList: React.FC = () => {
                         const isSelected = selectedId === id;
 
                         return (
-                          <div
+                          <Button
                             key={id}
                             onClick={() => setSelectedId(id)}
                             className={cn(
-                              'em:group em:relative em:flex em:cursor-pointer em:items-center em:gap-3 em:px-4 em:py-3 em:transition-colors',
+                              'em:group em:relative em:flex em:w-full em:items-center em:gap-3 em:px-4 em:py-2.5 em:transition-colors em:h-auto em:justify-start em:rounded-none',
                               isSelected
                                 ? 'em:bg-blue-50 em:ring-1 em:ring-blue-200 em:z-10'
                                 : 'hover:em:bg-gray-50'
                             )}
-                            role="button"
-                            tabIndex={0}
                             aria-selected={isSelected}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                setSelectedId(id);
-                              }
-                            }}
+                            variant="ghost"
+                            type="button"
                           >
-                            <span
+                            <Badge
+                              variant="secondary"
                               className={cn(
-                                'em:flex-shrink-0 em:rounded em:px-1.5 em:py-0.5 em:text-[10px] em:font-bold',
+                                'em:flex-shrink-0 em:text-[10px] em:font-bold',
                                 METHOD_COLORS[api.method.toUpperCase()] || DEFAULT_METHOD_COLOR
                               )}
                             >
                               {api.method.toUpperCase()}
-                            </span>
+                            </Badge>
                             <div className="em:min-w-0 em:flex-1">
                               <div className="em:flex em:items-center em:justify-between em:gap-2">
                                 <p
@@ -182,7 +184,7 @@ export const ApiList: React.FC = () => {
                               </div>
                               <p className="em:truncate em:text-xs em:text-gray-500">{api.url}</p>
                             </div>
-                          </div>
+                          </Button>
                         );
                       })}
                     </div>

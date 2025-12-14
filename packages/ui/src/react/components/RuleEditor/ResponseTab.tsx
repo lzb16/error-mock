@@ -2,6 +2,13 @@ import { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import type { MockRule } from '@error-mock/core';
 import { useI18n } from '@/i18n';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 interface ResponseTabProps {
   rule: MockRule;
@@ -55,6 +62,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
   );
   const [resultDraft, setResultDraft] = useState<string>('');
   const [errorBodyDraft, setErrorBodyDraft] = useState<string>('');
+  const [httpAdvancedOpen, setHttpAdvancedOpen] = useState(false);
 
   const handleStatusChange = (status: number) => {
     onChange('response.status', status);
@@ -130,145 +138,132 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
   return (
     <div className="em:space-y-0">
       {/* Status Code Selection */}
-      <div className="em:p-3 em:bg-white em:border-b">
-        <label
-          htmlFor="statusCode"
-          className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-2"
-        >
-          {t('responseTab.status.title')}
-        </label>
-        <select
-          id="statusCode"
-          value={rule.response.status}
-          onChange={(e) => handleStatusChange(parseInt(e.target.value))}
-          className="em:w-full em:px-3 em:py-2 em:border em:border-gray-300 em:rounded-md em:text-sm focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:border-blue-500"
-        >
-          <optgroup label={t('responseTab.status.group.success')}>
-            <option value="200">200 OK</option>
-            <option value="201">201 Created</option>
-          </optgroup>
-          <optgroup label={t('responseTab.status.group.clientError')}>
-            <option value="400">400 Bad Request</option>
-            <option value="401">401 Unauthorized</option>
-            <option value="403">403 Forbidden</option>
-            <option value="404">404 Not Found</option>
-            <option value="409">409 Conflict</option>
-          </optgroup>
-          <optgroup label={t('responseTab.status.group.serverError')}>
-            <option value="500">500 Internal Server Error</option>
-            <option value="502">502 Bad Gateway</option>
-            <option value="503">503 Service Unavailable</option>
-          </optgroup>
-        </select>
+      <div className="em:p-2.5 em:bg-white em:border-b">
+        <div className="em:space-y-2">
+          <Label htmlFor="statusCode">{t('responseTab.status.title')}</Label>
+          <Select
+            value={String(rule.response.status)}
+            onValueChange={(value) => handleStatusChange(parseInt(value))}
+          >
+            <SelectTrigger id="statusCode">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>{t('responseTab.status.group.success')}</SelectLabel>
+                <SelectItem value="200">200 OK</SelectItem>
+                <SelectItem value="201">201 Created</SelectItem>
+              </SelectGroup>
+              <SelectSeparator />
+              <SelectGroup>
+                <SelectLabel>{t('responseTab.status.group.clientError')}</SelectLabel>
+                <SelectItem value="400">400 Bad Request</SelectItem>
+                <SelectItem value="401">401 Unauthorized</SelectItem>
+                <SelectItem value="403">403 Forbidden</SelectItem>
+                <SelectItem value="404">404 Not Found</SelectItem>
+                <SelectItem value="409">409 Conflict</SelectItem>
+              </SelectGroup>
+              <SelectSeparator />
+              <SelectGroup>
+                <SelectLabel>{t('responseTab.status.group.serverError')}</SelectLabel>
+                <SelectItem value="500">500 Internal Server Error</SelectItem>
+                <SelectItem value="502">502 Bad Gateway</SelectItem>
+                <SelectItem value="503">503 Service Unavailable</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Status 2xx-3xx: Business Error Configuration */}
       {rule.response.status >= 200 && rule.response.status < 400 && (
-        <div className="em:p-4 em:space-y-4">
+        <div className="em:p-3 em:space-y-3">
           {/* Business Templates */}
           <div>
-            <label className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-2">
-              {t('responseTab.templates.title')}
-            </label>
+            <Label className="em:mb-2">{t('responseTab.templates.title')}</Label>
             <div className="em:grid em:grid-cols-2 em:gap-2">
               {BUSINESS_TEMPLATES.map((template) => (
-                <button
+                <Button
                   key={template.id}
                   onClick={() => applyTemplate(template)}
-                  className="em:px-3 em:py-2 em:text-sm em:border em:border-gray-300 em:rounded-md em:text-left hover:em:bg-blue-50 hover:em:border-blue-500 em:transition-colors focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500"
+                  variant="outline"
+                  size="sm"
+                  className="em:justify-start"
                 >
                   {template.name}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
 
           {/* Business Error Fields */}
           <div>
-            <label className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-2">
-              {t('responseTab.businessError.title')}
-            </label>
+            <Label className="em:mb-2">{t('responseTab.businessError.title')}</Label>
 
             <div className="em:grid em:grid-cols-3 em:gap-2">
               <div>
-                <label
-                  htmlFor="errNo"
-                  className="em:block em:text-xs em:text-gray-500 em:mb-1"
-                >
+                <Label htmlFor="errNo" className="em:text-xs em:text-muted-foreground">
                   err_no
-                </label>
-                <input
+                </Label>
+                <Input
                   id="errNo"
                   type="number"
                   value={rule.response.errNo}
                   onChange={(e) =>
                     onChange('response.errNo', parseInt(e.target.value) || 0)
                   }
-                  className="em:w-full em:px-2 em:py-1 em:border em:border-gray-300 em:rounded em:text-sm focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:border-blue-500"
                 />
-                <p className="em:text-xs em:text-gray-400 em:mt-1">
+                <p className="em:text-xs em:text-muted-foreground em:mt-1">
                   {t('responseTab.businessError.errNoHelp')}
                 </p>
               </div>
 
               <div className="em:col-span-2">
-                <label
-                  htmlFor="errMsg"
-                  className="em:block em:text-xs em:text-gray-500 em:mb-1"
-                >
+                <Label htmlFor="errMsg" className="em:text-xs em:text-muted-foreground">
                   err_msg
-                </label>
-                <input
+                </Label>
+                <Input
                   id="errMsg"
                   type="text"
                   value={rule.response.errMsg}
                   onChange={(e) => onChange('response.errMsg', e.target.value)}
-                  className="em:w-full em:px-2 em:py-1 em:border em:border-gray-300 em:rounded em:text-sm focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:border-blue-500"
                 />
               </div>
             </div>
 
             <div className="em:mt-2">
-              <label
-                htmlFor="detailErrMsg"
-                className="em:block em:text-xs em:text-gray-500 em:mb-1"
-              >
+              <Label htmlFor="detailErrMsg" className="em:text-xs em:text-muted-foreground">
                 detail_err_msg
-              </label>
-              <textarea
+              </Label>
+              <Textarea
                 id="detailErrMsg"
                 value={rule.response.detailErrMsg}
                 onChange={(e) =>
                   onChange('response.detailErrMsg', e.target.value)
                 }
                 rows={2}
-                className="em:w-full em:px-2 em:py-1 em:border em:border-gray-300 em:rounded em:text-sm focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:border-blue-500"
+                className="em:min-h-0"
               />
             </div>
           </div>
 
           {/* Response Data (result) */}
           <div>
-            <label
-              htmlFor="result"
-              className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-2"
-            >
+            <Label htmlFor="result" className="em:mb-2">
               {t('responseTab.result.title')}
-            </label>
-            <textarea
+            </Label>
+            <Textarea
               id="result"
               value={getResultValue()}
               onChange={(e) => handleResultChange(e.target.value)}
               rows={10}
-              className="em:w-full em:px-3 em:py-2 em:border em:border-gray-300 em:rounded em:font-mono em:text-sm focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:border-blue-500"
+              className="em:font-mono em:text-xs"
               placeholder="{}"
             />
             {resultJsonError && (
-              <p className="em:text-xs em:text-red-600 em:mt-1">
-                {resultJsonError}
-              </p>
+              <p className="em:text-xs em:text-destructive em:mt-1">{resultJsonError}</p>
             )}
-            <p className="em:text-xs em:text-gray-500 em:mt-1">
+            <p className="em:text-xs em:text-muted-foreground em:mt-1">
               {t('responseTab.result.finalReturn', {
                 shape:
                   '{ err_no, err_msg, detail_err_msg, result, sync, time_stamp, trace_id }',
@@ -280,45 +275,45 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
 
       {/* Status >= 400: HTTP Error Mode */}
       {rule.response.status >= 400 && (
-        <div className="em:p-4">
-          <div className="em:bg-yellow-50 em:border em:border-yellow-200 em:rounded-lg em:p-4">
-            <div className="em:flex em:items-start em:gap-3">
-              <AlertTriangle className="em:w-5 em:h-5 em:text-yellow-600 em:shrink-0 em:mt-0.5" />
-              <div>
-                <h4 className="em:font-semibold em:text-yellow-900">
-                  {t('responseTab.httpError.title')}
-                </h4>
-                <p className="em:text-sm em:text-yellow-700 em:mt-1">
-                  {t('responseTab.httpError.desc', { status: rule.response.status })}
-                </p>
-              </div>
+        <div className="em:p-3">
+          <Alert variant="warning">
+            <AlertTriangle className="em:w-5 em:h-5" />
+            <div>
+              <AlertTitle>{t('responseTab.httpError.title')}</AlertTitle>
+              <AlertDescription>
+                {t('responseTab.httpError.desc', { status: rule.response.status })}
+              </AlertDescription>
             </div>
-          </div>
+          </Alert>
 
           {/* Optional: Custom Error Body */}
-          <details className="em:mt-3">
-            <summary className="em:text-sm em:font-medium em:cursor-pointer em:text-blue-600 hover:em:text-blue-700">
-              {t('responseTab.httpError.advanced')}
-            </summary>
-            <div className="em:mt-3">
-              <textarea
+          <Collapsible
+            open={httpAdvancedOpen}
+            onOpenChange={setHttpAdvancedOpen}
+            className="em:mt-3"
+          >
+            <CollapsibleTrigger asChild>
+              <Button variant="link" size="sm" className="em:px-0">
+                {t('responseTab.httpError.advanced')}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="em:pt-2 em:space-y-2">
+              <Textarea
                 id="errorBody"
                 value={getErrorBodyValue()}
                 onChange={(e) => handleErrorBodyChange(e.target.value)}
                 placeholder='{"error": "Not Found", "message": "..."}'
                 rows={6}
-                className="em:w-full em:px-3 em:py-2 em:border em:border-gray-300 em:rounded em:font-mono em:text-sm focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:border-blue-500"
+                className="em:font-mono em:text-xs"
               />
               {errorBodyJsonError && (
-                <p className="em:text-xs em:text-red-600 em:mt-1">
-                  {errorBodyJsonError}
-                </p>
+                <p className="em:text-xs em:text-destructive">{errorBodyJsonError}</p>
               )}
-              <p className="em:text-xs em:text-gray-500 em:mt-1">
+              <p className="em:text-xs em:text-muted-foreground">
                 {t('responseTab.httpError.emptyHelp')}
               </p>
-            </div>
-          </details>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
       )}
     </div>
