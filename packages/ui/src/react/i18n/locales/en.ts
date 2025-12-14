@@ -7,6 +7,8 @@ export const en: Translations = {
   'common.applyChanges': 'Apply Changes',
   'common.network': 'Network',
   'common.response': 'Response',
+  'common.responseData': 'Response',
+  'common.networkSim': 'Network',
   'common.success': 'Success',
   'common.info': 'Info',
   'common.warning': 'Warning',

@@ -1,7 +1,7 @@
 import { useRulesStore } from '@/stores/useRulesStore';
 import { useToastStore } from '@/stores/useToastStore';
 import { useConfigStore } from '@/stores/useConfigStore';
-import { FileText } from 'lucide-react';
+import { FileText, FileJson, Wifi } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
@@ -127,8 +127,14 @@ export function RuleEditor() {
       <Tabs defaultValue="response" className="em:flex-1 em:flex em:flex-col em:overflow-hidden em:min-h-0">
         <div className="em:h-11 em:px-4 em:bg-white em:border-b em:border-gray-200 em:flex em:items-center em:justify-between em:shrink-0">
           <TabsList>
-            <TabsTrigger value="response">{t('common.response')}</TabsTrigger>
-            <TabsTrigger value="network">{t('common.network')}</TabsTrigger>
+            <TabsTrigger value="response" className="em:gap-1.5">
+              <FileJson className="em:w-3.5 em:h-3.5" />
+              {t('common.responseData')}
+            </TabsTrigger>
+            <TabsTrigger value="network" className="em:gap-1.5">
+              <Wifi className="em:w-3.5 em:h-3.5" />
+              {t('common.networkSim')}
+            </TabsTrigger>
           </TabsList>
 
           <div className="em:flex em:items-center em:gap-2">

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, FileJson, BookOpen } from 'lucide-react';
 import type { MockRule } from '@error-mock/core';
 import { useI18n } from '@/i18n';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -186,109 +186,130 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
           </div>
         </div>
 
-        {/* Business Error Fields (only for 2xx-3xx) */}
+        {/* Business Mode: Two Column Layout (Error Fields + JSON Editor) */}
         {isBusinessMode && (
-          <div className="em:p-3 em:bg-white em:rounded-lg em:border em:border-gray-200">
-            <div className="em:text-xs em:font-medium em:text-gray-500 em:uppercase em:tracking-wide em:mb-2">
-              {t('responseTab.businessError.title')}
+          <div className="em:flex-1 em:flex em:gap-3 em:min-h-0">
+            {/* Left Column: Business Error Fields (Vertical) */}
+            <div className="em:w-48 em:shrink-0 em:flex em:flex-col em:gap-2 em:p-3 em:bg-white em:rounded-lg em:border em:border-gray-200">
+              <div className="em:text-xs em:font-medium em:text-gray-500 em:uppercase em:tracking-wide">
+                {t('responseTab.businessError.title')}
+              </div>
+              <div className="em:space-y-2">
+                <div>
+                  <Label htmlFor="errNo" className="em:text-[11px] em:text-gray-500">
+                    err_no
+                  </Label>
+                  <Input
+                    id="errNo"
+                    type="number"
+                    value={rule.response.errNo}
+                    onChange={(e) =>
+                      onChange('response.errNo', parseInt(e.target.value) || 0)
+                    }
+                    className="em:h-8 em:font-mono em:text-sm"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="errMsg" className="em:text-[11px] em:text-gray-500">
+                    err_msg
+                  </Label>
+                  <Input
+                    id="errMsg"
+                    type="text"
+                    value={rule.response.errMsg}
+                    onChange={(e) => onChange('response.errMsg', e.target.value)}
+                    className="em:h-8 em:text-sm"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="detailErrMsg" className="em:text-[11px] em:text-gray-500">
+                    detail_err_msg
+                  </Label>
+                  <Input
+                    id="detailErrMsg"
+                    type="text"
+                    value={rule.response.detailErrMsg}
+                    onChange={(e) => onChange('response.detailErrMsg', e.target.value)}
+                    className="em:h-8 em:text-sm"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="em:grid em:grid-cols-4 em:gap-2">
-              <div>
-                <Label htmlFor="errNo" className="em:text-[11px] em:text-gray-500">
-                  err_no
-                </Label>
-                <Input
-                  id="errNo"
-                  type="number"
-                  value={rule.response.errNo}
-                  onChange={(e) =>
-                    onChange('response.errNo', parseInt(e.target.value) || 0)
-                  }
-                  className="em:h-8 em:font-mono em:text-sm"
-                />
+
+            {/* Right Column: JSON Editor */}
+            <div className="em:flex-1 em:flex em:flex-col em:bg-white em:rounded-lg em:border em:border-gray-200 em:overflow-hidden em:min-h-0">
+              <div className="em:flex em:items-center em:gap-1.5 em:px-3 em:py-2 em:border-b em:border-gray-200 em:bg-gray-50/50">
+                <FileJson className="em:w-3.5 em:h-3.5 em:text-gray-500" />
+                <span className="em:text-xs em:font-medium em:text-gray-500 em:uppercase em:tracking-wide">
+                  {t('responseTab.result.title')}
+                </span>
               </div>
-              <div className="em:col-span-2">
-                <Label htmlFor="errMsg" className="em:text-[11px] em:text-gray-500">
-                  err_msg
-                </Label>
-                <Input
-                  id="errMsg"
-                  type="text"
-                  value={rule.response.errMsg}
-                  onChange={(e) => onChange('response.errMsg', e.target.value)}
-                  className="em:h-8 em:text-sm"
-                />
-              </div>
-              <div>
-                <Label htmlFor="detailErrMsg" className="em:text-[11px] em:text-gray-500">
-                  detail_err_msg
-                </Label>
-                <Input
-                  id="detailErrMsg"
-                  type="text"
-                  value={rule.response.detailErrMsg}
-                  onChange={(e) => onChange('response.detailErrMsg', e.target.value)}
-                  className="em:h-8 em:text-sm"
-                />
+              <Textarea
+                id="result"
+                value={getResultValue()}
+                onChange={(e) => handleResultChange(e.target.value)}
+                className="em:flex-1 em:font-mono em:text-xs em:border-0 em:rounded-none em:resize-none focus-visible:em:ring-0"
+                placeholder="{}"
+              />
+              {resultJsonError && (
+                <div className="em:px-3 em:py-1.5 em:border-t em:border-gray-200 em:bg-red-50">
+                  <p className="em:text-xs em:text-destructive">{resultJsonError}</p>
+                </div>
+              )}
+              <div className="em:px-3 em:py-1.5 em:border-t em:border-gray-200 em:bg-gray-50/50">
+                <p className="em:text-xs em:text-gray-500">
+                  {t('responseTab.result.finalReturn', {
+                    shape: '{ err_no, err_msg, detail_err_msg, result, ... }',
+                  })}
+                </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* HTTP Error Alert (only for 4xx-5xx) */}
+        {/* HTTP Error Mode */}
         {!isBusinessMode && (
-          <Alert variant="warning">
-            <AlertTriangle className="em:w-5 em:h-5" />
-            <div>
-              <AlertTitle>{t('responseTab.httpError.title')}</AlertTitle>
-              <AlertDescription>
-                {t('responseTab.httpError.desc', { status: rule.response.status })}
-              </AlertDescription>
-            </div>
-          </Alert>
-        )}
+          <>
+            <Alert variant="warning">
+              <AlertTriangle className="em:w-5 em:h-5" />
+              <div>
+                <AlertTitle>{t('responseTab.httpError.title')}</AlertTitle>
+                <AlertDescription>
+                  {t('responseTab.httpError.desc', { status: rule.response.status })}
+                </AlertDescription>
+              </div>
+            </Alert>
 
-        {/* JSON Editor (main area) */}
-        <div className="em:flex-1 em:flex em:flex-col em:bg-white em:rounded-lg em:border em:border-gray-200 em:overflow-hidden em:min-h-0">
-          <div className="em:flex em:items-center em:justify-between em:px-3 em:py-2 em:border-b em:border-gray-200 em:bg-gray-50/50">
-            <span className="em:text-xs em:font-medium em:text-gray-500 em:uppercase em:tracking-wide">
-              {isBusinessMode ? t('responseTab.result.title') : t('responseTab.httpError.advanced')}
-            </span>
-          </div>
-          <Textarea
-            id="result"
-            value={isBusinessMode ? getResultValue() : getErrorBodyValue()}
-            onChange={(e) =>
-              isBusinessMode
-                ? handleResultChange(e.target.value)
-                : handleErrorBodyChange(e.target.value)
-            }
-            className="em:flex-1 em:font-mono em:text-xs em:border-0 em:rounded-none em:resize-none focus-visible:em:ring-0"
-            placeholder="{}"
-          />
-          {(isBusinessMode ? resultJsonError : errorBodyJsonError) && (
-            <div className="em:px-3 em:py-1.5 em:border-t em:border-gray-200 em:bg-red-50">
-              <p className="em:text-xs em:text-destructive">
-                {isBusinessMode ? resultJsonError : errorBodyJsonError}
-              </p>
+            {/* JSON Editor for HTTP Error */}
+            <div className="em:flex-1 em:flex em:flex-col em:bg-white em:rounded-lg em:border em:border-gray-200 em:overflow-hidden em:min-h-0">
+              <div className="em:flex em:items-center em:gap-1.5 em:px-3 em:py-2 em:border-b em:border-gray-200 em:bg-gray-50/50">
+                <FileJson className="em:w-3.5 em:h-3.5 em:text-gray-500" />
+                <span className="em:text-xs em:font-medium em:text-gray-500 em:uppercase em:tracking-wide">
+                  {t('responseTab.httpError.advanced')}
+                </span>
+              </div>
+              <Textarea
+                id="errorBody"
+                value={getErrorBodyValue()}
+                onChange={(e) => handleErrorBodyChange(e.target.value)}
+                className="em:flex-1 em:font-mono em:text-xs em:border-0 em:rounded-none em:resize-none focus-visible:em:ring-0"
+                placeholder='{"error": "Not Found", "message": "..."}'
+              />
+              {errorBodyJsonError && (
+                <div className="em:px-3 em:py-1.5 em:border-t em:border-gray-200 em:bg-red-50">
+                  <p className="em:text-xs em:text-destructive">{errorBodyJsonError}</p>
+                </div>
+              )}
             </div>
-          )}
-          {isBusinessMode && (
-            <div className="em:px-3 em:py-1.5 em:border-t em:border-gray-200 em:bg-gray-50/50">
-              <p className="em:text-xs em:text-gray-500">
-                {t('responseTab.result.finalReturn', {
-                  shape: '{ err_no, err_msg, detail_err_msg, result, sync, time_stamp, trace_id }',
-                })}
-              </p>
-            </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
 
       {/* Right: Templates Sidebar (only for 2xx-3xx) */}
       {isBusinessMode && (
         <div className="em:w-48 em:flex em:flex-col em:bg-white em:rounded-lg em:border em:border-gray-200 em:overflow-hidden em:shrink-0">
-          <div className="em:px-3 em:py-2 em:border-b em:border-gray-200 em:bg-gray-50/50">
+          <div className="em:flex em:items-center em:gap-1.5 em:px-3 em:py-2 em:border-b em:border-gray-200 em:bg-gray-50/50">
+            <BookOpen className="em:w-3.5 em:h-3.5 em:text-gray-500" />
             <h4 className="em:text-xs em:font-semibold em:text-gray-700 em:uppercase em:tracking-wide">
               {t('responseTab.templates.title')}
             </h4>

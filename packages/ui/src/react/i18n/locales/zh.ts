@@ -7,6 +7,8 @@ export const zh: Translations = {
   'common.applyChanges': '应用更改',
   'common.network': '网络',
   'common.response': '响应',
+  'common.responseData': '响应数据',
+  'common.networkSim': '网络模拟',
   'common.success': '成功',
   'common.info': '提示',
   'common.warning': '警告',
