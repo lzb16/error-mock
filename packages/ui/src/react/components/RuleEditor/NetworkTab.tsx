@@ -1,6 +1,6 @@
 import type { MockRule, GlobalConfig } from '@error-mock/core';
-import { PROFILE_DELAYS } from '@error-mock/core';
 import type { NetworkProfile } from '@error-mock/core';
+import { useI18n } from '@/i18n';
 
 interface NetworkTabProps {
   rule: MockRule;
@@ -13,13 +13,18 @@ export function NetworkTab({
   globalConfig,
   onChange,
 }: NetworkTabProps) {
+  const { t } = useI18n();
+
+  const globalProfile = globalConfig.networkProfile || 'none';
+  const globalProfileLabel = t(`networkProfile.${globalProfile}`);
+
   return (
     <div className="em:space-y-0">
       <div className="em:p-6 em:space-y-6">
         {/* Delay Configuration */}
         <div>
           <label className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-3">
-            Delay Configuration
+            {t('networkTab.delay.title')}
           </label>
 
           {/* Follow Global Option */}
@@ -32,11 +37,12 @@ export function NetworkTab({
             />
             <div className="em:flex-1">
               <div className="em:font-medium em:text-sm em:text-gray-900">
-                Follow Global Network Profile
+                {t('networkTab.delay.followGlobal.title')}
               </div>
               <div className="em:text-xs em:text-gray-500 em:mt-1">
-                Current: {globalConfig.networkProfile || 'none'} ={' '}
-                {PROFILE_DELAYS[globalConfig.networkProfile || 'none']}ms
+                {t('networkTab.delay.followGlobal.current', {
+                  profile: globalProfileLabel,
+                })}
               </div>
             </div>
           </label>
@@ -51,7 +57,7 @@ export function NetworkTab({
             />
             <div className="em:flex-1">
               <div className="em:font-medium em:text-sm em:text-gray-900">
-                Override for this API
+                {t('networkTab.delay.override.title')}
               </div>
             </div>
           </label>
@@ -64,7 +70,7 @@ export function NetworkTab({
                   htmlFor="networkProfile"
                   className="em:block em:text-xs em:text-gray-500 em:mb-1"
                 >
-                  Network Profile
+                  {t('networkTab.delay.profile.label')}
                 </label>
                 <select
                   id="networkProfile"
@@ -74,10 +80,10 @@ export function NetworkTab({
                   }
                   className="em:w-full em:px-3 em:py-2 em:border em:border-gray-300 em:rounded-md em:text-sm focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:border-blue-500"
                 >
-                  <option value="none">None (0ms)</option>
-                  <option value="fast4g">Fast 4G (150ms)</option>
-                  <option value="slow3g">Slow 3G (500ms)</option>
-                  <option value="2g">2G (1500ms)</option>
+                  <option value="none">{t('networkProfile.none')}</option>
+                  <option value="fast4g">{t('networkProfile.fast4g')}</option>
+                  <option value="slow3g">{t('networkProfile.slow3g')}</option>
+                  <option value="2g">{t('networkProfile.2g')}</option>
                 </select>
               </div>
 
@@ -86,7 +92,7 @@ export function NetworkTab({
                   htmlFor="customDelay"
                   className="em:block em:text-xs em:text-gray-500 em:mb-1"
                 >
-                  Or Custom Delay (ms)
+                  {t('networkTab.delay.custom.label')}
                 </label>
                 <input
                   id="customDelay"
@@ -98,13 +104,13 @@ export function NetworkTab({
                     onChange(
                       'network.customDelay',
                       e.target.value ? parseInt(e.target.value) : undefined
-                    )
+                  )
                   }
                   className="em:w-full em:px-3 em:py-2 em:border em:border-gray-300 em:rounded-md em:text-sm focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:border-blue-500"
-                  placeholder="Leave empty to use profile"
+                  placeholder={t('networkTab.delay.custom.placeholder')}
                 />
                 <p className="em:text-xs em:text-gray-400 em:mt-1">
-                  Custom delay overrides the profile selection
+                  {t('networkTab.delay.custom.help')}
                 </p>
               </div>
             </div>
@@ -114,7 +120,7 @@ export function NetworkTab({
         {/* Network Errors */}
         <div>
           <label className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-3">
-            Network Errors
+            {t('networkTab.errors.title')}
           </label>
 
           <div className="em:space-y-2">
@@ -129,7 +135,7 @@ export function NetworkTab({
                 onChange={() => onChange('network.errorMode', null)}
                 className="em:w-4 em:h-4 em:text-blue-600 em:border-gray-300 em:cursor-pointer"
               />
-              <span className="em:text-sm em:text-gray-900">None (正常)</span>
+              <span className="em:text-sm em:text-gray-900">{t('networkTab.errors.none')}</span>
             </label>
 
             {/* Timeout option */}
@@ -142,10 +148,10 @@ export function NetworkTab({
               />
               <div>
                 <div className="em:text-sm em:font-medium em:text-gray-900">
-                  Timeout
+                  {t('networkTab.errors.timeout.title')}
                 </div>
                 <div className="em:text-xs em:text-gray-500">
-                  抛出 DOMException('TimeoutError')
+                  {t('networkTab.errors.timeout.desc')}
                 </div>
               </div>
             </label>
@@ -160,10 +166,10 @@ export function NetworkTab({
               />
               <div>
                 <div className="em:text-sm em:font-medium em:text-gray-900">
-                  Offline
+                  {t('networkTab.errors.offline.title')}
                 </div>
                 <div className="em:text-xs em:text-gray-500">
-                  抛出 TypeError('Failed to fetch')
+                  {t('networkTab.errors.offline.desc')}
                 </div>
               </div>
             </label>
@@ -181,7 +187,7 @@ export function NetworkTab({
                 className="em:w-4 em:h-4 em:text-blue-600 em:border-gray-300 em:rounded em:cursor-pointer focus:em:ring-2 focus:em:ring-blue-500"
               />
               <span className="em:text-sm em:font-medium em:text-gray-900">
-                ⚡ Random Network Failure
+                {t('networkTab.randomFailure.title')}
               </span>
             </label>
 
@@ -203,7 +209,7 @@ export function NetworkTab({
                   </span>
                 </div>
                 <p className="em:text-xs em:text-gray-500 em:mt-2">
-                  触发时抛出 TypeError('Failed to fetch')
+                  {t('networkTab.randomFailure.desc')}
                 </p>
               </div>
             )}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import type { MockRule } from '@error-mock/core';
+import { useI18n } from '@/i18n';
 
 interface ResponseTabProps {
   rule: MockRule;
@@ -47,6 +48,7 @@ const BUSINESS_TEMPLATES: BusinessTemplate[] = [
 ];
 
 export function ResponseTab({ rule, onChange }: ResponseTabProps) {
+  const { t } = useI18n();
   const [resultJsonError, setResultJsonError] = useState<string | null>(null);
   const [errorBodyJsonError, setErrorBodyJsonError] = useState<string | null>(
     null
@@ -72,7 +74,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
       onChange('response.result', parsed);
       setResultJsonError(null);
     } catch (err) {
-      setResultJsonError('Invalid JSON format');
+      setResultJsonError(t('responseTab.json.invalid'));
       // Don't save invalid JSON - keep as draft only
     }
   };
@@ -84,7 +86,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
       onChange('response.errorBody', parsed);
       setErrorBodyJsonError(null);
     } catch (err) {
-      setErrorBodyJsonError('Invalid JSON format');
+      setErrorBodyJsonError(t('responseTab.json.invalid'));
       // Don't save invalid JSON - keep as draft only
     }
   };
@@ -133,7 +135,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
           htmlFor="statusCode"
           className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-2"
         >
-          HTTP Status Code
+          {t('responseTab.status.title')}
         </label>
         <select
           id="statusCode"
@@ -141,18 +143,18 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
           onChange={(e) => handleStatusChange(parseInt(e.target.value))}
           className="em:w-full em:px-3 em:py-2 em:border em:border-gray-300 em:rounded-md em:text-sm focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:border-blue-500"
         >
-          <optgroup label="Success">
+          <optgroup label={t('responseTab.status.group.success')}>
             <option value="200">200 OK</option>
             <option value="201">201 Created</option>
           </optgroup>
-          <optgroup label="Client Error">
+          <optgroup label={t('responseTab.status.group.clientError')}>
             <option value="400">400 Bad Request</option>
             <option value="401">401 Unauthorized</option>
             <option value="403">403 Forbidden</option>
             <option value="404">404 Not Found</option>
             <option value="409">409 Conflict</option>
           </optgroup>
-          <optgroup label="Server Error">
+          <optgroup label={t('responseTab.status.group.serverError')}>
             <option value="500">500 Internal Server Error</option>
             <option value="502">502 Bad Gateway</option>
             <option value="503">503 Service Unavailable</option>
@@ -166,7 +168,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
           {/* Business Templates */}
           <div>
             <label className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-2">
-              📚 Business Templates
+              {t('responseTab.templates.title')}
             </label>
             <div className="em:grid em:grid-cols-2 em:gap-2">
               {BUSINESS_TEMPLATES.map((template) => (
@@ -184,7 +186,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
           {/* Business Error Fields */}
           <div>
             <label className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-3">
-              Business Error
+              {t('responseTab.businessError.title')}
             </label>
 
             <div className="em:grid em:grid-cols-3 em:gap-3">
@@ -204,7 +206,9 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
                   }
                   className="em:w-full em:px-2 em:py-1 em:border em:border-gray-300 em:rounded em:text-sm focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:border-blue-500"
                 />
-                <p className="em:text-xs em:text-gray-400 em:mt-1">0=成功</p>
+                <p className="em:text-xs em:text-gray-400 em:mt-1">
+                  {t('responseTab.businessError.errNoHelp')}
+                </p>
               </div>
 
               <div className="em:col-span-2">
@@ -249,7 +253,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
               htmlFor="result"
               className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-2"
             >
-              Response Data (result 字段)
+              {t('responseTab.result.title')}
             </label>
             <textarea
               id="result"
@@ -265,7 +269,10 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
               </p>
             )}
             <p className="em:text-xs em:text-gray-500 em:mt-1">
-              💡 最终返回：{'{ err_no, err_msg, detail_err_msg, result, sync, time_stamp, trace_id }'}
+              {t('responseTab.result.finalReturn', {
+                shape:
+                  '{ err_no, err_msg, detail_err_msg, result, sync, time_stamp, trace_id }',
+              })}
             </p>
           </div>
         </div>
@@ -279,11 +286,10 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
               <AlertTriangle className="em:w-5 em:h-5 em:text-yellow-600 em:shrink-0 em:mt-0.5" />
               <div>
                 <h4 className="em:font-semibold em:text-yellow-900">
-                  HTTP Error Mode
+                  {t('responseTab.httpError.title')}
                 </h4>
                 <p className="em:text-sm em:text-yellow-700 em:mt-1">
-                  将返回 HTTP {rule.response.status} 错误。
-                  前端通常不解析错误响应体，会直接进入 catch 或错误处理。
+                  {t('responseTab.httpError.desc', { status: rule.response.status })}
                 </p>
               </div>
             </div>
@@ -292,7 +298,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
           {/* Optional: Custom Error Body */}
           <details className="em:mt-4">
             <summary className="em:text-sm em:font-medium em:cursor-pointer em:text-blue-600 hover:em:text-blue-700">
-              Advanced: Custom Error Body
+              {t('responseTab.httpError.advanced')}
             </summary>
             <div className="em:mt-3">
               <textarea
@@ -309,7 +315,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
                 </p>
               )}
               <p className="em:text-xs em:text-gray-500 em:mt-1">
-                留空则返回默认错误信息
+                {t('responseTab.httpError.emptyHelp')}
               </p>
             </div>
           </details>

@@ -3,6 +3,7 @@ import { WandSparkles } from 'lucide-react';
 import { useConfigStore } from '@/stores/useConfigStore';
 import { useRulesStore } from '@/stores/useRulesStore';
 import type { GlobalConfig } from '@error-mock/core';
+import { useI18n } from '@/i18n';
 
 const MARGIN = 20;
 const BUTTON_SIZE = 56;
@@ -61,6 +62,7 @@ function savePosition(x: number, y: number): void {
 }
 
 export function FloatButton() {
+  const { t } = useI18n();
   const { globalConfig, toggleModal, isModalOpen } = useConfigStore();
   const activeMockCount = useRulesStore((state) => state.activeMockCount());
 
@@ -182,7 +184,7 @@ export function FloatButton() {
       onPointerCancel={handlePointerCancel}
       onKeyDown={handleKeyDown}
       role="button"
-      aria-label="Toggle Error Mock Panel"
+      aria-label={t('floatButton.toggle')}
       aria-disabled={isModalOpen}
       tabIndex={isModalOpen ? -1 : 0}
       type="button"

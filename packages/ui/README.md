@@ -29,7 +29,15 @@ The UI is mounted programmatically via the `mount` function:
 import { mount } from '@error-mock/ui/react';
 
 // Mount the UI with API metadata
-mount({ metas: apiMetas });
+mount({ metas: apiMetas, locale: 'zh' }); // default: 'zh'
+```
+
+You can also switch language at runtime:
+
+```typescript
+import { setLocale } from '@error-mock/ui/react';
+
+setLocale('en');
 ```
 
 The mount function:

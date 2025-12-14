@@ -3,6 +3,7 @@ import { Search, X, ChevronRight, Inbox } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRulesStore } from '@/stores/useRulesStore';
 import type { ApiMeta } from '@error-mock/core';
+import { useI18n } from '@/i18n';
 
 const METHOD_COLORS: Record<string, string> = {
   GET: 'em:bg-blue-100 em:text-blue-800',
@@ -15,6 +16,7 @@ const METHOD_COLORS: Record<string, string> = {
 const DEFAULT_METHOD_COLOR = 'em:bg-gray-100 em:text-gray-800';
 
 export const ApiList: React.FC = () => {
+  const { t } = useI18n();
   const {
     searchQuery,
     setSearchQuery,
@@ -72,8 +74,8 @@ export const ApiList: React.FC = () => {
           <input
             id="api-search-input"
             type="text"
-            placeholder="Search APIs... (⌘K)"
-            aria-label="Search APIs"
+            placeholder={t('apiList.search.placeholder')}
+            aria-label={t('apiList.search.ariaLabel')}
             className="em:h-9 em:w-full em:rounded-md em:border em:border-gray-200 em:bg-gray-50 em:pl-9 em:pr-8 em:text-sm em:outline-none focus:em:border-blue-500 focus:em:ring-1 focus:em:ring-blue-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -82,7 +84,7 @@ export const ApiList: React.FC = () => {
             <button
               onClick={() => setSearchQuery('')}
               className="em:absolute em:right-2.5 em:top-2.5 em:text-gray-400 hover:em:text-gray-600"
-              aria-label="Clear search"
+              aria-label={t('apiList.search.clear')}
               type="button"
             >
               <X className="em:h-4 em:w-4" />
@@ -96,8 +98,8 @@ export const ApiList: React.FC = () => {
         {sortedModules.length === 0 ? (
           <div className="em:flex em:flex-col em:items-center em:justify-center em:py-12 em:text-center em:text-gray-500">
             <Inbox className="em:h-12 em:w-12 em:mb-3 em:text-gray-300" />
-            <p className="em:text-sm em:font-medium">No APIs found</p>
-            <p className="em:text-xs em:mt-1">Try adjusting your search terms</p>
+            <p className="em:text-sm em:font-medium">{t('apiList.empty.title')}</p>
+            <p className="em:text-xs em:mt-1">{t('apiList.empty.subtitle')}</p>
           </div>
         ) : (
           <div className="em:divide-y em:divide-gray-100">

@@ -7,12 +7,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useI18n } from '@/i18n';
 import { ApiList } from './ApiList';
 import { RuleEditor } from './RuleEditor';
 import { NetworkProfileSelect } from './modal/NetworkProfileSelect';
+import { LanguageSwitch } from './LanguageSwitch';
 
 export function Modal() {
   const { isModalOpen, setModalOpen } = useConfigStore();
+  const { t } = useI18n();
 
   // Lock page scroll while modal is open (Shadow DOM-safe; avoids react-remove-scroll wheel issues)
   useEffect(() => {
@@ -52,10 +55,13 @@ export function Modal() {
             <div className="em:flex em:items-center em:gap-2">
               <WandSparkles className="em:w-6 em:h-6 em:text-blue-600" />
               <DialogTitle className="em:text-xl em:font-bold em:text-gray-800">
-                Error Mock Control Panel
+                {t('modal.title')}
               </DialogTitle>
             </div>
-            <NetworkProfileSelect />
+            <div className="em:flex em:items-center em:gap-2">
+              <LanguageSwitch />
+              <NetworkProfileSelect />
+            </div>
           </div>
         </DialogHeader>
 

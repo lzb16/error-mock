@@ -2,6 +2,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import type { ApiMeta } from '@error-mock/core';
 import { App } from './App';
 import { ShadowRootProvider } from './context/ShadowRootContext';
+import { I18nProvider, resolveLocale, useLocaleStore, type Locale } from './i18n';
 // @ts-expect-error Vite handles ?inline imports
 import rawStyles from './styles/globals.css?inline';
 
@@ -10,6 +11,12 @@ let hostElement: HTMLElement | null = null;
 
 export interface MountOptions {
   metas: ApiMeta[];
+  /**
+   * UI locale. Default: 'zh'
+   *
+   * When provided, this value wins over persisted locale.
+   */
+  locale?: Locale;
 }
 
 const GLOBAL_STYLE_ID = 'error-mock-global-properties';
@@ -141,9 +148,17 @@ export function mount(options: MountOptions): void {
 
   // 6. 挂载 React
   root = createRoot(container);
+
+  // Apply initial locale before first render
+  if (options.locale) {
+    useLocaleStore.getState().setLocale(resolveLocale(options.locale));
+  }
+
   root.render(
     <ShadowRootProvider shadowRoot={shadowRoot}>
-      <App metas={options.metas} />
+      <I18nProvider>
+        <App metas={options.metas} />
+      </I18nProvider>
     </ShadowRootProvider>
   );
 }

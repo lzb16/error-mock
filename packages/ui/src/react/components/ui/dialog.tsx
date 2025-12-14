@@ -4,6 +4,7 @@ import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { usePortalContainer } from "@/context/ShadowRootContext"
+import { useI18n } from "@/i18n"
 
 function Dialog({
   ...props
@@ -75,6 +76,8 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  const { t } = useI18n()
+
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
@@ -94,7 +97,7 @@ function DialogContent({
             className="em:ring-offset-background em:focus:ring-ring em:data-[state=open]:bg-accent em:data-[state=open]:text-muted-foreground em:absolute em:top-4 em:right-4 em:rounded-xs em:opacity-70 em:transition-opacity em:hover:opacity-100 em:focus:ring-2 em:focus:ring-offset-2 em:focus:outline-hidden em:disabled:pointer-events-none em:[&_svg]:pointer-events-none em:[&_svg]:shrink-0 em:[&_svg:not([class*=size-])]:size-4"
           >
             <X />
-            <span className="em:sr-only">Close</span>
+            <span className="em:sr-only">{t('common.close')}</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>
@@ -109,6 +112,8 @@ function DialogHeader({
 }: React.ComponentProps<"div"> & {
   showCloseButton?: boolean
 }) {
+  const { t } = useI18n()
+
   return (
     <div
       data-slot="dialog-header"
@@ -124,7 +129,7 @@ function DialogHeader({
         <DialogPrimitive.Close asChild>
           <button
             className="em:rounded-sm em:opacity-70 em:transition-opacity hover:em:opacity-100 focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:ring-offset-2"
-            aria-label="Close"
+            aria-label={t('common.close')}
             type="button"
           >
             <X className="em:w-5 em:h-5 em:text-gray-600" />
