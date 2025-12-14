@@ -3,8 +3,6 @@ import { AlertTriangle } from 'lucide-react';
 import type { MockRule } from '@error-mock/core';
 import { useI18n } from '@/i18n';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -57,12 +55,9 @@ const BUSINESS_TEMPLATES: BusinessTemplate[] = [
 export function ResponseTab({ rule, onChange }: ResponseTabProps) {
   const { t } = useI18n();
   const [resultJsonError, setResultJsonError] = useState<string | null>(null);
-  const [errorBodyJsonError, setErrorBodyJsonError] = useState<string | null>(
-    null
-  );
+  const [errorBodyJsonError, setErrorBodyJsonError] = useState<string | null>(null);
   const [resultDraft, setResultDraft] = useState<string>('');
   const [errorBodyDraft, setErrorBodyDraft] = useState<string>('');
-  const [httpAdvancedOpen, setHttpAdvancedOpen] = useState(false);
 
   const handleStatusChange = (status: number) => {
     onChange('response.status', status);
@@ -135,74 +130,71 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
     return JSON.stringify(errorBody, null, 2);
   };
 
+  // Check if we're in business response mode (2xx-3xx)
+  const isBusinessMode = rule.response.status >= 200 && rule.response.status < 400;
+
   return (
-    <div className="em:space-y-0">
-      {/* Status Code Selection */}
-      <div className="em:p-2.5 em:bg-white em:border-b">
-        <div className="em:space-y-2">
-          <Label htmlFor="statusCode">{t('responseTab.status.title')}</Label>
-          <Select
-            value={String(rule.response.status)}
-            onValueChange={(value) => handleStatusChange(parseInt(value))}
-          >
-            <SelectTrigger id="statusCode">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>{t('responseTab.status.group.success')}</SelectLabel>
-                <SelectItem value="200">200 OK</SelectItem>
-                <SelectItem value="201">201 Created</SelectItem>
-              </SelectGroup>
-              <SelectSeparator />
-              <SelectGroup>
-                <SelectLabel>{t('responseTab.status.group.clientError')}</SelectLabel>
-                <SelectItem value="400">400 Bad Request</SelectItem>
-                <SelectItem value="401">401 Unauthorized</SelectItem>
-                <SelectItem value="403">403 Forbidden</SelectItem>
-                <SelectItem value="404">404 Not Found</SelectItem>
-                <SelectItem value="409">409 Conflict</SelectItem>
-              </SelectGroup>
-              <SelectSeparator />
-              <SelectGroup>
-                <SelectLabel>{t('responseTab.status.group.serverError')}</SelectLabel>
-                <SelectItem value="500">500 Internal Server Error</SelectItem>
-                <SelectItem value="502">502 Bad Gateway</SelectItem>
-                <SelectItem value="503">503 Service Unavailable</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Status 2xx-3xx: Business Error Configuration */}
-      {rule.response.status >= 200 && rule.response.status < 400 && (
-        <div className="em:p-3 em:space-y-3">
-          {/* Business Templates */}
-          <div>
-            <Label className="em:mb-2">{t('responseTab.templates.title')}</Label>
-            <div className="em:grid em:grid-cols-2 em:gap-2">
-              {BUSINESS_TEMPLATES.map((template) => (
-                <Button
-                  key={template.id}
-                  onClick={() => applyTemplate(template)}
-                  variant="outline"
-                  size="sm"
-                  className="em:justify-start"
-                >
-                  {template.name}
-                </Button>
-              ))}
-            </div>
+    <div className="em:flex em:gap-4 em:h-full">
+      {/* Left: Main Editor */}
+      <div className="em:flex-1 em:flex em:flex-col em:gap-3 em:min-w-0">
+        {/* Status Bar */}
+        <div className="em:flex em:items-center em:gap-4 em:p-3 em:bg-white em:rounded-lg em:border em:border-gray-200">
+          <div className="em:flex em:items-center em:gap-2">
+            <span className="em:text-xs em:font-medium em:text-gray-500 em:uppercase em:tracking-wide">
+              Status
+            </span>
+            <Select
+              value={String(rule.response.status)}
+              onValueChange={(value) => handleStatusChange(parseInt(value))}
+            >
+              <SelectTrigger className="em:w-40 em:h-8 em:font-mono em:text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>{t('responseTab.status.group.success')}</SelectLabel>
+                  <SelectItem value="200">200 OK</SelectItem>
+                  <SelectItem value="201">201 Created</SelectItem>
+                </SelectGroup>
+                <SelectSeparator />
+                <SelectGroup>
+                  <SelectLabel>{t('responseTab.status.group.clientError')}</SelectLabel>
+                  <SelectItem value="400">400 Bad Request</SelectItem>
+                  <SelectItem value="401">401 Unauthorized</SelectItem>
+                  <SelectItem value="403">403 Forbidden</SelectItem>
+                  <SelectItem value="404">404 Not Found</SelectItem>
+                  <SelectItem value="409">409 Conflict</SelectItem>
+                </SelectGroup>
+                <SelectSeparator />
+                <SelectGroup>
+                  <SelectLabel>{t('responseTab.status.group.serverError')}</SelectLabel>
+                  <SelectItem value="500">500 Internal Server Error</SelectItem>
+                  <SelectItem value="502">502 Bad Gateway</SelectItem>
+                  <SelectItem value="503">503 Service Unavailable</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
+          <div className="em:h-4 em:w-px em:bg-gray-200" />
+          <div className="em:flex em:items-center em:gap-2">
+            <span className="em:text-xs em:font-medium em:text-gray-500 em:uppercase em:tracking-wide">
+              Content-Type
+            </span>
+            <span className="em:text-xs em:font-mono em:text-gray-700 em:bg-gray-100 em:px-2 em:py-1 em:rounded em:border em:border-gray-200">
+              application/json
+            </span>
+          </div>
+        </div>
 
-          {/* Business Error Fields */}
-          <div>
-            <Label className="em:mb-2">{t('responseTab.businessError.title')}</Label>
-
-            <div className="em:grid em:grid-cols-3 em:gap-2">
+        {/* Business Error Fields (only for 2xx-3xx) */}
+        {isBusinessMode && (
+          <div className="em:p-3 em:bg-white em:rounded-lg em:border em:border-gray-200">
+            <div className="em:text-xs em:font-medium em:text-gray-500 em:uppercase em:tracking-wide em:mb-2">
+              {t('responseTab.businessError.title')}
+            </div>
+            <div className="em:grid em:grid-cols-4 em:gap-2">
               <div>
-                <Label htmlFor="errNo" className="em:text-xs em:text-muted-foreground">
+                <Label htmlFor="errNo" className="em:text-[11px] em:text-gray-500">
                   err_no
                 </Label>
                 <Input
@@ -212,14 +204,11 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
                   onChange={(e) =>
                     onChange('response.errNo', parseInt(e.target.value) || 0)
                   }
+                  className="em:h-8 em:font-mono em:text-sm"
                 />
-                <p className="em:text-xs em:text-muted-foreground em:mt-1">
-                  {t('responseTab.businessError.errNoHelp')}
-                </p>
               </div>
-
               <div className="em:col-span-2">
-                <Label htmlFor="errMsg" className="em:text-xs em:text-muted-foreground">
+                <Label htmlFor="errMsg" className="em:text-[11px] em:text-gray-500">
                   err_msg
                 </Label>
                 <Input
@@ -227,55 +216,27 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
                   type="text"
                   value={rule.response.errMsg}
                   onChange={(e) => onChange('response.errMsg', e.target.value)}
+                  className="em:h-8 em:text-sm"
+                />
+              </div>
+              <div>
+                <Label htmlFor="detailErrMsg" className="em:text-[11px] em:text-gray-500">
+                  detail_err_msg
+                </Label>
+                <Input
+                  id="detailErrMsg"
+                  type="text"
+                  value={rule.response.detailErrMsg}
+                  onChange={(e) => onChange('response.detailErrMsg', e.target.value)}
+                  className="em:h-8 em:text-sm"
                 />
               </div>
             </div>
-
-            <div className="em:mt-2">
-              <Label htmlFor="detailErrMsg" className="em:text-xs em:text-muted-foreground">
-                detail_err_msg
-              </Label>
-              <Textarea
-                id="detailErrMsg"
-                value={rule.response.detailErrMsg}
-                onChange={(e) =>
-                  onChange('response.detailErrMsg', e.target.value)
-                }
-                rows={2}
-                className="em:min-h-0"
-              />
-            </div>
           </div>
+        )}
 
-          {/* Response Data (result) */}
-          <div>
-            <Label htmlFor="result" className="em:mb-2">
-              {t('responseTab.result.title')}
-            </Label>
-            <Textarea
-              id="result"
-              value={getResultValue()}
-              onChange={(e) => handleResultChange(e.target.value)}
-              rows={10}
-              className="em:font-mono em:text-xs"
-              placeholder="{}"
-            />
-            {resultJsonError && (
-              <p className="em:text-xs em:text-destructive em:mt-1">{resultJsonError}</p>
-            )}
-            <p className="em:text-xs em:text-muted-foreground em:mt-1">
-              {t('responseTab.result.finalReturn', {
-                shape:
-                  '{ err_no, err_msg, detail_err_msg, result, sync, time_stamp, trace_id }',
-              })}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Status >= 400: HTTP Error Mode */}
-      {rule.response.status >= 400 && (
-        <div className="em:p-3">
+        {/* HTTP Error Alert (only for 4xx-5xx) */}
+        {!isBusinessMode && (
           <Alert variant="warning">
             <AlertTriangle className="em:w-5 em:h-5" />
             <div>
@@ -285,35 +246,89 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
               </AlertDescription>
             </div>
           </Alert>
+        )}
 
-          {/* Optional: Custom Error Body */}
-          <Collapsible
-            open={httpAdvancedOpen}
-            onOpenChange={setHttpAdvancedOpen}
-            className="em:mt-3"
-          >
-            <CollapsibleTrigger asChild>
-              <Button variant="link" size="sm" className="em:px-0">
-                {t('responseTab.httpError.advanced')}
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="em:pt-2 em:space-y-2">
-              <Textarea
-                id="errorBody"
-                value={getErrorBodyValue()}
-                onChange={(e) => handleErrorBodyChange(e.target.value)}
-                placeholder='{"error": "Not Found", "message": "..."}'
-                rows={6}
-                className="em:font-mono em:text-xs"
-              />
-              {errorBodyJsonError && (
-                <p className="em:text-xs em:text-destructive">{errorBodyJsonError}</p>
-              )}
-              <p className="em:text-xs em:text-muted-foreground">
-                {t('responseTab.httpError.emptyHelp')}
+        {/* JSON Editor (main area) */}
+        <div className="em:flex-1 em:flex em:flex-col em:bg-white em:rounded-lg em:border em:border-gray-200 em:overflow-hidden em:min-h-0">
+          <div className="em:flex em:items-center em:justify-between em:px-3 em:py-2 em:border-b em:border-gray-200 em:bg-gray-50/50">
+            <span className="em:text-xs em:font-medium em:text-gray-500 em:uppercase em:tracking-wide">
+              {isBusinessMode ? t('responseTab.result.title') : t('responseTab.httpError.advanced')}
+            </span>
+          </div>
+          <Textarea
+            id="result"
+            value={isBusinessMode ? getResultValue() : getErrorBodyValue()}
+            onChange={(e) =>
+              isBusinessMode
+                ? handleResultChange(e.target.value)
+                : handleErrorBodyChange(e.target.value)
+            }
+            className="em:flex-1 em:font-mono em:text-xs em:border-0 em:rounded-none em:resize-none focus-visible:em:ring-0"
+            placeholder="{}"
+          />
+          {(isBusinessMode ? resultJsonError : errorBodyJsonError) && (
+            <div className="em:px-3 em:py-1.5 em:border-t em:border-gray-200 em:bg-red-50">
+              <p className="em:text-xs em:text-destructive">
+                {isBusinessMode ? resultJsonError : errorBodyJsonError}
               </p>
-            </CollapsibleContent>
-          </Collapsible>
+            </div>
+          )}
+          {isBusinessMode && (
+            <div className="em:px-3 em:py-1.5 em:border-t em:border-gray-200 em:bg-gray-50/50">
+              <p className="em:text-xs em:text-gray-500">
+                {t('responseTab.result.finalReturn', {
+                  shape: '{ err_no, err_msg, detail_err_msg, result, sync, time_stamp, trace_id }',
+                })}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Right: Templates Sidebar (only for 2xx-3xx) */}
+      {isBusinessMode && (
+        <div className="em:w-48 em:flex em:flex-col em:bg-white em:rounded-lg em:border em:border-gray-200 em:overflow-hidden em:shrink-0">
+          <div className="em:px-3 em:py-2 em:border-b em:border-gray-200 em:bg-gray-50/50">
+            <h4 className="em:text-xs em:font-semibold em:text-gray-700 em:uppercase em:tracking-wide">
+              {t('responseTab.templates.title')}
+            </h4>
+          </div>
+          <div className="em:flex-1 em:overflow-y-auto em:p-2 em:space-y-1.5">
+            {BUSINESS_TEMPLATES.map((template) => {
+              const isActive = rule.response.errNo === template.errNo;
+              return (
+                <button
+                  key={template.id}
+                  onClick={() => applyTemplate(template)}
+                  className={`em:w-full em:p-2 em:text-left em:rounded-md em:border em:transition-all ${
+                    isActive
+                      ? 'em:border-blue-500 em:bg-blue-50'
+                      : 'em:border-gray-200 hover:em:border-blue-300 hover:em:bg-gray-50'
+                  }`}
+                >
+                  <div className="em:flex em:items-center em:justify-between em:mb-0.5">
+                    <span className="em:text-xs em:font-semibold em:text-gray-800">
+                      {template.name}
+                    </span>
+                    <span
+                      className={`em:text-[10px] em:px-1.5 em:py-0.5 em:rounded em:font-medium ${
+                        template.errNo === 0
+                          ? 'em:bg-green-100 em:text-green-700'
+                          : 'em:bg-red-100 em:text-red-700'
+                      }`}
+                    >
+                      {template.errNo}
+                    </span>
+                  </div>
+                  {template.errMsg && (
+                    <p className="em:text-[11px] em:text-gray-500 em:truncate">
+                      {template.errMsg}
+                    </p>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

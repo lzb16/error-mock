@@ -68,12 +68,12 @@ export function Modal() {
         {/* Body: Sidebar + Content */}
         <div className="em:flex em:flex-1 em:overflow-hidden em:min-h-0">
           {/* Sidebar */}
-          <div className="em:w-1/3 em:min-w-[320px] em:flex em:flex-col">
+          <div className="em:w-64 em:shrink-0 em:flex em:flex-col">
             <ApiList />
           </div>
 
           {/* Content */}
-          <div className="em:w-2/3 em:flex em:flex-col em:bg-gray-50 em:min-h-0">
+          <div className="em:flex-1 em:flex em:flex-col em:bg-gray-50 em:min-h-0">
             <RuleEditor />
           </div>
         </div>

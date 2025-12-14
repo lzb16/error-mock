@@ -92,61 +92,65 @@ export function RuleEditor() {
 
   // Main editor UI
   return (
-    <div className="em:flex em:flex-col em:h-full">
-      {/* Rule Info Header + Enable Toggle */}
-      <div className="em:px-4 em:py-2 em:border-b em:border-gray-200 em:bg-gray-50">
-        <div className="em:flex em:items-center em:justify-between em:gap-4 em:p-3 em:bg-white em:rounded-lg em:border em:border-gray-200">
-          <div className="em:flex em:items-center em:gap-3 em:min-w-0 em:flex-1">
-            <MethodBadge method={selectedMeta.method} />
-            <div className="em:flex em:items-center em:gap-2 em:min-w-0">
-              <h3 className="em:text-base em:font-semibold em:text-gray-900 em:truncate em:min-w-0" title={selectedMeta.name}>
-                {selectedMeta.name}
-              </h3>
-              <span className="em:text-sm em:text-gray-400 em:flex-shrink-0">•</span>
-              <p className="em:text-sm em:text-gray-500 em:truncate em:min-w-0" title={selectedMeta.url}>
-                {selectedMeta.url}
-              </p>
-            </div>
-          </div>
+    <div className="em:flex em:flex-col em:h-full em:bg-gray-50/30">
+      {/* Row 1: API Info + Enable Toggle */}
+      <div className="em:h-12 em:px-4 em:bg-white em:border-b em:border-gray-200 em:flex em:items-center em:justify-between em:shrink-0">
+        <div className="em:flex em:items-center em:gap-3 em:min-w-0">
+          <MethodBadge method={selectedMeta.method} />
+          <h3
+            className="em:text-base em:font-semibold em:text-gray-900 em:truncate"
+            title={selectedMeta.name}
+          >
+            {selectedMeta.name}
+          </h3>
+          <span className="em:text-gray-400">•</span>
+          <p
+            className="em:text-sm em:text-gray-500 em:truncate"
+            title={selectedMeta.url}
+          >
+            {selectedMeta.url}
+          </p>
+        </div>
 
-          <div className="em:flex em:items-center em:flex-shrink-0 em:border-l em:border-gray-200 em:pl-4">
-            <Switch
-              id="enable-mocking"
-              checked={rule.enabled}
-              onCheckedChange={(checked) => handleFieldChange('enabled', checked)}
-              aria-label={t('ruleEditor.enableMocking')}
-            />
-          </div>
+        <div className="em:flex em:items-center em:gap-2 em:shrink-0">
+          <span className="em:text-xs em:text-gray-500">Mock</span>
+          <Switch
+            id="enable-mocking"
+            checked={rule.enabled}
+            onCheckedChange={(checked) => handleFieldChange('enabled', checked)}
+            aria-label={t('ruleEditor.enableMocking')}
+          />
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="network" className="em:flex-1 em:flex em:flex-col em:overflow-hidden em:min-h-0">
-        <div className="em:px-4 em:pt-2">
+      {/* Row 2: Tabs + Actions */}
+      <Tabs defaultValue="response" className="em:flex-1 em:flex em:flex-col em:overflow-hidden em:min-h-0">
+        <div className="em:h-11 em:px-4 em:bg-white em:border-b em:border-gray-200 em:flex em:items-center em:justify-between em:shrink-0">
           <TabsList>
-            <TabsTrigger value="network">{t('common.network')}</TabsTrigger>
             <TabsTrigger value="response">{t('common.response')}</TabsTrigger>
+            <TabsTrigger value="network">{t('common.network')}</TabsTrigger>
           </TabsList>
+
+          <div className="em:flex em:items-center em:gap-2">
+            <Button variant="ghost" size="sm" onClick={handleCancel}>
+              {t('common.cancel')}
+            </Button>
+            <Button size="sm" onClick={handleApply}>
+              {t('common.applyChanges')}
+            </Button>
+          </div>
         </div>
 
-        <div className="em:flex-1 em:overflow-y-auto em:px-4 em:py-2 em:min-h-0">
-          <TabsContent value="network" className="em:mt-0">
-            <NetworkTab rule={rule} globalConfig={globalConfig} onChange={handleFieldChange} />
-          </TabsContent>
-
+        <div className="em:flex-1 em:overflow-y-auto em:p-4 em:min-h-0">
           <TabsContent value="response" className="em:mt-0">
             <ResponseTab rule={rule} onChange={handleFieldChange} />
           </TabsContent>
+
+          <TabsContent value="network" className="em:mt-0">
+            <NetworkTab rule={rule} globalConfig={globalConfig} onChange={handleFieldChange} />
+          </TabsContent>
         </div>
       </Tabs>
-
-      {/* Footer Buttons */}
-      <div className="em:flex em:gap-2 em:justify-end em:px-4 em:py-2 em:border-t em:border-gray-200 em:bg-white">
-        <Button variant="outline" onClick={handleCancel}>
-          {t('common.cancel')}
-        </Button>
-        <Button onClick={handleApply}>{t('common.applyChanges')}</Button>
-      </div>
     </div>
   );
 }
