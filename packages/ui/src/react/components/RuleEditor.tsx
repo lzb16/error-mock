@@ -147,7 +147,7 @@ export function RuleEditor() {
           </div>
         </div>
 
-        <div className="em:flex-1 em:p-4 em:min-h-0 em:overflow-hidden">
+        <div className="em:flex-1 em:px-4 em:pb-4 em:pt-3 em:min-h-0 em:overflow-hidden">
           <TabsContent value="response" className="em:mt-0 em:h-full em:overflow-y-auto">
             <ResponseTab rule={rule} onChange={handleFieldChange} />
           </TabsContent>

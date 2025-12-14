@@ -225,12 +225,12 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
                   <Label htmlFor="detailErrMsg" className="em:text-[11px] em:text-gray-500">
                     detail_err_msg
                   </Label>
-                  <Input
+                  <Textarea
                     id="detailErrMsg"
-                    type="text"
                     value={rule.response.detailErrMsg}
                     onChange={(e) => onChange('response.detailErrMsg', e.target.value)}
-                    className="em:h-8 em:text-sm"
+                    className="em:text-sm em:min-h-[60px] em:resize-none"
+                    rows={2}
                   />
                 </div>
               </div>

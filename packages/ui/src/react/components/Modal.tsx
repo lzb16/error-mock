@@ -41,7 +41,7 @@ export function Modal() {
   return (
     <Dialog open={isModalOpen} onOpenChange={setModalOpen}>
       <DialogContent
-        className="em:w-11/12 em:max-w-7xl em:h-5/6 em:max-h-[90vh] em:p-0 em:gap-0 em:flex em:flex-col em:overflow-hidden em:min-h-0"
+        className="em:w-11/12 em:max-w-5xl em:h-5/6 em:max-h-[90vh] em:p-0 em:gap-0 em:flex em:flex-col em:overflow-hidden em:min-h-0"
         aria-describedby={undefined}
         onPointerDownOutside={handleInteractOutside}
         onInteractOutside={handleInteractOutside}
