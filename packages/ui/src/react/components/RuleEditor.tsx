@@ -3,12 +3,12 @@ import { useToastStore } from '@/stores/useToastStore';
 import { useConfigStore } from '@/stores/useConfigStore';
 import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { useI18n } from '@/i18n';
 import { NetworkTab } from './RuleEditor/NetworkTab';
 import { ResponseTab } from './RuleEditor/ResponseTab';
+import { MethodBadge } from './MethodBadge';
 
 export function RuleEditor() {
   const { t } = useI18n();
@@ -97,9 +97,7 @@ export function RuleEditor() {
       <div className="em:px-4 em:py-2 em:border-b em:border-gray-200 em:bg-gray-50">
         <div className="em:flex em:items-center em:justify-between em:gap-4 em:p-3 em:bg-white em:rounded-lg em:border em:border-gray-200">
           <div className="em:flex em:items-center em:gap-3 em:min-w-0 em:flex-1">
-            <Badge variant="secondary" className="em:bg-blue-100 em:text-blue-800">
-              {selectedMeta.method}
-            </Badge>
+            <MethodBadge method={selectedMeta.method} />
             <div className="em:flex em:items-center em:gap-2 em:min-w-0">
               <h3 className="em:text-base em:font-semibold em:text-gray-900 em:truncate em:min-w-0" title={selectedMeta.name}>
                 {selectedMeta.name}

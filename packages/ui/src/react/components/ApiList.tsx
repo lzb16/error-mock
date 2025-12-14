@@ -4,19 +4,10 @@ import { cn } from '@/lib/utils';
 import { useRulesStore } from '@/stores/useRulesStore';
 import type { ApiMeta } from '@error-mock/core';
 import { useI18n } from '@/i18n';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
-const METHOD_COLORS: Record<string, string> = {
-  GET: 'em:bg-blue-100 em:text-blue-800',
-  POST: 'em:bg-green-100 em:text-green-800',
-  PUT: 'em:bg-orange-100 em:text-orange-800',
-  DELETE: 'em:bg-red-100 em:text-red-800',
-  PATCH: 'em:bg-purple-100 em:text-purple-800',
-};
-
-const DEFAULT_METHOD_COLOR = 'em:bg-gray-100 em:text-gray-800';
+import { Badge } from '@/components/ui/badge';
+import { MethodBadge } from './MethodBadge';
 
 export const ApiList: React.FC = () => {
   const { t } = useI18n();
@@ -156,20 +147,12 @@ export const ApiList: React.FC = () => {
                             variant="ghost"
                             type="button"
                           >
-                            <Badge
-                              variant="secondary"
-                              className={cn(
-                                'em:flex-shrink-0 em:text-[10px] em:font-bold',
-                                METHOD_COLORS[api.method.toUpperCase()] || DEFAULT_METHOD_COLOR
-                              )}
-                            >
-                              {api.method.toUpperCase()}
-                            </Badge>
+                            <MethodBadge method={api.method} />
                             <div className="em:min-w-0 em:flex-1">
                               <div className="em:flex em:items-center em:justify-between em:gap-2">
                                 <p
                                   className={cn(
-                                    'em:truncate em:text-sm em:font-medium',
+                                    'em:truncate em:text-sm em:font-medium em:text-left',
                                     isSelected ? 'em:text-blue-900' : 'em:text-gray-900'
                                   )}
                                 >
@@ -182,7 +165,7 @@ export const ApiList: React.FC = () => {
                                   )}
                                 />
                               </div>
-                              <p className="em:truncate em:text-xs em:text-gray-500">{api.url}</p>
+                              <p className="em:truncate em:text-xs em:text-gray-500 em:text-left">{api.url}</p>
                             </div>
                           </Button>
                         );
