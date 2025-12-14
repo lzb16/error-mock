@@ -20,10 +20,10 @@ export function NetworkTab({
 
   return (
     <div className="em:space-y-0">
-      <div className="em:p-6 em:space-y-6">
+      <div className="em:p-4 em:space-y-4">
         {/* Delay Configuration */}
         <div>
-          <label className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-3">
+          <label className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-2">
             {t('networkTab.delay.title')}
           </label>
 
@@ -64,7 +64,7 @@ export function NetworkTab({
 
           {/* Conditional: Show profile and custom delay inputs when overriding */}
           {rule.network.profile !== null && rule.network.profile !== undefined && (
-            <div className="em:ml-9 em:mt-3 em:space-y-3">
+            <div className="em:ml-9 em:mt-2 em:space-y-3">
               <div>
                 <label
                   htmlFor="networkProfile"
@@ -104,7 +104,7 @@ export function NetworkTab({
                     onChange(
                       'network.customDelay',
                       e.target.value ? parseInt(e.target.value) : undefined
-                  )
+                    )
                   }
                   className="em:w-full em:px-3 em:py-2 em:border em:border-gray-300 em:rounded-md em:text-sm focus:em:outline-none focus:em:ring-2 focus:em:ring-blue-500 focus:em:border-blue-500"
                   placeholder={t('networkTab.delay.custom.placeholder')}
@@ -119,7 +119,7 @@ export function NetworkTab({
 
         {/* Network Errors */}
         <div>
-          <label className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-3">
+          <label className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-2">
             {t('networkTab.errors.title')}
           </label>
 
@@ -176,7 +176,7 @@ export function NetworkTab({
           </div>
 
           {/* Random Failure */}
-          <div className="em:mt-4 em:pt-4 em:border-t em:border-gray-300">
+          <div className="em:mt-3 em:pt-3 em:border-t em:border-gray-300">
             <label className="em:flex em:items-center em:gap-3 em:mb-3 em:cursor-pointer">
               <input
                 type="checkbox"

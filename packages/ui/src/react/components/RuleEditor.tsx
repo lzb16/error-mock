@@ -93,8 +93,8 @@ export function RuleEditor() {
   return (
     <div className="em:flex em:flex-col em:h-full">
       {/* Rule Info Header + Enable Toggle */}
-      <div className="em:px-6 em:py-4 em:border-b em:border-gray-200 em:bg-gray-50">
-        <div className="em:flex em:items-center em:justify-between em:gap-4 em:p-4 em:bg-white em:rounded-lg em:border em:border-gray-200">
+      <div className="em:px-4 em:py-3 em:border-b em:border-gray-200 em:bg-gray-50">
+        <div className="em:flex em:items-center em:justify-between em:gap-4 em:p-3 em:bg-white em:rounded-lg em:border em:border-gray-200">
           <div className="em:flex em:items-center em:gap-3 em:min-w-0 em:flex-1">
             <span className="em:inline-flex em:items-center em:px-2 em:py-0.5 em:rounded em:text-xs em:font-medium em:bg-blue-100 em:text-blue-800">
               {selectedMeta.method}
@@ -123,14 +123,14 @@ export function RuleEditor() {
 
       {/* Tabs */}
       <Tabs defaultValue="network" className="em:flex-1 em:flex em:flex-col em:overflow-hidden em:min-h-0">
-        <div className="em:px-6 em:pt-4">
+        <div className="em:px-4 em:pt-3">
           <TabsList>
             <TabsTrigger value="network">{t('common.network')}</TabsTrigger>
             <TabsTrigger value="response">{t('common.response')}</TabsTrigger>
           </TabsList>
         </div>
 
-        <div className="em:flex-1 em:overflow-y-auto em:px-6 em:py-4 em:min-h-0">
+        <div className="em:flex-1 em:overflow-y-auto em:px-4 em:py-3 em:min-h-0">
           <TabsContent value="network" className="em:mt-0">
             <NetworkTab rule={rule} globalConfig={globalConfig} onChange={handleFieldChange} />
           </TabsContent>
@@ -142,7 +142,7 @@ export function RuleEditor() {
       </Tabs>
 
       {/* Footer Buttons */}
-      <div className="em:flex em:gap-2 em:justify-end em:px-6 em:py-4 em:border-t em:border-gray-200 em:bg-white">
+      <div className="em:flex em:gap-2 em:justify-end em:px-4 em:py-3 em:border-t em:border-gray-200 em:bg-white">
         <Button variant="outline" onClick={handleCancel}>
           {t('common.cancel')}
         </Button>

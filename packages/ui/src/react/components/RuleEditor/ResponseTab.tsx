@@ -130,7 +130,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
   return (
     <div className="em:space-y-0">
       {/* Status Code Selection */}
-      <div className="em:p-4 em:bg-white em:border-b">
+      <div className="em:p-3 em:bg-white em:border-b">
         <label
           htmlFor="statusCode"
           className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-2"
@@ -164,7 +164,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
 
       {/* Status 2xx-3xx: Business Error Configuration */}
       {rule.response.status >= 200 && rule.response.status < 400 && (
-        <div className="em:p-6 em:space-y-6">
+        <div className="em:p-4 em:space-y-4">
           {/* Business Templates */}
           <div>
             <label className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-2">
@@ -185,11 +185,11 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
 
           {/* Business Error Fields */}
           <div>
-            <label className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-3">
+            <label className="em:block em:text-sm em:font-medium em:text-gray-700 em:mb-2">
               {t('responseTab.businessError.title')}
             </label>
 
-            <div className="em:grid em:grid-cols-3 em:gap-3">
+            <div className="em:grid em:grid-cols-3 em:gap-2">
               <div>
                 <label
                   htmlFor="errNo"
@@ -228,7 +228,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
               </div>
             </div>
 
-            <div className="em:mt-3">
+            <div className="em:mt-2">
               <label
                 htmlFor="detailErrMsg"
                 className="em:block em:text-xs em:text-gray-500 em:mb-1"
@@ -280,7 +280,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
 
       {/* Status >= 400: HTTP Error Mode */}
       {rule.response.status >= 400 && (
-        <div className="em:p-6">
+        <div className="em:p-4">
           <div className="em:bg-yellow-50 em:border em:border-yellow-200 em:rounded-lg em:p-4">
             <div className="em:flex em:items-start em:gap-3">
               <AlertTriangle className="em:w-5 em:h-5 em:text-yellow-600 em:shrink-0 em:mt-0.5" />
@@ -296,7 +296,7 @@ export function ResponseTab({ rule, onChange }: ResponseTabProps) {
           </div>
 
           {/* Optional: Custom Error Body */}
-          <details className="em:mt-4">
+          <details className="em:mt-3">
             <summary className="em:text-sm em:font-medium em:cursor-pointer em:text-blue-600 hover:em:text-blue-700">
               {t('responseTab.httpError.advanced')}
             </summary>
