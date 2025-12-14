@@ -147,12 +147,12 @@ export function RuleEditor() {
           </div>
         </div>
 
-        <div className="em:flex-1 em:overflow-y-auto em:p-4 em:min-h-0">
-          <TabsContent value="response" className="em:mt-0">
+        <div className="em:flex-1 em:p-4 em:min-h-0 em:overflow-hidden">
+          <TabsContent value="response" className="em:mt-0 em:h-full em:overflow-y-auto">
             <ResponseTab rule={rule} onChange={handleFieldChange} />
           </TabsContent>
 
-          <TabsContent value="network" className="em:mt-0">
+          <TabsContent value="network" className="em:mt-0 em:h-full em:overflow-y-auto">
             <NetworkTab rule={rule} globalConfig={globalConfig} onChange={handleFieldChange} />
           </TabsContent>
         </div>

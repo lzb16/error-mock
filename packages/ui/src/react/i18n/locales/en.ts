@@ -73,7 +73,7 @@ export const en: Translations = {
   'responseTab.status.group.success': 'Success',
   'responseTab.status.group.clientError': 'Client Error',
   'responseTab.status.group.serverError': 'Server Error',
-  'responseTab.templates.title': '📚 Business Templates',
+  'responseTab.templates.title': 'Templates',
   'responseTab.businessError.title': 'Business Error',
   'responseTab.businessError.errNoHelp': '0 = success',
   'responseTab.result.title': 'Response Data (result field)',

@@ -73,7 +73,7 @@ export const zh: Translations = {
   'responseTab.status.group.success': '成功',
   'responseTab.status.group.clientError': '客户端错误',
   'responseTab.status.group.serverError': '服务端错误',
-  'responseTab.templates.title': '📚 业务模板',
+  'responseTab.templates.title': '业务模板',
   'responseTab.businessError.title': '业务错误',
   'responseTab.businessError.errNoHelp': '0=成功',
   'responseTab.result.title': '响应数据（result 字段）',
