@@ -6,7 +6,7 @@ import type { GlobalConfig } from '@error-mock/core';
 import { useI18n } from '@/i18n';
 
 const MARGIN = 20;
-const BUTTON_SIZE = 56;
+const BUTTON_SIZE = 48;
 
 interface Position {
   x: number;
@@ -67,6 +67,7 @@ export function FloatButton() {
   const activeMockCount = useRulesStore((state) => state.activeMockCount());
 
   const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
+  const [initialized, setInitialized] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const draggingRef = useRef(false); // Sync dragging state to avoid stale closure
   const dragStartRef = useRef<DragStart>({ x: 0, y: 0, time: 0 });
@@ -94,6 +95,7 @@ export function FloatButton() {
     };
 
     initPosition();
+    setInitialized(true);
   }, [globalConfig.position]);
 
   // Drag handlers using Pointer Events (supports touch and mouse)
@@ -168,9 +170,11 @@ export function FloatButton() {
     }
   };
 
+  if (!initialized) return null;
+
   return (
     <button
-      className="em:fixed em:touch-none em:top-0 em:left-0 em:bg-blue-600 em:text-white em:rounded-full em:w-14 em:h-14 em:shadow-lg em:flex em:items-center em:justify-center em:cursor-pointer hover:em:bg-blue-700 hover:em:scale-105 em:transition-transform em:duration-200 focus:em:outline-none focus:em:ring-2 focus:em:ring-offset-2 focus:em:ring-blue-500"
+      className="em:fixed em:touch-none em:top-0 em:left-0 em:bg-blue-600 em:text-white em:rounded-full em:w-12 em:h-12 em:shadow-lg em:flex em:items-center em:justify-center em:cursor-pointer hover:em:bg-blue-700 hover:em:scale-105 em:transition-transform em:duration-200 focus:em:outline-none focus:em:ring-2 focus:em:ring-offset-2 focus:em:ring-blue-500"
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
         willChange: isDragging ? 'transform' : 'auto',
@@ -190,11 +194,14 @@ export function FloatButton() {
       type="button"
     >
       {/* Wand Sparkles icon */}
-      <WandSparkles className="em:h-8 em:w-8" />
+      <WandSparkles className="em:h-6 em:w-6" />
 
-      {/* Active mock count badge */}
+      {/* Active mock count badge - positioned relative to button */}
       {activeMockCount > 0 && (
-        <span className="em:absolute -em:top-1 -em:right-1 em:bg-red-500 em:text-white em:text-xs em:font-bold em:w-6 em:h-6 em:rounded-full em:flex em:items-center em:justify-center em:border-2 em:border-white em:animate-pulse">
+        <span
+          className="em:absolute em:bg-emerald-600 em:text-white em:text-xs em:font-bold em:w-5 em:h-5 em:rounded-full em:flex em:items-center em:justify-center em:border-2 em:border-white em:animate-pulse"
+          style={{ top: '-4px', right: '-4px' }}
+        >
           {activeMockCount}
         </span>
       )}
