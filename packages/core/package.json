@@ -1,6 +1,16 @@
 {
   "name": "@error-mock/core",
   "version": "0.0.1",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lzb16/error-mock.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/lzb16/error-mock/issues"
+  },
+  "homepage": "https://github.com/lzb16/error-mock#readme",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

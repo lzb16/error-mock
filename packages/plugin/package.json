@@ -1,6 +1,16 @@
 {
   "name": "@error-mock/plugin",
   "version": "0.0.1",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lzb16/error-mock.git",
+    "directory": "packages/plugin"
+  },
+  "bugs": {
+    "url": "https://github.com/lzb16/error-mock/issues"
+  },
+  "homepage": "https://github.com/lzb16/error-mock#readme",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -43,4 +53,3 @@
     "webpack": "^5.89.0"
   }
 }
-
