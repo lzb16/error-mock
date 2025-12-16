@@ -6,6 +6,7 @@ import {
   updateRules
 } from '../interceptor/fetch';
 import type { MockRule } from '../types';
+import { DEFAULT_FIELD_OMIT_CONFIG, DEFAULT_NETWORK_CONFIG, DEFAULT_RESPONSE_CONFIG } from '../constants';
 
 describe('FetchInterceptor', () => {
   const originalFetch = globalThis.fetch;
@@ -21,23 +22,33 @@ describe('FetchInterceptor', () => {
     globalThis.fetch = originalFetch;
   });
 
-  const createRule = (overrides: Partial<MockRule> = {}): MockRule => ({
-    id: 'test',
-    url: '/api/test',
-    method: 'GET',
-    enabled: true,
-    mockType: 'success',
-    network: { delay: 0, timeout: false, offline: false, failRate: 0 },
-    business: { errNo: 0, errMsg: '', detailErrMsg: '' },
-    response: { useDefault: false, customResult: { mocked: true } },
-    fieldOmit: {
-      enabled: false,
-      mode: 'manual',
-      fields: [],
-      random: { probability: 0, maxOmitCount: 0, excludeFields: [], depthLimit: 5, omitMode: 'delete' },
-    },
-    ...overrides,
-  });
+  const createRule = (overrides: Partial<MockRule> = {}): MockRule => {
+    const { response, network, fieldOmit, ...rest } = overrides;
+    return {
+      id: 'test',
+      url: '/api/test',
+      method: 'GET',
+      enabled: true,
+      response: {
+        ...DEFAULT_RESPONSE_CONFIG,
+        result: { mocked: true },
+        ...(response ?? {}),
+      },
+      network: {
+        ...DEFAULT_NETWORK_CONFIG,
+        ...(network ?? {}),
+      },
+      fieldOmit: {
+        ...DEFAULT_FIELD_OMIT_CONFIG,
+        ...(fieldOmit ?? {}),
+        random: {
+          ...DEFAULT_FIELD_OMIT_CONFIG.random,
+          ...(fieldOmit?.random ?? {}),
+        },
+      },
+      ...rest,
+    };
+  };
 
   it('intercepts matching request and returns mock response', async () => {
     const rules = [createRule()];
@@ -73,8 +84,7 @@ describe('FetchInterceptor', () => {
 
   it('returns business error response', async () => {
     const rules = [createRule({
-      mockType: 'businessError',
-      business: { errNo: 10001, errMsg: 'Token expired', detailErrMsg: 'Please login' },
+      response: { errNo: 10001, errMsg: 'Token expired', detailErrMsg: 'Please login' },
     })];
     installFetchInterceptor(rules);
 
@@ -87,7 +97,7 @@ describe('FetchInterceptor', () => {
 
   it('throws TypeError for offline simulation', async () => {
     const rules = [createRule({
-      network: { delay: 0, timeout: false, offline: true, failRate: 0 },
+      network: { errorMode: 'offline' },
     })];
     installFetchInterceptor(rules);
 
@@ -96,7 +106,7 @@ describe('FetchInterceptor', () => {
 
   it('throws DOMException for timeout simulation', async () => {
     const rules = [createRule({
-      network: { delay: 0, timeout: true, offline: false, failRate: 0 },
+      network: { errorMode: 'timeout' },
     })];
     installFetchInterceptor(rules);
 
@@ -105,7 +115,7 @@ describe('FetchInterceptor', () => {
 
   it('respects AbortSignal', async () => {
     const rules = [createRule({
-      network: { delay: 1000, timeout: false, offline: false, failRate: 0 },
+      network: { customDelay: 1000 },
     })];
     installFetchInterceptor(rules);
 
@@ -120,28 +130,29 @@ describe('FetchInterceptor', () => {
 
   it('applies delay', async () => {
     vi.useFakeTimers();
+    try {
+      const rules = [createRule({
+        network: { customDelay: 500 },
+      })];
+      installFetchInterceptor(rules);
 
-    const rules = [createRule({
-      network: { delay: 500, timeout: false, offline: false, failRate: 0 },
-    })];
-    installFetchInterceptor(rules);
+      const fetchPromise = fetch('/api/test');
 
-    const fetchPromise = fetch('/api/test');
+      // Should not resolve immediately
+      await vi.advanceTimersByTimeAsync(100);
 
-    // Should not resolve immediately
-    await vi.advanceTimersByTimeAsync(100);
+      // Advance past delay
+      await vi.advanceTimersByTimeAsync(500);
 
-    // Advance past delay
-    await vi.advanceTimersByTimeAsync(500);
-
-    const response = await fetchPromise;
-    expect(response.status).toBe(200);
-
-    vi.useRealTimers();
+      const response = await fetchPromise;
+      expect(response.status).toBe(200);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('updates rules dynamically', async () => {
-    const rules = [createRule({ response: { useDefault: false, customResult: { v: 1 } } })];
+    const rules = [createRule({ response: { result: { v: 1 } } })];
     installFetchInterceptor(rules);
 
     let response = await fetch('/api/test');
@@ -149,7 +160,7 @@ describe('FetchInterceptor', () => {
     expect(data.result.v).toBe(1);
 
     // Update rules
-    updateRules([createRule({ response: { useDefault: false, customResult: { v: 2 } } })]);
+    updateRules([createRule({ response: { result: { v: 2 } } })]);
 
     response = await fetch('/api/test');
     data = await response.json();
@@ -157,7 +168,9 @@ describe('FetchInterceptor', () => {
   });
 
   it('bypasses OPTIONS requests by default', async () => {
-    const rules = [createRule({ method: 'GET' })];
+    // Create a matching rule for OPTIONS to ensure bypass is actually tested.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rules = [createRule({ method: 'OPTIONS' as any })];
     installFetchInterceptor(rules);
 
     const response = await fetch('/api/test', { method: 'OPTIONS' });
@@ -171,7 +184,7 @@ describe('FetchInterceptor', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.05);
 
     const rules = [createRule({
-      network: { delay: 0, timeout: false, offline: false, failRate: 10 },
+      network: { failRate: 10 },
     })];
     installFetchInterceptor(rules);
 
@@ -182,7 +195,7 @@ describe('FetchInterceptor', () => {
 
   it('checks abort signal after delay', async () => {
     const rules = [createRule({
-      network: { delay: 100, timeout: false, offline: false, failRate: 0 },
+      network: { customDelay: 100 },
     })];
     installFetchInterceptor(rules);
 
@@ -198,7 +211,7 @@ describe('FetchInterceptor', () => {
 
   it('applies field omission when enabled', async () => {
     const rules = [createRule({
-      response: { useDefault: false, customResult: { field1: 'value1', field2: 'value2' } },
+      response: { result: { field1: 'value1', field2: 'value2' } },
       fieldOmit: {
         enabled: true,
         mode: 'manual',
@@ -215,16 +228,16 @@ describe('FetchInterceptor', () => {
     expect('field2' in data.result).toBe(false);
   });
 
-  it('uses default response when useDefault is true', async () => {
+  it('uses default response config when result is empty object', async () => {
     const rules = [createRule({
-      response: { useDefault: true, customResult: { ignored: 'value' } },
+      response: { ...DEFAULT_RESPONSE_CONFIG },
     })];
     installFetchInterceptor(rules);
 
     const response = await fetch('/api/test');
     const data = await response.json();
 
-    // Should use empty object as default, not the customResult
+    // Default response config has empty object result
     expect(data.result).toEqual({});
     expect(data.err_no).toBe(0);
   });
@@ -244,7 +257,7 @@ describe('FetchInterceptor', () => {
 
   it('supports custom bypass configuration with URL patterns', async () => {
     const rules = [createRule()];
-    installFetchInterceptor(rules, { urlPatterns: [/^\/api\/test$/] });
+    installFetchInterceptor(rules, undefined, { urlPatterns: [/^\/api\/test$/] });
 
     const response = await fetch('/api/test');
     const data = await response.json();
@@ -265,7 +278,7 @@ describe('FetchInterceptor', () => {
 
   it('bypasses requests to specified origins', async () => {
     const rules = [createRule({ url: '/api/test', method: 'GET' })];
-    installFetchInterceptor(rules, { origins: ['https://api.foo.com'] });
+    installFetchInterceptor(rules, undefined, { origins: ['https://api.foo.com'] });
 
     const response = await fetch('https://api.foo.com/api/test');
     const data = await response.json();
@@ -284,21 +297,20 @@ describe('FetchInterceptor', () => {
     expect(data.result).toEqual({ mocked: true });
   });
 
-  it('throws TypeError for mockType: networkError', async () => {
-    const rules = [createRule({
-      mockType: 'networkError',
-    })];
+  it('throws TypeError when errorMode is offline', async () => {
+    const rules = [createRule({ network: { errorMode: 'offline' } })];
     installFetchInterceptor(rules);
 
     await expect(fetch('/api/test')).rejects.toThrow(TypeError);
     await expect(fetch('/api/test')).rejects.toThrow('Failed to fetch');
   });
 
-  it('mockType: networkError always fails regardless of network settings', async () => {
-    const rules = [createRule({
-      mockType: 'networkError',
-      network: { delay: 0, timeout: false, offline: false, failRate: 0 },
-    })];
+  it('errorMode: offline always fails regardless of other network settings', async () => {
+    const rules = [
+      createRule({
+        network: { errorMode: 'offline', failRate: 0 },
+      }),
+    ];
     installFetchInterceptor(rules);
 
     await expect(fetch('/api/test')).rejects.toThrow(TypeError);
@@ -306,7 +318,7 @@ describe('FetchInterceptor', () => {
 
   it('cleans up abort listeners after delay completes', async () => {
     const rules = [createRule({
-      network: { delay: 100, timeout: false, offline: false, failRate: 0 },
+      network: { customDelay: 100 },
     })];
     installFetchInterceptor(rules);
 
@@ -329,7 +341,7 @@ describe('FetchInterceptor', () => {
 
   it('cleans up abort listeners when abort is triggered during delay', async () => {
     const rules = [createRule({
-      network: { delay: 200, timeout: false, offline: false, failRate: 0 },
+      network: { customDelay: 200 },
     })];
     installFetchInterceptor(rules);
 
@@ -347,8 +359,8 @@ describe('FetchInterceptor', () => {
 
   describe('contentTypes bypass', () => {
     it('bypasses requests with specified content-type in Headers', async () => {
-      const rules = [createRule()];
-      installFetchInterceptor(rules, { contentTypes: ['application/octet-stream'] });
+      const rules = [createRule({ method: 'POST' })];
+      installFetchInterceptor(rules, undefined, { contentTypes: ['application/octet-stream'] });
 
       const headers = new Headers();
       headers.set('content-type', 'application/octet-stream');
@@ -364,8 +376,8 @@ describe('FetchInterceptor', () => {
     });
 
     it('bypasses requests with specified content-type in object headers', async () => {
-      const rules = [createRule()];
-      installFetchInterceptor(rules, { contentTypes: ['multipart/form-data'] });
+      const rules = [createRule({ method: 'POST' })];
+      installFetchInterceptor(rules, undefined, { contentTypes: ['multipart/form-data'] });
 
       const response = await fetch('/api/test', {
         method: 'POST',
@@ -380,8 +392,8 @@ describe('FetchInterceptor', () => {
     });
 
     it('bypasses requests with specified content-type in array headers', async () => {
-      const rules = [createRule()];
-      installFetchInterceptor(rules, { contentTypes: ['video/mp4'] });
+      const rules = [createRule({ method: 'POST' })];
+      installFetchInterceptor(rules, undefined, { contentTypes: ['video/mp4'] });
 
       const response = await fetch('/api/test', {
         method: 'POST',
@@ -396,8 +408,8 @@ describe('FetchInterceptor', () => {
     });
 
     it('bypasses Request object with specified content-type', async () => {
-      const rules = [createRule()];
-      installFetchInterceptor(rules, { contentTypes: ['image/png'] });
+      const rules = [createRule({ method: 'POST' })];
+      installFetchInterceptor(rules, undefined, { contentTypes: ['image/png'] });
 
       const headers = new Headers();
       headers.set('content-type', 'image/png');
@@ -415,7 +427,7 @@ describe('FetchInterceptor', () => {
 
     it('does not bypass when content-type does not match', async () => {
       const rules = [createRule({ method: 'POST' })];
-      installFetchInterceptor(rules, { contentTypes: ['application/octet-stream'] });
+      installFetchInterceptor(rules, undefined, { contentTypes: ['application/octet-stream'] });
 
       const response = await fetch('/api/test', {
         method: 'POST',
@@ -432,7 +444,7 @@ describe('FetchInterceptor', () => {
 
     it('supports multiple content-type patterns', async () => {
       const rules = [createRule({ method: 'POST' })];
-      installFetchInterceptor(rules, { contentTypes: ['image/', 'video/', 'audio/'] });
+      installFetchInterceptor(rules, undefined, { contentTypes: ['image/', 'video/', 'audio/'] });
 
       const response1 = await fetch('/api/test', {
         method: 'POST',
@@ -458,7 +470,7 @@ describe('FetchInterceptor', () => {
 
     it('does not bypass when contentTypes is empty', async () => {
       const rules = [createRule({ method: 'POST' })];
-      installFetchInterceptor(rules, { contentTypes: [] });
+      installFetchInterceptor(rules, undefined, { contentTypes: [] });
 
       const response = await fetch('/api/test', {
         method: 'POST',
@@ -473,7 +485,7 @@ describe('FetchInterceptor', () => {
 
     it('handles requests without content-type header', async () => {
       const rules = [createRule()];
-      installFetchInterceptor(rules, { contentTypes: ['application/octet-stream'] });
+      installFetchInterceptor(rules, undefined, { contentTypes: ['application/octet-stream'] });
 
       const response = await fetch('/api/test', { method: 'GET' });
       const data = await response.json();
@@ -486,7 +498,7 @@ describe('FetchInterceptor', () => {
   describe('AbortSignal edge cases', () => {
     it('throws immediately if signal is already aborted before fetch', async () => {
       const rules = [createRule({
-        network: { delay: 1000, timeout: false, offline: false, failRate: 0 },
+        network: { customDelay: 1000 },
       })];
       installFetchInterceptor(rules);
 
@@ -504,7 +516,7 @@ describe('FetchInterceptor', () => {
       vi.useFakeTimers();
 
       const rules = [createRule({
-        network: { delay: 1000, timeout: false, offline: false, failRate: 0 },
+        network: { customDelay: 1000 },
       })];
       installFetchInterceptor(rules);
 

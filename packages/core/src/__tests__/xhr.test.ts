@@ -2,25 +2,36 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { installXHRInterceptor, uninstallXHRInterceptor } from '../interceptor/xhr';
 import type { MockRule } from '../types';
+import { DEFAULT_FIELD_OMIT_CONFIG, DEFAULT_NETWORK_CONFIG, DEFAULT_RESPONSE_CONFIG } from '../constants';
 
 describe('XHRInterceptor', () => {
-  const createRule = (overrides: Partial<MockRule> = {}): MockRule => ({
-    id: 'test',
-    url: '/api/test',
-    method: 'GET',
-    enabled: true,
-    mockType: 'success',
-    network: { delay: 0, timeout: false, offline: false, failRate: 0 },
-    business: { errNo: 0, errMsg: '', detailErrMsg: '' },
-    response: { useDefault: false, customResult: { mocked: true } },
-    fieldOmit: {
-      enabled: false,
-      mode: 'manual',
-      fields: [],
-      random: { probability: 0, maxOmitCount: 0, excludeFields: [], depthLimit: 5, omitMode: 'delete' },
-    },
-    ...overrides,
-  });
+  const createRule = (overrides: Partial<MockRule> = {}): MockRule => {
+    const { response, network, fieldOmit, ...rest } = overrides;
+    return {
+      id: 'test',
+      url: '/api/test',
+      method: 'GET',
+      enabled: true,
+      response: {
+        ...DEFAULT_RESPONSE_CONFIG,
+        result: { mocked: true },
+        ...(response ?? {}),
+      },
+      network: {
+        ...DEFAULT_NETWORK_CONFIG,
+        ...(network ?? {}),
+      },
+      fieldOmit: {
+        ...DEFAULT_FIELD_OMIT_CONFIG,
+        ...(fieldOmit ?? {}),
+        random: {
+          ...DEFAULT_FIELD_OMIT_CONFIG.random,
+          ...(fieldOmit?.random ?? {}),
+        },
+      },
+      ...rest,
+    };
+  };
 
   afterEach(() => {
     uninstallXHRInterceptor();
@@ -75,8 +86,7 @@ describe('XHRInterceptor', () => {
 
   it('returns business error response', async () => {
     const rules = [createRule({
-      mockType: 'businessError',
-      business: { errNo: 10001, errMsg: 'Error', detailErrMsg: '' },
+      response: { errNo: 10001, errMsg: 'Error', detailErrMsg: '' },
     })];
     installXHRInterceptor(rules);
 
@@ -88,7 +98,7 @@ describe('XHRInterceptor', () => {
 
   it('triggers onerror for offline simulation', async () => {
     const rules = [createRule({
-      network: { delay: 0, timeout: false, offline: true, failRate: 0 },
+      network: { errorMode: 'offline' },
     })];
     installXHRInterceptor(rules);
 
@@ -97,7 +107,7 @@ describe('XHRInterceptor', () => {
 
   it('triggers ontimeout for timeout simulation', async () => {
     const rules = [createRule({
-      network: { delay: 0, timeout: true, offline: false, failRate: 0 },
+      network: { errorMode: 'timeout' },
     })];
     installXHRInterceptor(rules);
 
@@ -185,7 +195,7 @@ describe('XHRInterceptor', () => {
 
   it('handles abort() method', async () => {
     const rules = [createRule({
-      network: { delay: 100, timeout: false, offline: false, failRate: 0 },
+      network: { customDelay: 100 },
     })];
     installXHRInterceptor(rules);
 
@@ -269,12 +279,12 @@ describe('XHRInterceptor', () => {
 
   it('applies field omission when enabled', async () => {
     const rules = [createRule({
-      response: { useDefault: false, customResult: { field1: 'value1', field2: 'value2' } },
+      response: { result: { field1: 'value1', field2: 'value2' } },
       fieldOmit: {
         enabled: true,
         mode: 'manual',
         fields: ['result.field2'],
-        random: { probability: 0, maxOmitCount: 0, excludeFields: [], depthLimit: 5, omitMode: 'delete' },
+        random: { ...DEFAULT_FIELD_OMIT_CONFIG.random },
       },
     })];
     installXHRInterceptor(rules);
@@ -286,40 +296,41 @@ describe('XHRInterceptor', () => {
     expect('field2' in data.result).toBe(false);
   });
 
-  it('uses default response when useDefault is true', async () => {
+  it('uses default response config when result is empty object', async () => {
     const rules = [createRule({
-      response: { useDefault: true, customResult: { ignored: 'value' } },
+      response: { ...DEFAULT_RESPONSE_CONFIG },
     })];
     installXHRInterceptor(rules);
 
     const result = await makeXHRRequest('GET', '/api/test');
     const data = JSON.parse(result.response);
 
-    // Should use empty object as default, not the customResult
+    // Default response config has empty object result
     expect(data.result).toEqual({});
     expect(data.err_no).toBe(0);
   });
 
   it('applies delay', async () => {
     vi.useFakeTimers();
+    try {
+      const rules = [createRule({
+        network: { customDelay: 500 },
+      })];
+      installXHRInterceptor(rules);
 
-    const rules = [createRule({
-      network: { delay: 500, timeout: false, offline: false, failRate: 0 },
-    })];
-    installXHRInterceptor(rules);
+      const xhrPromise = makeXHRRequest('GET', '/api/test');
 
-    const xhrPromise = makeXHRRequest('GET', '/api/test');
+      // Should not resolve immediately
+      await vi.advanceTimersByTimeAsync(100);
 
-    // Should not resolve immediately
-    await vi.advanceTimersByTimeAsync(100);
+      // Advance past delay
+      await vi.advanceTimersByTimeAsync(500);
 
-    // Advance past delay
-    await vi.advanceTimersByTimeAsync(500);
-
-    const result = await xhrPromise;
-    expect(result.status).toBe(200);
-
-    vi.useRealTimers();
+      const result = await xhrPromise;
+      expect(result.status).toBe(200);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('throws NotImplementedError for addEventListener', async () => {
@@ -420,7 +431,7 @@ describe('XHRInterceptor', () => {
 
   it('supports custom bypass configuration', async () => {
     const rules = [createRule({ method: 'GET' })];
-    installXHRInterceptor(rules, { methods: ['GET'] });
+    installXHRInterceptor(rules, undefined, { methods: ['GET'] });
 
     // GET requests should bypass
     const xhr = new XMLHttpRequest();
@@ -457,7 +468,7 @@ describe('XHRInterceptor', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.05);
 
     const rules = [createRule({
-      network: { delay: 0, timeout: false, offline: false, failRate: 10 },
+      network: { failRate: 10 },
     })];
     installXHRInterceptor(rules);
 
@@ -479,7 +490,7 @@ describe('XHRInterceptor', () => {
 
   it('bypasses requests to specified origins', async () => {
     const rules = [createRule({ url: '/api/test', method: 'GET' })];
-    installXHRInterceptor(rules, { origins: ['https://api.foo.com'] });
+    installXHRInterceptor(rules, undefined, { origins: ['https://api.foo.com'] });
 
     const xhr = new XMLHttpRequest();
     xhr.open('GET', 'https://api.foo.com/api/test');
@@ -490,7 +501,7 @@ describe('XHRInterceptor', () => {
 
   it('bypasses requests matching URL patterns', async () => {
     const rules = [createRule({ url: '/api/test', method: 'GET' })];
-    installXHRInterceptor(rules, { urlPatterns: [/^https:\/\/external\.com/] });
+    installXHRInterceptor(rules, undefined, { urlPatterns: [/^https:\/\/external\.com/] });
 
     const xhr = new XMLHttpRequest();
     xhr.open('GET', 'https://external.com/api/test');
@@ -499,20 +510,15 @@ describe('XHRInterceptor', () => {
     expect(xhr.readyState).toBe(1);
   });
 
-  it('triggers onerror for mockType: networkError', async () => {
-    const rules = [createRule({
-      mockType: 'networkError',
-    })];
+  it('triggers onerror when errorMode is offline', async () => {
+    const rules = [createRule({ network: { errorMode: 'offline' } })];
     installXHRInterceptor(rules);
 
     await expect(makeXHRRequest('GET', '/api/test')).rejects.toThrow('XHR error');
   });
 
-  it('mockType: networkError always fails regardless of network settings', async () => {
-    const rules = [createRule({
-      mockType: 'networkError',
-      network: { delay: 0, timeout: false, offline: false, failRate: 0 },
-    })];
+  it('errorMode: offline always fails regardless of other network settings', async () => {
+    const rules = [createRule({ network: { errorMode: 'offline', failRate: 0 } })];
     installXHRInterceptor(rules);
 
     await expect(makeXHRRequest('GET', '/api/test')).rejects.toThrow('XHR error');
@@ -521,7 +527,7 @@ describe('XHRInterceptor', () => {
   describe('contentTypes bypass', () => {
     it('bypasses requests with specified content-type', async () => {
       const rules = [createRule()];
-      installXHRInterceptor(rules, { contentTypes: ['application/octet-stream'] });
+      installXHRInterceptor(rules, undefined, { contentTypes: ['application/octet-stream'] });
 
       const xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/test');
@@ -545,7 +551,7 @@ describe('XHRInterceptor', () => {
 
     it('bypasses requests with content-type including boundary', async () => {
       const rules = [createRule()];
-      installXHRInterceptor(rules, { contentTypes: ['multipart/form-data'] });
+      installXHRInterceptor(rules, undefined, { contentTypes: ['multipart/form-data'] });
 
       const xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/test');
@@ -557,7 +563,7 @@ describe('XHRInterceptor', () => {
 
     it('does not bypass when content-type does not match', async () => {
       const rules = [createRule({ method: 'POST' })];
-      installXHRInterceptor(rules, { contentTypes: ['application/octet-stream'] });
+      installXHRInterceptor(rules, undefined, { contentTypes: ['application/octet-stream'] });
 
       const result = await new Promise<{ status: number; response: any }>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -575,7 +581,7 @@ describe('XHRInterceptor', () => {
 
     it('supports multiple content-type patterns', async () => {
       const rules = [createRule()];
-      installXHRInterceptor(rules, { contentTypes: ['image/', 'video/', 'audio/'] });
+      installXHRInterceptor(rules, undefined, { contentTypes: ['image/', 'video/', 'audio/'] });
 
       const xhr1 = new XMLHttpRequest();
       xhr1.open('POST', '/api/test');
@@ -595,7 +601,7 @@ describe('XHRInterceptor', () => {
 
     it('does not bypass when contentTypes is empty', async () => {
       const rules = [createRule({ method: 'POST' })];
-      installXHRInterceptor(rules, { contentTypes: [] });
+      installXHRInterceptor(rules, undefined, { contentTypes: [] });
 
       const result = await new Promise<{ status: number; response: any }>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -613,7 +619,7 @@ describe('XHRInterceptor', () => {
 
     it('handles requests without content-type header', async () => {
       const rules = [createRule()];
-      installXHRInterceptor(rules, { contentTypes: ['application/octet-stream'] });
+      installXHRInterceptor(rules, undefined, { contentTypes: ['application/octet-stream'] });
 
       const result = await makeXHRRequest('GET', '/api/test');
       const data = JSON.parse(result.response);
@@ -625,7 +631,7 @@ describe('XHRInterceptor', () => {
 
     it('handles case-insensitive content-type header key', async () => {
       const rules = [createRule()];
-      installXHRInterceptor(rules, { contentTypes: ['text/plain'] });
+      installXHRInterceptor(rules, undefined, { contentTypes: ['text/plain'] });
 
       const xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/test');

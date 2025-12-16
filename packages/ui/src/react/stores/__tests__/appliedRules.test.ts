@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useRulesStore } from '../useRulesStore';
 import type { ApiMeta, MockRule } from '@error-mock/core';
-import { DEFAULT_RESPONSE_CONFIG, DEFAULT_NETWORK_CONFIG, DEFAULT_FIELD_OMIT_CONFIG } from '@error-mock/core';
+import { DEFAULT_RESPONSE_CONFIG, DEFAULT_NETWORK_CONFIG, DEFAULT_FIELD_OMIT_CONFIG, STORAGE_SCHEMA_VERSION } from '@error-mock/core';
 
 describe('appliedRules separation', () => {
   const mockApiMeta: ApiMeta = {
@@ -89,7 +89,10 @@ describe('appliedRules separation', () => {
       fieldOmit: { ...DEFAULT_FIELD_OMIT_CONFIG },
     };
 
-    localStorage.setItem('error-mock:rules', JSON.stringify([savedRule]));
+    localStorage.setItem(
+      'error-mock:rules',
+      JSON.stringify({ version: STORAGE_SCHEMA_VERSION, rules: [savedRule] })
+    );
 
     // Load rules
     loadRules();

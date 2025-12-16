@@ -125,6 +125,7 @@ describe('useRulesStore', () => {
     discardDraftRule(mockApiMeta);
     expect(useRulesStore.getState().mockRules.get(id)?.enabled).toBe(false);
     expect(useRulesStore.getState().mockRules.get(id)?.response.status).toBe(200);
+    expect(() => JSON.stringify(useRulesStore.getState().mockRules.get(id)?.response.result)).not.toThrow();
   });
 });
 

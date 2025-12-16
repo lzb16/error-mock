@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RuleStorage } from '../storage/local';
 import type { MockRule } from '../types';
+import {
+  DEFAULT_FIELD_OMIT_CONFIG,
+  DEFAULT_GLOBAL_CONFIG,
+  DEFAULT_NETWORK_CONFIG,
+  DEFAULT_RESPONSE_CONFIG,
+  STORAGE_SCHEMA_VERSION,
+} from '../constants';
 
 describe('RuleStorage', () => {
   const storage = new RuleStorage('test-prefix');
@@ -10,16 +17,9 @@ describe('RuleStorage', () => {
     url: `/api/${id}`,
     method: 'GET',
     enabled: true,
-    mockType: 'success',
-    network: { delay: 0, timeout: false, offline: false, failRate: 0 },
-    business: { errNo: 0, errMsg: '', detailErrMsg: '' },
-    response: { useDefault: true, customResult: null },
-    fieldOmit: {
-      enabled: false,
-      mode: 'manual',
-      fields: [],
-      random: { probability: 0, maxOmitCount: 0, excludeFields: [], depthLimit: 5, omitMode: 'delete' },
-    },
+    response: { ...DEFAULT_RESPONSE_CONFIG },
+    network: { ...DEFAULT_NETWORK_CONFIG },
+    fieldOmit: { ...DEFAULT_FIELD_OMIT_CONFIG },
   });
 
   beforeEach(() => {
@@ -53,7 +53,7 @@ describe('RuleStorage', () => {
   it('exports and imports config', () => {
     const rules = [createRule('test1')];
     storage.saveRules(rules);
-    storage.saveGlobalConfig({ enabled: false });
+    storage.saveGlobalConfig({ enabled: false, networkProfile: 'slow3g' });
 
     const exported = storage.exportConfig();
     storage.clear();
@@ -63,6 +63,7 @@ describe('RuleStorage', () => {
     storage.importConfig(exported);
     expect(storage.getRules()).toEqual(rules);
     expect(storage.getGlobalConfig().enabled).toBe(false);
+    expect(storage.getGlobalConfig().networkProfile).toBe('slow3g');
   });
 
   it('handles localStorage errors when saving rules', () => {
@@ -113,24 +114,7 @@ describe('RuleStorage', () => {
 
     // Should return default config on parse error
     const config = storage.getGlobalConfig();
-    expect(config).toEqual({
-      enabled: true,
-      position: 'bottom-right',
-      theme: 'system',
-      keyboardShortcuts: true,
-      defaults: {
-        delay: 0,
-        mockType: 'none',
-        failRate: 0,
-        timeout: false,
-        offline: false,
-        business: {
-          errNo: 0,
-          errMsg: '',
-          detailErrMsg: '',
-        },
-      },
-    });
+    expect(config).toEqual(DEFAULT_GLOBAL_CONFIG);
   });
 
   it('handles localStorage errors when saving config', () => {
@@ -168,7 +152,7 @@ describe('RuleStorage', () => {
 
     localStorage.setItem(
       'test-prefix:rules',
-      JSON.stringify([invalidRule])
+      JSON.stringify({ version: STORAGE_SCHEMA_VERSION, rules: [invalidRule] })
     );
 
     // getRules should normalize the invalid method to GET
@@ -177,99 +161,31 @@ describe('RuleStorage', () => {
     expect(retrieved[0].method).toBe('GET');
   });
 
-  it('migrates legacy GlobalConfig (defaultDelay) to new format', () => {
-    // Store old format config with defaultDelay
-    const legacyConfig = {
+  it('clears rules when storage schema version is outdated', () => {
+    localStorage.setItem('test-prefix:rules', JSON.stringify({ version: 999, rules: [createRule('test1')] }));
+    expect(storage.getRules()).toEqual([]);
+    expect(localStorage.getItem('test-prefix:rules')).toBeNull();
+  });
+
+  it('ignores unknown legacy fields in config', () => {
+    localStorage.setItem(
+      'test-prefix:config',
+      JSON.stringify({
+        enabled: false,
+        position: 'top-left',
+        theme: 'dark',
+        keyboardShortcuts: false,
+        defaultDelay: 500, // legacy field (ignored)
+      })
+    );
+
+    const config = storage.getGlobalConfig();
+    expect(config).toEqual({
       enabled: false,
-      defaultDelay: 500,
       position: 'top-left',
       theme: 'dark',
       keyboardShortcuts: false,
-    };
-
-    localStorage.setItem('test-prefix:config', JSON.stringify(legacyConfig));
-
-    // getGlobalConfig should auto-migrate to new format
-    const config = storage.getGlobalConfig();
-
-    expect(config.enabled).toBe(false);
-    expect(config.position).toBe('top-left');
-    expect(config.theme).toBe('dark');
-    expect(config.keyboardShortcuts).toBe(false);
-
-    // Should have migrated defaultDelay to defaults.delay
-    expect(config.defaults).toBeDefined();
-    expect(config.defaults.delay).toBe(500);
-    expect(config.defaults.mockType).toBe('none');
-    expect(config.defaults.failRate).toBe(0);
-
-    // Should have persisted migrated config (no more defaultDelay)
-    const stored = JSON.parse(localStorage.getItem('test-prefix:config') || '{}');
-    expect(stored.defaultDelay).toBeUndefined();
-    expect(stored.defaults).toBeDefined();
-    expect(stored.defaults.delay).toBe(500);
-  });
-
-  it('handles invalid defaultDelay during migration', () => {
-    // Store config with invalid defaultDelay
-    const legacyConfig = {
-      enabled: true,
-      defaultDelay: '300' as any, // Invalid: string instead of number
-      position: 'bottom-right',
-      theme: 'system',
-      keyboardShortcuts: true,
-    };
-
-    localStorage.setItem('test-prefix:config', JSON.stringify(legacyConfig));
-
-    // Should fallback to default delay (0)
-    const config = storage.getGlobalConfig();
-    expect(config.defaults.delay).toBe(0); // Falls back to DEFAULT_RULE_DEFAULTS.delay
-  });
-
-  it('removes defaultDelay from saved config', () => {
-    // Save a config with legacy defaultDelay
-    storage.saveGlobalConfig({ enabled: false, defaultDelay: 123 } as any);
-
-    // Stored config should not have defaultDelay
-    const stored = JSON.parse(localStorage.getItem('test-prefix:config') || '{}');
-    expect(stored.defaultDelay).toBeUndefined();
-    expect(stored.defaults.delay).toBe(123); // Migrated to defaults.delay
-  });
-
-  it('handles new GlobalConfig format correctly', () => {
-    // Store new format config with defaults
-    const newConfig = {
-      enabled: true,
-      position: 'bottom-left',
-      theme: 'light',
-      keyboardShortcuts: true,
-      defaults: {
-        delay: 1000,
-        mockType: 'networkError',
-        failRate: 50,
-        timeout: true,
-        offline: false,
-        business: {
-          errNo: 500,
-          errMsg: 'Test error',
-          detailErrMsg: 'Detailed test error',
-        },
-      },
-    };
-
-    localStorage.setItem('test-prefix:config', JSON.stringify(newConfig));
-
-    // getGlobalConfig should return it as-is
-    const config = storage.getGlobalConfig();
-
-    expect(config.enabled).toBe(true);
-    expect(config.position).toBe('bottom-left');
-    expect(config.theme).toBe('light');
-    expect(config.defaults.delay).toBe(1000);
-    expect(config.defaults.mockType).toBe('networkError');
-    expect(config.defaults.failRate).toBe(50);
-    expect(config.defaults.timeout).toBe(true);
-    expect(config.defaults.business.errNo).toBe(500);
+      networkProfile: DEFAULT_GLOBAL_CONFIG.networkProfile,
+    });
   });
 });

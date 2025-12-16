@@ -1,116 +1,101 @@
-# Manual E2E Test Scenario - Phase 2 Task 4
+# Manual E2E Checklist
 
-## Test Objective
-Verify that NetworkTab, ResponseTab, and AdvancedTab are properly integrated into RuleEditor and function correctly in both single and batch editing modes.
+目标：验证 Vite / Webpack(Umi3) 示例在“只安装插件”的情况下可正常注入 UI，并且 RuleEditor 的 `Apply/Cancel`、Response/Network 两个 tab 工作正常（含 Cancel 代理撤销崩溃的回归用例）。
 
-## Prerequisites
-- Run `pnpm dev` to start development server
-- Open browser to application URL
-- Ensure at least 2 API rules are available for batch testing
+## 0) 准备
 
-## Test Scenarios
+```bash
+pnpm install
+```
 
-### Scenario 1: Single Rule Editing - Network Tab
-1. Click Float Button to open rule editor
-2. Select a single API rule
-3. **Verify:** Network tab is active by default
-4. **Verify:** Network tab displays:
-   - Delay input (with current value)
-   - Failure Rate slider (with percentage badge)
-   - Simulate Timeout checkbox
-   - Simulate Offline checkbox
-5. Edit Delay value (e.g., change to 500ms)
-6. **Verify:** Input reflects new value immediately
-7. Click "Apply" button
-8. **Verify:** Changes are saved (check rule list or re-open editor)
+### Vite 示例
 
-### Scenario 2: Single Rule Editing - Response Tab
-1. With rule editor open, click "Response" tab
-2. **Verify:** Response tab displays appropriate content based on mockType:
-   - If mockType is 'success': Shows "Success Mode Active" info card
-   - If mockType is 'businessError': Shows Business Error form (errNo, errMsg, detailErrMsg)
-   - If mockType is 'networkError': Shows "Network Error Mode Active" info card
-   - If mockType is 'none': Shows "Mock Disabled" info card
-3. If in businessError mode:
-   - Edit Error Code (e.g., 404)
-   - Edit Error Message (e.g., "Not Found")
-   - Edit Detail Error Message (optional)
-4. Click "Apply"
-5. **Verify:** Changes are saved
+```bash
+pnpm dev
+```
 
-### Scenario 3: Single Rule Editing - Advanced Tab
-1. With rule editor open, click "Advanced" tab
-2. **Verify:** Advanced tab displays:
-   - Field Omission section with toggle
-   - Mode selector (Manual/Random) when enabled
-   - Appropriate controls based on selected mode
-3. Toggle "Enable Field Omission" on
-4. Select "Manual" mode
-5. Enter comma-separated fields (e.g., "field1, field2")
-6. Click "Apply"
-7. **Verify:** Changes are saved
+打开 `http://127.0.0.1:5173`（端口以实际输出为准）。
 
-### Scenario 4: Tab Switching with State Preservation
-1. With rule editor open on Network tab
-2. Edit Delay to 1000ms (do NOT apply yet)
-3. Switch to Response tab
-4. Switch to Advanced tab
-5. Switch back to Network tab
-6. **Verify:** Delay value is still 1000ms (state preserved across tab switches)
-7. Click "Apply"
-8. **Verify:** Changes are saved
+### Umi3 示例
 
-### Scenario 5: Batch Mode - Network Tab
-1. Select 2 or more API rules from the list
-2. **Verify:** Batch Control Bar appears showing "2 rules selected"
-3. **Verify:** Network tab is active by default
-4. **Verify:** If rules have different delay values, input shows "(Mixed)" placeholder
-5. Edit Delay to 300ms
-6. Click "Apply to All"
-7. **Verify:** Both rules now have delay = 300ms (check by opening each individually)
+```bash
+pnpm -C examples/umi3-example dev
+```
 
-### Scenario 6: Batch Mode - Response Tab with MIXED Values
-1. Select 2 rules where:
-   - Rule A: mockType = 'success'
-   - Rule B: mockType = 'businessError' with errNo = 500
-2. Click Response tab
-3. **Verify:** If mockTypes differ, may show MIXED state or first rule's state
-4. Edit errNo to 404 (applies only if mockType = 'businessError')
-5. Click "Apply to All"
-6. **Verify:** Only rules with mockType = 'businessError' have updated errNo
+打开 `http://127.0.0.1:8000`（端口以实际输出为准）。
 
-### Scenario 7: Batch Mode - Advanced Tab
-1. Select 2 rules with different fieldOmit settings
-2. Click Advanced tab
-3. **Verify:** MIXED values display correctly (placeholders)
-4. Enable Field Omission
-5. Select "Random" mode
-6. Set probability to 0.5 (50%)
-7. Click "Apply to All"
-8. **Verify:** Both rules now have fieldOmit.enabled = true, mode = 'random', probability = 0.5
+## 1) UI 注入与 API 列表
 
-### Scenario 8: Cancel Batch Editing
-1. With batch editor open and some edits made
-2. Click "Cancel Batch" button
-3. **Verify:** Editor closes without saving changes
-4. **Verify:** Original rule values remain unchanged
+1. 页面右下角出现蓝色魔杖按钮（可拖动）
+2. 点击按钮打开面板
+3. 左侧能看到 `user`、`storage` 两个 module（至少 6 个 API）
+4. 点击任意 API，右侧出现 RuleEditor：
+   - 顶部显示 `Method`、`name`、`url`
+   - `Mock` 开关可切换
+   - 默认有 2 个 tab：`Response` / `Network`
 
-## Expected Results Summary
-- ✅ All 3 tabs render correctly in single and batch modes
-- ✅ Tab switching preserves unsaved changes
-- ✅ MIXED values display with "(Mixed)" placeholders in batch mode
-- ✅ Apply button saves changes correctly
-- ✅ Apply to All button propagates changes to all selected rules
-- ✅ Cancel buttons discard changes
-- ✅ No console errors or visual glitches
-- ✅ All form controls are responsive and accessible
+## 2) Response：成功与业务错误
 
-## Pass Criteria
-All scenarios must pass without errors. Any visual glitches, state loss, or incorrect batch application should be considered a failure.
+1. 选择 `GET /api/user/info`（或任意 API）
+2. 打开 RuleEditor：开启 `Mock` 开关
+3. `Response` tab：保持 `Status = 200`
+4. 在 `result` 文本框输入：
+   - `{"from":"error-mock","ok":true}`
+5. 点击 `Apply`
+6. 回到示例页面点击对应按钮（Vite 示例：`Get User`；Umi 示例：`Get User`）
+7. **期望**：页面 `Result` 区域显示 `{"from":"error-mock","ok":true}`（或包含该字段）
+
+业务错误：
+1. 在 `err_no` 改为 `1001`，`detail_err_msg` 写入任意文本
+2. 点击 `Apply`
+3. 再触发同一请求
+4. **期望**：示例页面以 error 样式显示错误（message 包含 `detail_err_msg/err_msg`）
+
+## 3) Response：HTTP 错误（非 2xx/3xx）
+
+1. 将 `Status` 改为 `404`
+2. 在 `errorBody` 文本框输入：`{"error":"Not Found"}`
+3. 点击 `Apply`
+4. 触发同一请求
+5. **期望**：示例页面显示 error（或能在 Network/Console 看到 404 + 自定义 body）
+
+## 4) Network：超时/断网/随机失败/延迟
+
+1. 切到 `Network` tab
+2. 设置 `Timeout` → `Apply` → 触发请求
+   - **期望**：示例页面报错（通常为超时/Abort/Failed to fetch）
+3. 设置 `Offline` → `Apply` → 触发请求
+   - **期望**：示例页面报错（类似离线）
+4. 勾选 `Random failure`，把滑块拉到 `100%` → `Apply` → 触发请求
+   - **期望**：每次都报错
+5. 切回 `None`（关闭 error）并设置 delay 为 `Override + customDelay=800` → `Apply`
+   - **期望**：请求延后返回（可通过视觉等待或 Network timing 观察）
+
+## 5) 回归：RuleEditor 点击 Cancel 不应崩溃（Immer revoked proxy）
+
+复现/验证步骤：
+1. 选择任意 API，开启 `Mock`
+2. `Response` tab：在 `result` 输入一个对象 JSON（例如 `{"a":1}`）
+3. 点击 `Apply`
+4. 再把 `result` 改成另一个对象（例如 `{"a":2}`），但**不要** Apply
+5. 点击 `Cancel`
+6. **期望**：
+   - `result` 回滚到已 Apply 的值（`{"a":1}`）
+   - 页面不出现 React error overlay
+   - 控制台无 `Cannot perform 'get' on a proxy that has been revoked`
+
+## 6) “一次安装就够”检查点
+
+示例项目无需安装 `@error-mock/ui`：
+
+- Vite：只依赖 `@error-mock/vite-plugin`
+- Umi3：只 devDependency `@error-mock/webpack-plugin`
+
+只要插件生效，UI 会自动注入并 mount。
 
 ---
 
-**Test Date:** [To be filled during actual manual testing]
-**Tester:** [To be filled during actual manual testing]
+**Test Date:** [fill]
+**Tester:** [fill]
 **Status:** [PASS/FAIL]
-**Notes:** [Any observations during testing]
+**Notes:** [fill]

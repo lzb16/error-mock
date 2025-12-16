@@ -82,7 +82,7 @@ export function errorMockVitePlugin(options: ErrorMockVitePluginOptions = {}): P
 function generateRuntimeCode(apiMetas: ApiMeta[]): string {
   return `
 // Error Mock Runtime - Auto-injected by vite plugin
-import { mount } from '@error-mock/ui/react';
+import { mount } from '@error-mock/vite-plugin/runtime';
 
 // API metadata from build time
 const apiMetas = ${JSON.stringify(apiMetas, null, 2)};
@@ -178,34 +178,11 @@ export function errorMockDevWatcher(options: ErrorMockDevWatcherOptions): Plugin
             // Clear previous timer
             if (reloadTimer) clearTimeout(reloadTimer);
 
-            // Delay + existence check
+            // Delay to allow file writes to finish (especially on slower FS)
             reloadTimer = setTimeout(() => {
-              const indexPath = path.resolve(resolvedPackagesDir, pkg, 'dist', 'index.js');
-              const stylePath = path.resolve(resolvedPackagesDir, pkg, 'dist', 'style.css');
-
-              // Check if critical files exist
-              const indexExists = fs.existsSync(indexPath);
-              const styleExists = fs.existsSync(stylePath);
-
-              if (indexExists && styleExists) {
-                console.log(`[dev-watcher] ${pkg} 关键文件存在，触发刷新`);
-                server.moduleGraph.invalidateAll();
-                server.ws.send({ type: 'full-reload', path: '*' });
-              } else if (indexExists) {
-                // Style might not exist for some packages, only check index
-                console.log(`[dev-watcher] ${pkg} index.js 存在，触发刷新`);
-                server.moduleGraph.invalidateAll();
-                server.ws.send({ type: 'full-reload', path: '*' });
-              } else {
-                console.log(`[dev-watcher] ${pkg} 文件未就绪，延迟重试`);
-                // Retry once after 300ms
-                setTimeout(() => {
-                  if (fs.existsSync(indexPath)) {
-                    server.moduleGraph.invalidateAll();
-                    server.ws.send({ type: 'full-reload', path: '*' });
-                  }
-                }, 300);
-              }
+              if (!fs.existsSync(markerPath)) return;
+              server.moduleGraph.invalidateAll();
+              server.ws.send({ type: 'full-reload', path: '*' });
             }, reloadDelay);
           }
         };

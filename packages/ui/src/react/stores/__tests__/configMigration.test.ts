@@ -18,9 +18,7 @@ if (typeof localStorage === 'undefined') {
 // NOW import store (after localStorage is available)
 import { useConfigStore } from '../useConfigStore';
 
-// TODO: These tests require proper localStorage mock setup in vitest environment
-// Skipping for now as they test persist middleware functionality, not core logic
-describe.skip('useConfigStore migration', () => {
+describe('useConfigStore migration', () => {
   const STORAGE_KEY = 'error-mock-config';
 
   beforeEach(() => {

@@ -8,6 +8,14 @@ node_modules/
 dist/
 build/
 
+# Error Mock plugin generated files
+.error-mock/
+
+# Umi generated files
+.umi/
+.umi-production/
+.umi-test/
+
 # Vite generated timestamped config artifacts
 vite.*.timestamp-*.mjs
 

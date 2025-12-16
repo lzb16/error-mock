@@ -9,8 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@error-mock/core": "file:../../packages/core",
-    "@error-mock/ui": "file:../../packages/ui",
     "@error-mock/vite-plugin": "file:../../packages/vite-plugin"
   },
   "devDependencies": {

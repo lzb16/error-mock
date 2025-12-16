@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { enableMapSet } from 'immer';
+import { enableMapSet, current } from 'immer';
 import type { ApiMeta, MockRule } from '@error-mock/core';
 import { RuleStorage, DEFAULT_RESPONSE_CONFIG, DEFAULT_NETWORK_CONFIG, DEFAULT_FIELD_OMIT_CONFIG } from '@error-mock/core';
 
@@ -75,13 +75,8 @@ export const useRulesStore = create<RulesState>()(
         const id = `${meta.module}-${meta.name}`;
         const applied = state.appliedRules.get(id);
         if (applied) {
-          // Create a deep copy to avoid Immer proxy issues
-          state.mockRules.set(id, {
-            ...applied,
-            response: { ...applied.response },
-            network: { ...applied.network },
-            fieldOmit: { ...applied.fieldOmit },
-          });
+          // `applied` is an Immer draft here; spreading it can leak revoked proxies into state.
+          state.mockRules.set(id, current(applied) as MockRule);
         } else {
           state.mockRules.delete(id);
         }
