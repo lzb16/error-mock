@@ -38,6 +38,7 @@ Thumbs.db
 .pnpm-pack/
 .pnpm-store/
 .tmp-*
+.npmrc.publish
 
 # Local E2E consumer projects + packs
 e2e/packs/
