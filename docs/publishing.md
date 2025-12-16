@@ -42,3 +42,12 @@ pnpm -r publish --access public --filter @error-mock/vite-plugin
 pnpm -r publish --access public --filter @error-mock/webpack-plugin
 ```
 
+## GitHub Actions 发布（推荐）
+
+适合本地网络不稳定或希望自动化发布的场景。
+
+1. 在 npm 创建一个 **Automation** token（可绕过 2FA、具备 `@error-mock` 组织发布权限）。
+2. 在 GitHub 仓库 `Settings -> Secrets and variables -> Actions` 添加 `NPM_TOKEN`。
+3. 推送 tag（例如 `v0.0.2`）或在 Actions 页面手动触发 `Publish to npm` workflow。
+
+> workflow 会先 build，再按依赖顺序依次发布 6 个包：`@error-mock/core`、`@error-mock/parser`、`@error-mock/ui`、`@error-mock/plugin`、`@error-mock/vite-plugin`、`@error-mock/webpack-plugin`。
