@@ -31,9 +31,4 @@ jobs:
       - name: Publish packages
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          set -euo pipefail
-          for dir in core parser ui plugin vite-plugin webpack-plugin; do
-            echo "Publishing packages/$dir"
-            (cd "packages/$dir" && pnpm publish --access public --no-git-checks)
-          done
+        run: pnpm -r publish --filter "@error-mock/*" --access public --no-git-checks
