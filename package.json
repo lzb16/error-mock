@@ -10,7 +10,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint packages --ext .ts,.tsx",
-    "clean": "pnpm -r clean"
+    "clean": "pnpm -r clean",
+    "e2e:pack": "node scripts/e2e-pack.mjs",
+    "e2e:prepare": "node scripts/e2e-prepare.mjs"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

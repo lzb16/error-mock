@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 // 从源码导入插件和开发辅助工具
-import errorMockPlugin, { errorMockDevWatcher } from '../../packages/vite-plugin/src/index.ts';
+import errorMockPlugin, { errorMockDevWatcher } from '../../packages/plugin/src/index.ts';
 
 const packagesDir = resolve(__dirname, '../../packages');
 

@@ -21,8 +21,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@error-mock/parser": "workspace:*",
-    "@error-mock/ui": "workspace:*"
+    "@error-mock/plugin": "workspace:*"
   },
   "peerDependencies": {
     "vite": "^4.0.0 || ^5.0.0"

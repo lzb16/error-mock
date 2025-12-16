@@ -21,7 +21,7 @@ examples/vite-example: errorMockDevWatcher 监听 .build-complete
 ## 关键实现
 
 - UI 包写 marker：`packages/ui/vite.config.ts`
-- watcher 插件：`packages/vite-plugin/src/index.ts`（`errorMockDevWatcher()`）
+- watcher 插件：`packages/plugin/src/vite.ts`（`errorMockDevWatcher()`）
 - 示例工程启用：`examples/vite-example/vite.config.ts`
 
 ## 使用方式
@@ -44,4 +44,3 @@ errorMockDevWatcher({ watch: ['ui'] });
 ```
 
 如果要监听更多包，需要这些包也在构建完成后写入同名 marker 文件（目前已为 `ui` 配置）。
-

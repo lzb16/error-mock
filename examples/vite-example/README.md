@@ -1,6 +1,6 @@
 # Vite Example - Error Mock Plugin
 
-This example demonstrates how to use the `@error-mock/vite-plugin` in a Vite project.
+This example demonstrates how to use the `@error-mock/plugin` in a Vite project.
 
 ## Features
 
@@ -99,7 +99,7 @@ The plugin automatically:
 ### vite.config.ts
 
 ```typescript
-import errorMockPlugin from '@error-mock/vite-plugin';
+import errorMockPlugin from '@error-mock/plugin';
 
 export default defineConfig({
   plugins: [
@@ -127,5 +127,5 @@ The plugin recognizes:
 ## Learn More
 
 - [Main Documentation](../../README.md)
-- [Plugin Configuration](../../packages/vite-plugin/README.md)
-- [Core Concepts](../../packages/core/README.md)
+- [Getting Started](../../docs/getting-started.md)
+- [API Parsing](../../docs/api-parsing.md)

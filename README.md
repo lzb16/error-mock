@@ -4,24 +4,25 @@
 
 ## 组件与包
 
-- `@error-mock/vite-plugin`：Vite 插件（开发环境注入 runtime）
-- `@error-mock/webpack-plugin`：Webpack 插件（开发环境生成 runtime entry 并注入，适配 Umi3）
+- `@error-mock/plugin`：统一插件（Vite / Webpack，开发环境注入 runtime）
 - `@error-mock/ui`：UI（React + Shadow DOM，内置规则编辑与持久化）
 - `@error-mock/core`：拦截器与 mock 引擎
 - `@error-mock/parser`：从 `src/api` 生成 `ApiMeta`（供 UI 展示）
+
+> 兼容包：`@error-mock/vite-plugin` / `@error-mock/webpack-plugin` 仍保留，但内部已收敛到 `@error-mock/plugin`，推荐直接使用统一包。
 
 ## 安装
 
 ### Vite
 
 ```bash
-npm i -D @error-mock/vite-plugin
+npm i -D @error-mock/plugin
 ```
 
 ```ts
 // vite.config.ts
 import { defineConfig } from 'vite';
-import errorMockPlugin from '@error-mock/vite-plugin';
+import errorMockPlugin from '@error-mock/plugin';
 
 export default defineConfig({
   plugins: [
@@ -35,13 +36,13 @@ export default defineConfig({
 ### Webpack / Umi3
 
 ```bash
-npm i -D @error-mock/webpack-plugin
+npm i -D @error-mock/plugin
 ```
 
 ```ts
 // .umirc.ts
 import { defineConfig } from 'umi';
-import { ErrorMockWebpackPlugin } from '@error-mock/webpack-plugin';
+import { ErrorMockWebpackPlugin } from '@error-mock/plugin';
 
 export default defineConfig({
   chainWebpack(config) {
@@ -83,6 +84,7 @@ export const getUser = createRequest<GetUserResponse, GetUserRequest>({
 - 常见问题：`docs/troubleshooting.md`
 - 路线图：`docs/roadmap.md`
 - 开发说明：`docs/development.md`
+- 发布到 npm：`docs/publishing.md`
 
 ## 示例项目
 

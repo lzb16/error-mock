@@ -13,13 +13,13 @@
 ### Vite
 
 ```bash
-npm i -D @error-mock/vite-plugin
+npm i -D @error-mock/plugin
 ```
 
 ```ts
 // vite.config.ts
 import { defineConfig } from 'vite';
-import errorMockPlugin from '@error-mock/vite-plugin';
+import errorMockPlugin from '@error-mock/plugin';
 
 export default defineConfig({
   plugins: [
@@ -33,13 +33,13 @@ export default defineConfig({
 ### Webpack / Umi3
 
 ```bash
-npm i -D @error-mock/webpack-plugin
+npm i -D @error-mock/plugin
 ```
 
 ```ts
 // .umirc.ts
 import { defineConfig } from 'umi';
-import { ErrorMockWebpackPlugin } from '@error-mock/webpack-plugin';
+import { ErrorMockWebpackPlugin } from '@error-mock/plugin';
 
 export default defineConfig({
   chainWebpack(config) {

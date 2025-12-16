@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:npm": "vite --config vite.config.npm.ts",
     "build": "vite build",
+    "build:npm": "vite build --config vite.config.npm.ts",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@error-mock/vite-plugin": "file:../../packages/vite-plugin"
+    "@error-mock/plugin": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

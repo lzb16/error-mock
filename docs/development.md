@@ -5,8 +5,9 @@
 - `packages/core`：拦截器与 mock 引擎（fetch/xhr、规则匹配、响应生成、存储）
 - `packages/parser`：API 解析（从 `src/api` 生成 `ApiMeta`）
 - `packages/ui`：React UI（Shadow DOM 挂载、规则编辑）
-- `packages/vite-plugin`：Vite 插件（开发期注入 runtime）
-- `packages/webpack-plugin`：Webpack 插件（开发期写入 runtime entry 并注入）
+- `packages/plugin`：统一插件（Vite / Webpack，开发期注入 runtime）
+- `packages/vite-plugin`：兼容包（转发到 `@error-mock/plugin`）
+- `packages/webpack-plugin`：兼容包（转发到 `@error-mock/plugin`）
 
 ## 本地开发
 

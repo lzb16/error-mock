@@ -30,3 +30,15 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Tooling artifacts
+.codemachine/
+.playwright-mcp/
+.npm-cache/
+.pnpm-pack/
+.pnpm-store/
+.tmp-*
+
+# Local E2E consumer projects + packs
+e2e/packs/
+e2e/consumers/

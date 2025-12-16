@@ -1,5 +1,5 @@
 import { defineConfig } from 'umi';
-import { ErrorMockWebpackPlugin } from '@error-mock/webpack-plugin';
+import { ErrorMockWebpackPlugin } from '@error-mock/plugin';
 
 export default defineConfig({
   nodeModulesTransform: {

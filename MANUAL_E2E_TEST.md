@@ -8,6 +8,16 @@
 pnpm install
 ```
 
+### npm 包方式（consumer，推荐发布前验证）
+
+```bash
+pnpm e2e:prepare
+pnpm -C e2e/consumers/vite dev
+pnpm -C e2e/consumers/umi3 dev
+```
+
+> consumer 模式会用 `pnpm pack` 生成 `tgz` 并用 `pnpm install --ignore-workspace` 安装，尽量贴近真实 npm 安装行为。
+
 ### Vite 示例
 
 ```bash
@@ -88,8 +98,8 @@ pnpm -C examples/umi3-example dev
 
 示例项目无需安装 `@error-mock/ui`：
 
-- Vite：只依赖 `@error-mock/vite-plugin`
-- Umi3：只 devDependency `@error-mock/webpack-plugin`
+- Vite：只依赖 `@error-mock/plugin`
+- Umi3：只 devDependency `@error-mock/plugin`
 
 只要插件生效，UI 会自动注入并 mount。
 

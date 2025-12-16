@@ -5,13 +5,15 @@
     "paths": {
       "@error-mock/core": ["packages/core/src"],
       "@error-mock/parser": ["packages/parser/src"],
-      "@error-mock/ui": ["packages/ui/src"]
+      "@error-mock/ui": ["packages/ui/src"],
+      "@error-mock/plugin": ["packages/plugin/src"]
     }
   },
   "references": [
     { "path": "packages/core" },
     { "path": "packages/parser" },
     { "path": "packages/ui" },
+    { "path": "packages/plugin" },
     { "path": "packages/webpack-plugin" },
     { "path": "packages/vite-plugin" }
   ]

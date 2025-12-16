@@ -10,6 +10,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     dts({
+      tsconfigPath: resolve(__dirname, 'tsconfig.build.json'),
       insertTypesEntry: true,
       include: ['src/react/**/*'],
       outDir: 'dist/react',

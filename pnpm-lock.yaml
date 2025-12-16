@@ -54,9 +54,9 @@ importers:
         specifier: ^3.5.41
         version: 3.5.43(react-router@5.2.0(react@16.14.0))
     devDependencies:
-      '@error-mock/webpack-plugin':
+      '@error-mock/plugin':
         specifier: workspace:*
-        version: link:../../packages/webpack-plugin
+        version: link:../../packages/plugin
       '@types/react':
         specifier: ^17.0.0
         version: 17.0.90
@@ -69,9 +69,9 @@ importers:
 
   examples/vite-example:
     dependencies:
-      '@error-mock/vite-plugin':
-        specifier: file:../../packages/vite-plugin
-        version: file:packages/vite-plugin(vite@5.4.21(@types/node@20.19.25)(lightningcss@1.30.2)(terser@5.44.1))
+      '@error-mock/plugin':
+        specifier: workspace:*
+        version: link:../../packages/plugin
     devDependencies:
       '@types/node':
         specifier: ^20.10.0
@@ -102,6 +102,25 @@ importers:
       tsup:
         specifier: ^8.0.0
         version: 8.5.1(@microsoft/api-extractor@7.43.0(@types/node@20.19.25))(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)
+
+  packages/plugin:
+    dependencies:
+      '@error-mock/parser':
+        specifier: workspace:*
+        version: link:../parser
+      '@error-mock/ui':
+        specifier: workspace:*
+        version: link:../ui
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(@microsoft/api-extractor@7.43.0(@types/node@20.19.25))(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)
+      vite:
+        specifier: ^5.0.10
+        version: 5.4.21(@types/node@20.19.25)(lightningcss@1.30.2)(terser@5.44.1)
+      webpack:
+        specifier: ^5.89.0
+        version: 5.103.0
 
   packages/ui:
     dependencies:
@@ -205,12 +224,9 @@ importers:
 
   packages/vite-plugin:
     dependencies:
-      '@error-mock/parser':
+      '@error-mock/plugin':
         specifier: workspace:*
-        version: link:../parser
-      '@error-mock/ui':
-        specifier: workspace:*
-        version: link:../ui
+        version: link:../plugin
     devDependencies:
       tsup:
         specifier: ^8.0.0
@@ -221,12 +237,9 @@ importers:
 
   packages/webpack-plugin:
     dependencies:
-      '@error-mock/parser':
+      '@error-mock/plugin':
         specifier: workspace:*
-        version: link:../parser
-      '@error-mock/ui':
-        specifier: workspace:*
-        version: link:../ui
+        version: link:../plugin
     devDependencies:
       tsup:
         specifier: ^8.0.0
@@ -390,11 +403,6 @@ packages:
   '@csstools/css-tokenizer@3.0.4':
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
     engines: {node: '>=18'}
-
-  '@error-mock/vite-plugin@file:packages/vite-plugin':
-    resolution: {directory: packages/vite-plugin, type: directory}
-    peerDependencies:
-      vite: ^4.0.0 || ^5.0.0
 
   '@esbuild/aix-ppc64@0.21.5':
     resolution: {integrity: sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ==}
@@ -4584,12 +4592,6 @@ snapshots:
       postcss: 8.5.6
 
   '@csstools/css-tokenizer@3.0.4': {}
-
-  '@error-mock/vite-plugin@file:packages/vite-plugin(vite@5.4.21(@types/node@20.19.25)(lightningcss@1.30.2)(terser@5.44.1))':
-    dependencies:
-      '@error-mock/parser': link:packages/parser
-      '@error-mock/ui': link:packages/ui
-      vite: 5.4.21(@types/node@20.19.25)(lightningcss@1.30.2)(terser@5.44.1)
 
   '@esbuild/aix-ppc64@0.21.5':
     optional: true
