@@ -137,6 +137,36 @@ class MockXMLHttpRequest {
   private _timeoutId: ReturnType<typeof setTimeout> | null = null;
   private _realXHR: XMLHttpRequest | null = null;
 
+  /**
+   * The final response URL (WHATWG URL string).
+   *
+   * Axios (browser adapter) commonly reads `response.request.responseURL`.
+   * Some projects also read a non-standard `responseUrl` field, so we provide
+   * both for compatibility.
+   */
+  get responseURL(): string {
+    const raw =
+      // If we're passing through, delegate to the real XHR when available.
+      (this._realXHR as any)?.responseURL ||
+      // Fallback to the opened URL.
+      this._url;
+
+    try {
+      const base =
+        typeof window !== 'undefined' && window.location
+          ? window.location.href
+          : 'http://localhost';
+      return new URL(raw, base).href;
+    } catch {
+      return raw;
+    }
+  }
+
+  // Non-standard alias used by some codebases.
+  get responseUrl(): string {
+    return this.responseURL;
+  }
+
   open(method: string, url: string | URL, async = true, _user?: string | null, _password?: string | null) {
     this._method = method.toUpperCase();
     this._url = url.toString();

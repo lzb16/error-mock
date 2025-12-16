@@ -73,6 +73,23 @@ describe('XHRInterceptor', () => {
     expect(data.result).toEqual({ mocked: true });
   });
 
+  it('exposes responseURL/responseUrl for axios compatibility', async () => {
+    const rules = [createRule()];
+    installXHRInterceptor(rules);
+
+    const result = await new Promise<{ responseURL: string; responseUrl: string }>((resolve, reject) => {
+      const xhr: any = new XMLHttpRequest();
+      xhr.onload = () => resolve({ responseURL: xhr.responseURL, responseUrl: xhr.responseUrl });
+      xhr.onerror = reject;
+      xhr.open('GET', '/api/test');
+      xhr.send();
+    });
+
+    expect(typeof result.responseURL).toBe('string');
+    expect(result.responseURL).toContain('/api/test');
+    expect(result.responseUrl).toBe(result.responseURL);
+  });
+
   it('goes through correct readyState transitions', async () => {
     const rules = [createRule()];
     installXHRInterceptor(rules);
