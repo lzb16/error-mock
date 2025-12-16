@@ -44,6 +44,7 @@ export class ErrorMockWebpackPlugin {
   private lastRuntimeCode: string | null = null;
   private entryInjected = false;
   private debugEnabled = false;
+  private lastParsedApiCount: number | null = null;
 
   constructor(options: ErrorMockWebpackPluginOptions = {}) {
     this.options = {
@@ -59,7 +60,9 @@ export class ErrorMockWebpackPlugin {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const compilerAny = compiler as any;
     const webpackVersion = compilerAny.webpack?.version || '4.x (no compiler.webpack)';
-    console.log(`[ErrorMock] Webpack version: ${webpackVersion}`);
+    if (this.debugEnabled) {
+      console.log(`[ErrorMock][build] Webpack version: ${webpackVersion}`);
+    }
 
     if (compiler.options.mode === 'production') {
       return;
@@ -107,7 +110,13 @@ export class ErrorMockWebpackPlugin {
     compiler.hooks.beforeCompile.tapAsync(PLUGIN_NAME, (_params, callback) => {
       try {
         apiMetas = this.normalizeApiMetas(this.options.adapter.parse(apiDirAbsPath));
-        console.log(`[ErrorMock] Parsed ${apiMetas.length} APIs from ${apiDirAbsPath}`);
+        const nextCount = apiMetas.length;
+        const prevCount = this.lastParsedApiCount;
+        this.lastParsedApiCount = nextCount;
+
+        if (this.debugEnabled || prevCount === null || prevCount !== nextCount) {
+          console.log(`[ErrorMock][build] Parsed ${nextCount} APIs from ${apiDirAbsPath}`);
+        }
       } catch (error) {
         console.warn(`[ErrorMock] Failed to parse API directory`, error);
         apiMetas = [];
@@ -258,14 +267,21 @@ export class ErrorMockWebpackPlugin {
     return `
 // Error Mock Runtime - Auto-injected by webpack plugin
 // NOTE: This file is bundled by webpack (do NOT load it directly in browser as a bare module).
-import { mount } from '@error-mock/ui';
+import { mount, isMounted } from '@error-mock/plugin/runtime';
 
 const apiMetas = ${JSON.stringify(apiMetas, null, 2)};
+const __ERROR_MOCK_DEBUG__ = ${JSON.stringify(this.debugEnabled)};
 
 function initErrorMock() {
   try {
-    mount({ metas: apiMetas });
-    console.log('[ErrorMock] Initialized with', apiMetas.length, 'APIs');
+    if (!isMounted()) {
+      mount({ metas: apiMetas });
+      if (__ERROR_MOCK_DEBUG__) {
+        console.log('[ErrorMock][runtime] Mounted with', apiMetas.length, 'APIs');
+      }
+    } else if (__ERROR_MOCK_DEBUG__) {
+      console.log('[ErrorMock][runtime] Already mounted, skipping');
+    }
   } catch (error) {
     console.error('[ErrorMock] Failed to initialize:', error);
   }

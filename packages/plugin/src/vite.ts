@@ -47,7 +47,7 @@ export function errorMockVitePlugin(options: ErrorMockVitePluginOptions = {}): P
       // Parse API directory
       try {
         apiMetas = opts.adapter.parse(fullPath);
-        console.log(`[ErrorMock] Parsed ${apiMetas.length} APIs from ${fullPath}`);
+        console.log(`[ErrorMock][build] Parsed ${apiMetas.length} APIs from ${fullPath}`);
       } catch (error) {
         console.warn(`[ErrorMock] Failed to parse API directory: ${fullPath}`, error);
         apiMetas = [];
@@ -82,17 +82,17 @@ export function errorMockVitePlugin(options: ErrorMockVitePluginOptions = {}): P
 function generateRuntimeCode(apiMetas: ApiMeta[]): string {
   return `
 // Error Mock Runtime - Auto-injected by vite plugin
-import { mount } from '@error-mock/ui/react';
+import { mount, isMounted } from '@error-mock/plugin/runtime';
 
 // API metadata from build time
 const apiMetas = ${JSON.stringify(apiMetas, null, 2)};
 
 function initErrorMock() {
   try {
-    // Mount React app with Shadow DOM
-    mount({ metas: apiMetas });
-
-    console.log('[ErrorMock] Initialized with', apiMetas.length, 'APIs');
+    if (!isMounted()) {
+      // Mount React app with Shadow DOM
+      mount({ metas: apiMetas });
+    }
   } catch (error) {
     console.error('[ErrorMock] Failed to initialize:', error);
   }
