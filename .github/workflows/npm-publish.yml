@@ -28,6 +28,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm -r --filter "@error-mock/*" build
 
+      - name: Verify npm auth
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm whoami
+
       - name: Publish packages
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
