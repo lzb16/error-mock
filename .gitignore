@@ -42,3 +42,10 @@ Thumbs.db
 # Local E2E consumer projects + packs
 e2e/packs/
 e2e/consumers/
+
+# Local prototypes / design notes (not part of source)
+RuleEditorLayoutProto.html
+RuleEditorProto.html
+docs/proto_archive/
+docs/ui-redesign-github-style.md
+docs/ui-redesign-review.md
