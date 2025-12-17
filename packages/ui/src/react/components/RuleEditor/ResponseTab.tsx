@@ -30,25 +30,11 @@ const BUSINESS_TEMPLATES: BusinessTemplate[] = [
     detailErrMsg: '',
   },
   {
-    id: 'insufficient-balance',
-    name: '余额不足',
-    errNo: 1001,
-    errMsg: '余额不足',
-    detailErrMsg: '当前余额不足以完成此操作',
-  },
-  {
-    id: 'permission-denied',
-    name: '权限被拒',
-    errNo: 1002,
-    errMsg: '权限不足',
-    detailErrMsg: '您没有执行此操作的权限',
-  },
-  {
-    id: 'duplicate-order',
-    name: '订单重复',
-    errNo: 1003,
-    errMsg: '订单已存在',
-    detailErrMsg: '该订单号已被使用',
+    id: 'mock-error',
+    name: '模拟异常',
+    errNo: 999,
+    errMsg: '模拟异常',
+    detailErrMsg: '这是一个模拟的业务异常',
   },
 ];
 
