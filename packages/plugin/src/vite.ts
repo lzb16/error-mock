@@ -14,6 +14,20 @@ export interface ErrorMockVitePluginOptions {
    * Custom API adapter for parsing
    */
   adapter?: ApiAdapter;
+
+  /**
+   * Request matching options.
+   *
+   * Useful for dev proxy setups (e.g. Umi) where requests are prefixed with
+   * something like `/api`, but your API definitions/rules are stored without it.
+   */
+  match?: {
+    /**
+     * Strip these prefixes from request URL pathname before matching rules.
+     * @example ['/api']
+     */
+    stripPrefixes?: string[];
+  };
 }
 
 /**
@@ -24,6 +38,7 @@ export function errorMockVitePlugin(options: ErrorMockVitePluginOptions = {}): P
   const opts: Required<ErrorMockVitePluginOptions> = {
     apiDir: options.apiDir || 'src/api',
     adapter: options.adapter || createDefaultAdapter(),
+    match: options.match || {},
   };
 
   let config: ResolvedConfig;
@@ -62,7 +77,7 @@ export function errorMockVitePlugin(options: ErrorMockVitePluginOptions = {}): P
 
     load(id) {
       if (id === RESOLVED_VIRTUAL_MODULE_ID) {
-        return generateRuntimeCode(apiMetas);
+        return generateRuntimeCode(apiMetas, opts.match);
       }
     },
 
@@ -79,19 +94,23 @@ export function errorMockVitePlugin(options: ErrorMockVitePluginOptions = {}): P
   };
 }
 
-function generateRuntimeCode(apiMetas: ApiMeta[]): string {
+function generateRuntimeCode(
+  apiMetas: ApiMeta[],
+  matchOptions: NonNullable<ErrorMockVitePluginOptions['match']>
+): string {
   return `
 // Error Mock Runtime - Auto-injected by vite plugin
 import { mount, isMounted } from '@error-mock/plugin/runtime';
 
 // API metadata from build time
 const apiMetas = ${JSON.stringify(apiMetas, null, 2)};
+const runtimeConfig = ${JSON.stringify({ match: matchOptions }, null, 2)};
 
 function initErrorMock() {
   try {
     if (!isMounted()) {
       // Mount React app with Shadow DOM
-      mount({ metas: apiMetas });
+      mount({ metas: apiMetas, config: runtimeConfig });
     }
   } catch (error) {
     console.error('[ErrorMock] Failed to initialize:', error);

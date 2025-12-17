@@ -8,6 +8,7 @@ describe('useConfigStore', () => {
   beforeEach(() => {
     useConfigStore.setState({
       globalConfig: DEFAULT_GLOBAL_CONFIG,
+      runtimeConfig: {},
       isModalOpen: false,
       isMinimized: false,
     });

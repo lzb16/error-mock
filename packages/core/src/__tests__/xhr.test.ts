@@ -2,7 +2,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { installXHRInterceptor, uninstallXHRInterceptor } from '../interceptor/xhr';
 import type { MockRule } from '../types';
-import { DEFAULT_FIELD_OMIT_CONFIG, DEFAULT_NETWORK_CONFIG, DEFAULT_RESPONSE_CONFIG } from '../constants';
+import {
+  DEFAULT_FIELD_OMIT_CONFIG,
+  DEFAULT_GLOBAL_CONFIG,
+  DEFAULT_NETWORK_CONFIG,
+  DEFAULT_RESPONSE_CONFIG,
+} from '../constants';
 
 describe('XHRInterceptor', () => {
   const createRule = (overrides: Partial<MockRule> = {}): MockRule => {
@@ -67,6 +72,20 @@ describe('XHRInterceptor', () => {
     installXHRInterceptor(rules);
 
     const result = await makeXHRRequest('GET', '/api/test');
+    const data = JSON.parse(result.response);
+
+    expect(result.status).toBe(200);
+    expect(data.result).toEqual({ mocked: true });
+  });
+
+  it('supports stripping proxy prefixes before matching', async () => {
+    const rules = [createRule({ url: '/user/login' })];
+    installXHRInterceptor(rules, {
+      ...DEFAULT_GLOBAL_CONFIG,
+      match: { stripPrefixes: ['/api'] },
+    });
+
+    const result = await makeXHRRequest('GET', '/api/user/login');
     const data = JSON.parse(result.response);
 
     expect(result.status).toBe(200);

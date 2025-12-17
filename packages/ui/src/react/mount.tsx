@@ -1,8 +1,9 @@
 import { createRoot, type Root } from 'react-dom/client';
-import type { ApiMeta } from '@error-mock/core';
+import type { ApiMeta, GlobalConfig } from '@error-mock/core';
 import { App } from './App';
 import { ShadowRootProvider } from './context/ShadowRootContext';
 import { I18nProvider, resolveLocale, useLocaleStore, type Locale } from './i18n';
+import { useConfigStore } from './stores/useConfigStore';
 // @ts-expect-error Vite handles ?inline imports
 import rawStyles from './styles/globals.css?inline';
 
@@ -17,6 +18,13 @@ export interface MountOptions {
    * When provided, this value wins over persisted locale.
    */
   locale?: Locale;
+  /**
+   * Runtime-only config overrides (not persisted).
+   *
+   * Useful for environment-specific settings, e.g. stripping proxy prefixes
+   * before matching rules.
+   */
+  config?: Partial<GlobalConfig>;
 }
 
 const GLOBAL_STYLE_ID = 'error-mock-global-properties';
@@ -154,6 +162,13 @@ export function mount(options: MountOptions): void {
     useLocaleStore.getState().setLocale(resolveLocale(options.locale));
   }
 
+  // Apply runtime-only overrides (not persisted)
+  if (options.config) {
+    useConfigStore.getState().setRuntimeConfig(options.config);
+  } else {
+    useConfigStore.getState().clearRuntimeConfig();
+  }
+
   root.render(
     <ShadowRootProvider shadowRoot={shadowRoot}>
       <I18nProvider>
@@ -174,6 +189,7 @@ export function unmount(): void {
   }
   // Clean up global @property rules
   removeGlobalPropertyRules();
+  useConfigStore.getState().clearRuntimeConfig();
 }
 
 export function isMounted(): boolean {

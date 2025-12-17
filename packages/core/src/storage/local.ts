@@ -103,6 +103,16 @@ export class RuleStorage {
       if (!data) return { ...DEFAULT_GLOBAL_CONFIG };
 
       const parsed = JSON.parse(data) as Partial<GlobalConfig>;
+      const parsedMatch = (parsed as Partial<GlobalConfig> & { match?: unknown }).match;
+      const matchObject =
+        typeof parsedMatch === 'object' && parsedMatch !== null
+          ? (parsedMatch as Record<string, unknown>)
+          : null;
+      const stripPrefixes =
+        Array.isArray(matchObject?.stripPrefixes) &&
+        matchObject?.stripPrefixes.every((p) => typeof p === 'string')
+          ? (matchObject.stripPrefixes as string[])
+          : DEFAULT_GLOBAL_CONFIG.match?.stripPrefixes ?? [];
 
       // Merge with defaults to ensure all fields exist
       return {
@@ -111,6 +121,9 @@ export class RuleStorage {
         theme: parsed.theme ?? DEFAULT_GLOBAL_CONFIG.theme,
         keyboardShortcuts: parsed.keyboardShortcuts ?? DEFAULT_GLOBAL_CONFIG.keyboardShortcuts,
         networkProfile: parsed.networkProfile ?? DEFAULT_GLOBAL_CONFIG.networkProfile,
+        match: {
+          stripPrefixes,
+        },
       };
     } catch {
       return { ...DEFAULT_GLOBAL_CONFIG };

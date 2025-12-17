@@ -6,7 +6,12 @@ import {
   updateRules
 } from '../interceptor/fetch';
 import type { MockRule } from '../types';
-import { DEFAULT_FIELD_OMIT_CONFIG, DEFAULT_NETWORK_CONFIG, DEFAULT_RESPONSE_CONFIG } from '../constants';
+import {
+  DEFAULT_FIELD_OMIT_CONFIG,
+  DEFAULT_GLOBAL_CONFIG,
+  DEFAULT_NETWORK_CONFIG,
+  DEFAULT_RESPONSE_CONFIG,
+} from '../constants';
 
 describe('FetchInterceptor', () => {
   const originalFetch = globalThis.fetch;
@@ -69,6 +74,19 @@ describe('FetchInterceptor', () => {
     const data = await response.json();
 
     expect(data.real).toBe(true);
+  });
+
+  it('supports stripping proxy prefixes before matching', async () => {
+    const rules = [createRule({ url: '/user/login' })];
+    installFetchInterceptor(rules, {
+      ...DEFAULT_GLOBAL_CONFIG,
+      match: { stripPrefixes: ['/api'] },
+    });
+
+    const response = await fetch('/api/user/login');
+    const data = await response.json();
+
+    expect(data.result).toEqual({ mocked: true });
   });
 
   it('supports Request object input', async () => {

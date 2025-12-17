@@ -4,6 +4,7 @@ import { matchRule } from '../engine/matcher';
 import { omitFields } from '../engine/field-omit';
 import { PROFILE_DELAYS, DEFAULT_GLOBAL_CONFIG } from '../constants';
 import { getStatusText, generateTraceId } from '../utils/http-utils';
+import { applyMatchConfig } from '../utils/match-url';
 
 let originalFetch: typeof fetch | null = null;
 let currentRules: MockRule[] = [];
@@ -77,7 +78,7 @@ export function installFetchInterceptor(
       return originalFetch!.call(globalThis, input, init);
     }
 
-    const rule = matchRule(currentRules, urlForMatching, method);
+    const rule = matchRule(currentRules, applyMatchConfig(urlForMatching, globalConfig), method);
     if (!rule) {
       return originalFetch!.call(globalThis, input, init);
     }

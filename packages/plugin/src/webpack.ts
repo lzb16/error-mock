@@ -27,6 +27,20 @@ export interface ErrorMockWebpackPluginOptions {
    * Enable debug logs (or set env `ERROR_MOCK_DEBUG=1`).
    */
   debug?: boolean;
+
+  /**
+   * Request matching options.
+   *
+   * Useful for dev proxy setups (e.g. Umi) where requests are prefixed with
+   * something like `/api`, but your API definitions/rules are stored without it.
+   */
+  match?: {
+    /**
+     * Strip these prefixes from request URL pathname before matching rules.
+     * @example ['/api']
+     */
+    stripPrefixes?: string[];
+  };
 }
 
 const PLUGIN_NAME = 'ErrorMockWebpackPlugin';
@@ -52,6 +66,7 @@ export class ErrorMockWebpackPlugin {
       adapter: options.adapter || createDefaultAdapter(),
       runtimeDir: options.runtimeDir || DEFAULT_RUNTIME_DIR,
       debug: options.debug ?? false,
+      match: options.match || {},
     };
     this.debugEnabled = this.options.debug || process.env.ERROR_MOCK_DEBUG === '1';
   }
@@ -271,11 +286,12 @@ import { mount, isMounted } from '@error-mock/plugin/runtime';
 
 const apiMetas = ${JSON.stringify(apiMetas, null, 2)};
 const __ERROR_MOCK_DEBUG__ = ${JSON.stringify(this.debugEnabled)};
+const runtimeConfig = ${JSON.stringify({ match: this.options.match }, null, 2)};
 
 function initErrorMock() {
   try {
     if (!isMounted()) {
-      mount({ metas: apiMetas });
+      mount({ metas: apiMetas, config: runtimeConfig });
       if (__ERROR_MOCK_DEBUG__) {
         console.log('[ErrorMock][runtime] Mounted with', apiMetas.length, 'APIs');
       }

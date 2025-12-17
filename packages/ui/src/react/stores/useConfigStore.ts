@@ -4,9 +4,12 @@ import { DEFAULT_GLOBAL_CONFIG, type GlobalConfig } from '@error-mock/core';
 
 interface ConfigState {
   globalConfig: GlobalConfig;
+  runtimeConfig: Partial<GlobalConfig>;
   isModalOpen: boolean;
   isMinimized: boolean;
   updateGlobalConfig: (config: Partial<GlobalConfig>) => void;
+  setRuntimeConfig: (config: Partial<GlobalConfig>) => void;
+  clearRuntimeConfig: () => void;
   toggleModal: () => void;
   setModalOpen: (isOpen: boolean) => void;
   setMinimized: (isMinimized: boolean) => void;
@@ -16,10 +19,13 @@ export const useConfigStore = create<ConfigState>()(
   persist(
     (set) => ({
       globalConfig: DEFAULT_GLOBAL_CONFIG,
+      runtimeConfig: {},
       isModalOpen: false,
       isMinimized: false,
       updateGlobalConfig: (config) =>
         set((state) => ({ globalConfig: { ...state.globalConfig, ...config } })),
+      setRuntimeConfig: (config) => set({ runtimeConfig: config }),
+      clearRuntimeConfig: () => set({ runtimeConfig: {} }),
       toggleModal: () => set((state) => ({ isModalOpen: !state.isModalOpen })),
       setModalOpen: (isOpen) => set({ isModalOpen: isOpen }),
       setMinimized: (isMinimized) => set({ isMinimized }),
@@ -38,6 +44,7 @@ export const useConfigStore = create<ConfigState>()(
         if (!persistedConfig) {
           return {
             globalConfig: DEFAULT_GLOBAL_CONFIG,
+            runtimeConfig: {},
             isModalOpen: false,
             isMinimized: false,
           };
@@ -51,6 +58,7 @@ export const useConfigStore = create<ConfigState>()(
 
         return {
           globalConfig: migratedConfig,
+          runtimeConfig: {},
           isModalOpen: state.isModalOpen ?? false,
           isMinimized: state.isMinimized ?? false,
         };

@@ -42,6 +42,9 @@ export const DEFAULT_GLOBAL_CONFIG: GlobalConfig = {
   theme: 'system',
   keyboardShortcuts: true,
   networkProfile: 'none',
+  match: {
+    stripPrefixes: [],
+  },
 };
 
 // Network profile delay mappings (in milliseconds)

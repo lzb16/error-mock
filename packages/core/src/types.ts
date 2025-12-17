@@ -8,6 +8,18 @@ export type ThemeMode = 'dark' | 'light' | 'system';
 
 export type NetworkProfile = 'none' | 'fast4g' | 'slow3g' | '2g';
 
+export interface MatchConfig {
+  /**
+   * Strip these prefixes from the request URL pathname before matching rules.
+   *
+   * Useful when dev proxy adds a fixed prefix (e.g. `/api`), but your API
+   * definitions/rules are stored without it (e.g. `/user/login`).
+   *
+   * Example: request `/api/user/login` + stripPrefixes [`/api`] => match `/user/login`.
+   */
+  stripPrefixes?: string[];
+}
+
 export interface NetworkConfig {
   profile?: NetworkProfile | null; // null = follow global
   customDelay?: number; // Custom delay in ms
@@ -77,6 +89,7 @@ export interface GlobalConfig {
   theme: ThemeMode;
   keyboardShortcuts: boolean;
   networkProfile: NetworkProfile; // Global network profile (default 'none')
+  match?: MatchConfig;
 }
 
 export interface BypassConfig {

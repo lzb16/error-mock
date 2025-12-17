@@ -26,6 +26,7 @@ describe('useConfigStore migration', () => {
     // Reset store to default
     useConfigStore.setState({
       globalConfig: DEFAULT_GLOBAL_CONFIG,
+      runtimeConfig: {},
       isModalOpen: false,
       isMinimized: false,
     });
@@ -116,7 +117,10 @@ describe('useConfigStore migration', () => {
     const { migrate } = (useConfigStore as any).persist.getOptions();
     const migrated = migrate(config.state, 1);
 
-    expect(migrated.globalConfig).toEqual(config.state.globalConfig);
+    expect(migrated.globalConfig).toEqual({
+      ...DEFAULT_GLOBAL_CONFIG,
+      ...config.state.globalConfig,
+    });
     expect(migrated.isModalOpen).toBe(true);
     expect(migrated.isMinimized).toBe(true);
   });

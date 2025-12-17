@@ -186,6 +186,7 @@ describe('RuleStorage', () => {
       theme: 'dark',
       keyboardShortcuts: false,
       networkProfile: DEFAULT_GLOBAL_CONFIG.networkProfile,
+      match: DEFAULT_GLOBAL_CONFIG.match,
     });
   });
 });

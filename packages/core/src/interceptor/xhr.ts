@@ -4,6 +4,7 @@ import { matchRule } from '../engine/matcher';
 import { omitFields } from '../engine/field-omit';
 import { PROFILE_DELAYS, DEFAULT_GLOBAL_CONFIG } from '../constants';
 import { getStatusText, generateTraceId } from '../utils/http-utils';
+import { applyMatchConfig } from '../utils/match-url';
 
 let OriginalXHR: typeof XMLHttpRequest | null = null;
 let currentRules: MockRule[] = [];
@@ -231,7 +232,7 @@ class MockXMLHttpRequest {
     // Get content-type from request headers
     const contentType = this._requestHeaders['content-type'];
 
-    const rule = matchRule(currentRules, urlForMatching, this._method);
+    const rule = matchRule(currentRules, applyMatchConfig(urlForMatching, globalConfig), this._method);
 
     if (!rule || shouldBypass(this._url, this._method, contentType)) {
       this._passthrough(body);

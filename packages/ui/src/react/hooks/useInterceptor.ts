@@ -21,6 +21,7 @@ import { useConfigStore } from '@/stores/useConfigStore';
 export function useInterceptor() {
   const appliedRules = useRulesStore((state) => state.appliedRules);
   const globalConfig = useConfigStore((state) => state.globalConfig);
+  const runtimeConfig = useConfigStore((state) => state.runtimeConfig);
   const isInstalled = useRef(false);
 
   // Sync rules and config whenever they change
@@ -37,6 +38,15 @@ export function useInterceptor() {
       return;
     }
 
+    const mergedConfig = {
+      ...globalConfig,
+      ...runtimeConfig,
+      match: {
+        ...(globalConfig.match || {}),
+        ...(runtimeConfig.match || {}),
+      },
+    };
+
     // If already installed, reinstall to update both rules and config
     // because updateRules() doesn't support config updates.
     if (isInstalled.current) {
@@ -45,12 +55,12 @@ export function useInterceptor() {
     }
 
     // Install with enabled rules only.
-    install(enabledRules, globalConfig);
+    install(enabledRules, mergedConfig);
     isInstalled.current = true;
 
     // Note: We don't uninstall here because we want interceptors
     // to persist across rule updates (only unmount should uninstall)
-  }, [appliedRules, globalConfig]);
+  }, [appliedRules, globalConfig, runtimeConfig]);
 
   // Cleanup on unmount
   useEffect(() => {
