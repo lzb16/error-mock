@@ -113,6 +113,18 @@ export class ErrorMockWebpackPlugin {
     this.ensureRuntimeEntryInjected(compiler);
 
     const apiDirAbsPath = path.resolve(compiler.context, this.options.apiDir);
+
+    // Parse APIs once at startup
+    try {
+      apiMetas = this.normalizeApiMetas(this.options.adapter.parse(apiDirAbsPath));
+      this.lastParsedApiCount = apiMetas.length;
+      if (this.debugEnabled) {
+        console.log(`[ErrorMock][debug] Parsed ${apiMetas.length} APIs from ${apiDirAbsPath}`);
+      }
+    } catch (error) {
+      console.warn(`[ErrorMock] Failed to parse API directory`, error);
+    }
+
     if (this.debugEnabled) {
       compiler.hooks.invalid.tap(PLUGIN_NAME, (fileName) => {
         console.log(`[ErrorMock][debug] Webpack invalidated by: ${fileName || '(unknown)'}`);
@@ -139,11 +151,12 @@ export class ErrorMockWebpackPlugin {
         apiMetas = this.normalizeApiMetas(this.options.adapter.parse(apiDirAbsPath));
         const nextCount = apiMetas.length;
         const prevCount = this.lastParsedApiCount;
-        this.lastParsedApiCount = nextCount;
 
-        if (this.debugEnabled || prevCount === null || prevCount !== nextCount) {
-          console.log(`[ErrorMock][build] Parsed ${nextCount} APIs from ${apiDirAbsPath}`);
+        // Only log when API count actually changes (skip first time)
+        if (prevCount !== null && prevCount !== nextCount) {
+          console.log(`[ErrorMock][build] API count changed: ${prevCount} -> ${nextCount}`);
         }
+        this.lastParsedApiCount = nextCount;
       } catch (error) {
         console.warn(`[ErrorMock] Failed to parse API directory`, error);
         apiMetas = [];
