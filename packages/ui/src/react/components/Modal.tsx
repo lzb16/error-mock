@@ -10,8 +10,6 @@ import {
 import { useI18n } from '@/i18n';
 import { ApiList } from './ApiList';
 import { RuleEditor } from './RuleEditor';
-import { NetworkProfileSelect } from './modal/NetworkProfileSelect';
-import { LanguageSwitch } from './LanguageSwitch';
 
 export function Modal() {
   const { isModalOpen, setModalOpen } = useConfigStore();
@@ -51,17 +49,11 @@ export function Modal() {
           showCloseButton
           className="em:px-6 em:py-4 em:border-b em:border-gray-200 em:bg-gradient-to-r em:from-blue-50 em:to-indigo-50 em:space-y-0"
         >
-          <div className="em:flex em:items-center em:justify-between em:gap-4">
-            <div className="em:flex em:items-center em:gap-2">
-              <WandSparkles className="em:w-6 em:h-6 em:text-blue-600" />
-              <DialogTitle className="em:text-xl em:font-bold em:text-gray-800">
-                {t('modal.title')}
-              </DialogTitle>
-            </div>
-            <div className="em:flex em:items-center em:gap-2">
-              <LanguageSwitch />
-              <NetworkProfileSelect />
-            </div>
+          <div className="em:flex em:items-center em:gap-2">
+            <WandSparkles className="em:w-6 em:h-6 em:text-blue-600" />
+            <DialogTitle className="em:text-xl em:font-bold em:text-gray-800">
+              {t('modal.title')}
+            </DialogTitle>
           </div>
         </DialogHeader>
 

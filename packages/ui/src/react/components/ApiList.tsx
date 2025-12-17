@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { MethodBadge } from './MethodBadge';
+import { SettingsModal } from './SettingsModal';
 
 export const ApiList: React.FC = () => {
   const { t } = useI18n();
@@ -60,7 +61,7 @@ export const ApiList: React.FC = () => {
   const sortedModules = useMemo(() => Array.from(groups.keys()).sort(), [groups]);
 
   return (
-    <div className="em:flex em:h-full em:flex-col em:bg-white em:border-r em:border-gray-200">
+    <div className="em:flex em:h-full em:flex-col em:bg-white em:border-r em:border-gray-200 em:relative">
       {/* Search Header */}
       <div className="em:p-3 em:border-b em:border-gray-200">
         <div className="em:relative">
@@ -90,7 +91,7 @@ export const ApiList: React.FC = () => {
       </div>
 
       {/* API List */}
-      <div className="em:flex-1 em:overflow-y-auto">
+      <div className="em:flex-1 em:overflow-y-auto em:pb-12">
         {sortedModules.length === 0 ? (
           <div className="em:flex em:flex-col em:items-center em:justify-center em:py-12 em:text-center em:text-gray-500">
             <Inbox className="em:h-12 em:w-12 em:mb-3 em:text-gray-300" />
@@ -177,6 +178,11 @@ export const ApiList: React.FC = () => {
             })}
           </div>
         )}
+      </div>
+
+      {/* Settings Button */}
+      <div className="em:absolute em:bottom-3 em:right-3">
+        <SettingsModal />
       </div>
     </div>
   );

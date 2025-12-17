@@ -43,6 +43,18 @@ export const en: Translations = {
   'language.zh': '中文',
   'language.en': 'English',
 
+  // Settings
+  'settings.title': 'Settings',
+  'settings.language': 'Language',
+  'settings.networkProfile': 'Global Network Profile',
+  'settings.logLevel': 'Log Level',
+
+  // Log Level
+  'logLevel.error': 'Error',
+  'logLevel.warn': 'Warn',
+  'logLevel.info': 'Info',
+  'logLevel.debug': 'Debug',
+
   // RuleEditor
   'ruleEditor.enableMocking': 'Enable Mocking',
   'ruleEditor.empty.title': 'Select an API to configure',

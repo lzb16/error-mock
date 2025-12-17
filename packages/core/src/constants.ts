@@ -42,6 +42,7 @@ export const DEFAULT_GLOBAL_CONFIG: GlobalConfig = {
   theme: 'system',
   keyboardShortcuts: true,
   networkProfile: 'none',
+  logLevel: 'warn',
   match: {
     stripPrefixes: [],
   },

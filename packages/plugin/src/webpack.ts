@@ -29,6 +29,12 @@ export interface ErrorMockWebpackPluginOptions {
   debug?: boolean;
 
   /**
+   * Default HTTP method when not specified in API definition.
+   * @default 'GET'
+   */
+  defaultMethod?: string;
+
+  /**
    * Request matching options.
    *
    * Useful for dev proxy setups (e.g. Umi) where requests are prefixed with
@@ -63,9 +69,12 @@ export class ErrorMockWebpackPlugin {
   constructor(options: ErrorMockWebpackPluginOptions = {}) {
     this.options = {
       apiDir: options.apiDir || 'src/api',
-      adapter: options.adapter || createDefaultAdapter(),
+      adapter: options.adapter || createDefaultAdapter({
+        defaultMethod: options.defaultMethod,
+      }),
       runtimeDir: options.runtimeDir || DEFAULT_RUNTIME_DIR,
       debug: options.debug ?? false,
+      defaultMethod: options.defaultMethod || 'GET',
       match: options.match || {},
     };
     this.debugEnabled = this.options.debug || process.env.ERROR_MOCK_DEBUG === '1';
@@ -94,6 +103,9 @@ export class ErrorMockWebpackPlugin {
       }
       return;
     }
+
+    // Add resolve alias for @error-mock/plugin/runtime to help pnpm workspace resolution
+    this.setupResolveAlias(compiler);
 
     let apiMetas: ApiMeta[] = [];
 
@@ -276,6 +288,55 @@ export class ErrorMockWebpackPlugin {
       const keyB = `${b.module}\u0000${b.name}\u0000${b.method}\u0000${b.url}`;
       return keyA.localeCompare(keyB);
     });
+  }
+
+  private setupResolveAlias(compiler: Compiler): void {
+    // __dirname points to this plugin's dist folder after build
+    const pluginDistDir = __dirname;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const options = compiler.options as any;
+    options.resolve = options.resolve || {};
+    options.resolve.alias = options.resolve.alias || {};
+
+    // List of packages that need aliases for pnpm workspace resolution
+    const packageAliases: Record<string, string> = {
+      '@error-mock/plugin/runtime': path.resolve(pluginDistDir, 'runtime.js'),
+    };
+
+    // Try to resolve @error-mock/ui and @error-mock/core from the plugin's dependencies
+    try {
+      // Resolve from the plugin package's node_modules or workspace
+      const pluginPkgDir = path.resolve(pluginDistDir, '..');
+      const uiPkgPath = require.resolve('@error-mock/ui/react', { paths: [pluginPkgDir] });
+      const corePkgPath = require.resolve('@error-mock/core', { paths: [pluginPkgDir] });
+
+      packageAliases['@error-mock/ui/react'] = uiPkgPath;
+      packageAliases['@error-mock/ui'] = uiPkgPath;
+      packageAliases['@error-mock/core'] = corePkgPath;
+    } catch {
+      // In monorepo development, try to find packages by relative paths
+      const monorepoPackagesDir = path.resolve(pluginDistDir, '..', '..'); // packages/
+      const uiDistPath = path.resolve(monorepoPackagesDir, 'ui', 'dist', 'react', 'index.js');
+      const coreDistPath = path.resolve(monorepoPackagesDir, 'core', 'dist', 'index.js');
+
+      if (fs.existsSync(uiDistPath)) {
+        packageAliases['@error-mock/ui/react'] = uiDistPath;
+        packageAliases['@error-mock/ui'] = uiDistPath;
+      }
+      if (fs.existsSync(coreDistPath)) {
+        packageAliases['@error-mock/core'] = coreDistPath;
+      }
+    }
+
+    for (const [name, target] of Object.entries(packageAliases)) {
+      if (!options.resolve.alias[name]) {
+        options.resolve.alias[name] = target;
+        if (this.debugEnabled) {
+          console.log(`[ErrorMock][build] Added resolve alias: ${name} -> ${target}`);
+        }
+      }
+    }
   }
 
   private generateRuntimeCode(apiMetas: ApiMeta[]): string {

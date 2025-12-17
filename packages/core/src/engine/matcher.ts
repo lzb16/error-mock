@@ -1,6 +1,7 @@
 // packages/core/src/engine/matcher.ts
 import { match, type MatchFunction } from 'path-to-regexp';
 import type { MockRule } from '../types';
+import { logger } from '../logger';
 
 // Cache compiled matchers for performance
 const matcherCache = new Map<string, MatchFunction<Record<string, string>>>();
@@ -53,15 +54,20 @@ export function matchRule(
 ): MockRule | null {
   for (const rule of rules) {
     if (!rule.enabled) {
+      logger.debug('  Skip |', rule.id, '| Reason: disabled');
       continue;
     }
 
     if (rule.method.toUpperCase() !== requestMethod.toUpperCase()) {
+      logger.debug('  Skip |', rule.id, '| Method mismatch:', rule.method, '!=', requestMethod);
       continue;
     }
 
     if (matchUrl(requestUrl, rule.url)) {
+      logger.debug('  Match |', rule.id, '| URL:', rule.url, '~=', requestUrl);
       return rule;
+    } else {
+      logger.debug('  Skip |', rule.id, '| URL mismatch:', rule.url, '!=', requestUrl);
     }
   }
 

@@ -8,6 +8,8 @@ export type ThemeMode = 'dark' | 'light' | 'system';
 
 export type NetworkProfile = 'none' | 'fast4g' | 'slow3g' | '2g';
 
+export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+
 export interface MatchConfig {
   /**
    * Strip these prefixes from the request URL pathname before matching rules.
@@ -89,6 +91,7 @@ export interface GlobalConfig {
   theme: ThemeMode;
   keyboardShortcuts: boolean;
   networkProfile: NetworkProfile; // Global network profile (default 'none')
+  logLevel: LogLevel; // Log level for debugging (default 'warn')
   match?: MatchConfig;
 }
 

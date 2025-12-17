@@ -5,6 +5,7 @@ import { omitFields } from '../engine/field-omit';
 import { PROFILE_DELAYS, DEFAULT_GLOBAL_CONFIG } from '../constants';
 import { getStatusText, generateTraceId } from '../utils/http-utils';
 import { applyMatchConfig } from '../utils/match-url';
+import { logger, setLogLevel } from '../logger';
 
 let OriginalXHR: typeof XMLHttpRequest | null = null;
 let currentRules: MockRule[] = [];
@@ -30,6 +31,13 @@ export function installXHRInterceptor(
   // Reset bypass config each install to avoid leaking state across re-installs/tests
   bypassConfig = { ...defaultBypassConfig, ...(bypass || {}) };
 
+  // Set log level from config
+  if (globalConfig.logLevel) {
+    setLogLevel(globalConfig.logLevel);
+  }
+
+  logger.info('XHR interceptor installed with', rules.length, 'rules');
+
   // @ts-expect-error - We're replacing XMLHttpRequest
   globalThis.XMLHttpRequest = MockXMLHttpRequest;
 }
@@ -41,6 +49,7 @@ export function uninstallXHRInterceptor(): void {
     currentRules = [];
     globalConfig = { ...DEFAULT_GLOBAL_CONFIG };
     bypassConfig = { ...defaultBypassConfig };
+    logger.info('XHR interceptor uninstalled');
   }
 }
 
@@ -232,12 +241,25 @@ class MockXMLHttpRequest {
     // Get content-type from request headers
     const contentType = this._requestHeaders['content-type'];
 
-    const rule = matchRule(currentRules, applyMatchConfig(urlForMatching, globalConfig), this._method);
-
-    if (!rule || shouldBypass(this._url, this._method, contentType)) {
+    // Check bypass first
+    if (shouldBypass(this._url, this._method, contentType)) {
+      logger.debug('Bypass request |', this._method, urlForMatching, '| Reason: bypass config');
       this._passthrough(body);
       return;
     }
+
+    const urlAfterStrip = applyMatchConfig(urlForMatching, globalConfig);
+    logger.debug('Intercepting |', this._method, urlForMatching, urlAfterStrip !== urlForMatching ? `-> ${urlAfterStrip}` : '', '| Rules:', currentRules.length);
+
+    const rule = matchRule(currentRules, urlAfterStrip, this._method);
+
+    if (!rule) {
+      logger.debug('Pass through |', this._method, urlForMatching, '| No matching rule found');
+      this._passthrough(body);
+      return;
+    }
+
+    logger.info('Matched |', this._method, urlForMatching, '| Rule:', rule.id);
 
     const execute = () => {
       if (this._aborted) return;

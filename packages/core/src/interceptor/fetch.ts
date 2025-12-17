@@ -5,6 +5,7 @@ import { omitFields } from '../engine/field-omit';
 import { PROFILE_DELAYS, DEFAULT_GLOBAL_CONFIG } from '../constants';
 import { getStatusText, generateTraceId } from '../utils/http-utils';
 import { applyMatchConfig } from '../utils/match-url';
+import { logger, setLogLevel } from '../logger';
 
 let originalFetch: typeof fetch | null = null;
 let currentRules: MockRule[] = [];
@@ -32,6 +33,13 @@ export function installFetchInterceptor(
   globalConfig = config ? { ...config } : { ...DEFAULT_GLOBAL_CONFIG };
   // Reset bypass config each install to avoid leaking state across re-installs/tests
   bypassConfig = { ...defaultBypassConfig, ...(bypass || {}) };
+
+  // Set log level from config
+  if (globalConfig.logLevel) {
+    setLogLevel(globalConfig.logLevel);
+  }
+
+  logger.info('Fetch interceptor installed with', rules.length, 'rules');
 
   globalThis.fetch = async function(
     input: RequestInfo | URL,
@@ -75,13 +83,20 @@ export function installFetchInterceptor(
 
     // Check bypass (pass full URL for origin-based bypass rules)
     if (shouldBypass(url, method, contentType)) {
+      logger.debug('Bypass request |', method, urlForMatching, '| Reason: bypass config');
       return originalFetch!.call(globalThis, input, init);
     }
 
-    const rule = matchRule(currentRules, applyMatchConfig(urlForMatching, globalConfig), method);
+    const urlAfterStrip = applyMatchConfig(urlForMatching, globalConfig);
+    logger.debug('Intercepting |', method, urlForMatching, urlAfterStrip !== urlForMatching ? `-> ${urlAfterStrip}` : '', '| Rules:', currentRules.length);
+
+    const rule = matchRule(currentRules, urlAfterStrip, method);
     if (!rule) {
+      logger.debug('Pass through |', method, urlForMatching, '| No matching rule found');
       return originalFetch!.call(globalThis, input, init);
     }
+
+    logger.info('Matched |', method, urlForMatching, '| Rule:', rule.id);
 
     // Collect abort signals
     const signals: AbortSignal[] = [];
@@ -113,6 +128,7 @@ export function uninstallFetchInterceptor(): void {
     currentRules = [];
     globalConfig = { ...DEFAULT_GLOBAL_CONFIG };
     bypassConfig = { ...defaultBypassConfig };
+    logger.info('Fetch interceptor uninstalled');
   }
 }
 

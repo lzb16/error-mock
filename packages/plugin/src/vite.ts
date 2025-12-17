@@ -16,6 +16,12 @@ export interface ErrorMockVitePluginOptions {
   adapter?: ApiAdapter;
 
   /**
+   * Default HTTP method when not specified in API definition.
+   * @default 'GET'
+   */
+  defaultMethod?: string;
+
+  /**
    * Request matching options.
    *
    * Useful for dev proxy setups (e.g. Umi) where requests are prefixed with
@@ -37,7 +43,10 @@ export interface ErrorMockVitePluginOptions {
 export function errorMockVitePlugin(options: ErrorMockVitePluginOptions = {}): Plugin {
   const opts: Required<ErrorMockVitePluginOptions> = {
     apiDir: options.apiDir || 'src/api',
-    adapter: options.adapter || createDefaultAdapter(),
+    adapter: options.adapter || createDefaultAdapter({
+      defaultMethod: options.defaultMethod,
+    }),
+    defaultMethod: options.defaultMethod || 'GET',
     match: options.match || {},
   };
 

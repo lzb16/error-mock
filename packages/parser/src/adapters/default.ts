@@ -1,12 +1,16 @@
 import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
-import type { ApiMeta, ApiAdapter } from '../types';
+import type { ApiMeta, ApiAdapter, AdapterOptions } from '../types';
 
 /**
  * Parse a single API file using TypeScript AST
  */
-export function parseApiFile(code: string, moduleName: string): ApiMeta[] {
+export function parseApiFile(
+  code: string,
+  moduleName: string,
+  options?: { defaultMethod?: string }
+): ApiMeta[] {
   const sourceFile = ts.createSourceFile(
     'api.ts',
     code,
@@ -48,7 +52,13 @@ export function parseApiFile(code: string, moduleName: string): ApiMeta[] {
 
         // Check if it's createRequest<...>(...)
         if (ts.isIdentifier(callExpr) && callExpr.text === 'createRequest') {
-          const apiMeta = extractApiMeta(decl.name.text, call, sourceFile, urlConstants);
+          const apiMeta = extractApiMeta(
+            decl.name.text,
+            call,
+            sourceFile,
+            urlConstants,
+            options?.defaultMethod
+          );
           if (apiMeta) {
             results.push({ ...apiMeta, module: moduleName });
           }
@@ -68,7 +78,8 @@ function extractApiMeta(
   name: string,
   call: ts.CallExpression,
   sourceFile: ts.SourceFile,
-  urlConstants: Map<string, string>
+  urlConstants: Map<string, string>,
+  defaultMethod?: string
 ): Omit<ApiMeta, 'module'> | null {
   const typeArgs = call.typeArguments;
   const [arg] = call.arguments;
@@ -76,7 +87,7 @@ function extractApiMeta(
   if (!arg || !ts.isObjectLiteralExpression(arg)) return null;
 
   let url = '';
-  let method = 'GET';
+  let method = (defaultMethod || 'GET').toUpperCase();
 
   for (const prop of arg.properties) {
     if (!ts.isPropertyAssignment(prop) || !ts.isIdentifier(prop.name)) continue;
@@ -109,7 +120,7 @@ function extractApiMeta(
 /**
  * Create the default adapter that scans src/api directories
  */
-export function createDefaultAdapter(): ApiAdapter {
+export function createDefaultAdapter(options?: AdapterOptions): ApiAdapter {
   return {
     parse(apiDir: string): ApiMeta[] {
       const results: ApiMeta[] = [];
@@ -132,7 +143,9 @@ export function createDefaultAdapter(): ApiAdapter {
 
         try {
           const code = fs.readFileSync(indexPath, 'utf-8');
-          const apis = parseApiFile(code, moduleName);
+          const apis = parseApiFile(code, moduleName, {
+            defaultMethod: options?.defaultMethod,
+          });
           results.push(...apis);
         } catch (e) {
           console.warn(`[ErrorMock] Failed to parse ${indexPath}:`, e);

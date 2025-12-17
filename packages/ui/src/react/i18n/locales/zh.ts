@@ -43,6 +43,18 @@ export const zh: Translations = {
   'language.zh': '中文',
   'language.en': 'English',
 
+  // Settings
+  'settings.title': '设置',
+  'settings.language': '语言',
+  'settings.networkProfile': '全局网络配置',
+  'settings.logLevel': '日志级别',
+
+  // Log Level
+  'logLevel.error': '错误（Error）',
+  'logLevel.warn': '警告（Warn）',
+  'logLevel.info': '信息（Info）',
+  'logLevel.debug': '调试（Debug）',
+
   // RuleEditor
   'ruleEditor.enableMocking': '启用模拟',
   'ruleEditor.empty.title': '请选择要配置的 API',

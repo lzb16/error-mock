@@ -121,6 +121,7 @@ export class RuleStorage {
         theme: parsed.theme ?? DEFAULT_GLOBAL_CONFIG.theme,
         keyboardShortcuts: parsed.keyboardShortcuts ?? DEFAULT_GLOBAL_CONFIG.keyboardShortcuts,
         networkProfile: parsed.networkProfile ?? DEFAULT_GLOBAL_CONFIG.networkProfile,
+        logLevel: parsed.logLevel ?? DEFAULT_GLOBAL_CONFIG.logLevel,
         match: {
           stripPrefixes,
         },

@@ -7,6 +7,14 @@ export interface ApiMeta {
   responseType?: string;
 }
 
+export interface AdapterOptions {
+  /**
+   * Default HTTP method when not specified in API definition.
+   * @default 'GET'
+   */
+  defaultMethod?: string;
+}
+
 export interface ApiAdapter {
   parse(apiDir: string): ApiMeta[];
 }
