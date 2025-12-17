@@ -65,6 +65,7 @@ export class ErrorMockWebpackPlugin {
   private entryInjected = false;
   private debugEnabled = false;
   private lastParsedApiCount: number | null = null;
+  private initialBuildDone = false;
 
   constructor(options: ErrorMockWebpackPluginOptions = {}) {
     this.options = {
@@ -81,13 +82,6 @@ export class ErrorMockWebpackPlugin {
   }
 
   apply(compiler: Compiler): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const compilerAny = compiler as any;
-    const webpackVersion = compilerAny.webpack?.version || '4.x (no compiler.webpack)';
-    if (this.debugEnabled) {
-      console.log(`[ErrorMock][build] Webpack version: ${webpackVersion}`);
-    }
-
     if (compiler.options.mode === 'production') {
       return;
     }
@@ -118,18 +112,10 @@ export class ErrorMockWebpackPlugin {
     try {
       apiMetas = this.normalizeApiMetas(this.options.adapter.parse(apiDirAbsPath));
       this.lastParsedApiCount = apiMetas.length;
-      if (this.debugEnabled) {
-        console.log(`[ErrorMock][debug] Parsed ${apiMetas.length} APIs from ${apiDirAbsPath}`);
-      }
     } catch (error) {
       console.warn(`[ErrorMock] Failed to parse API directory`, error);
     }
 
-    if (this.debugEnabled) {
-      compiler.hooks.invalid.tap(PLUGIN_NAME, (fileName) => {
-        console.log(`[ErrorMock][debug] Webpack invalidated by: ${fileName || '(unknown)'}`);
-      });
-    }
     compiler.hooks.thisCompilation.tap(PLUGIN_NAME, (compilation) => {
       // Make webpack watch the API directory even if it's not in the module graph.
       // This helps both plain webpack and framework integrations.
@@ -152,9 +138,9 @@ export class ErrorMockWebpackPlugin {
         const nextCount = apiMetas.length;
         const prevCount = this.lastParsedApiCount;
 
-        // Only log when API count actually changes (skip first time)
-        if (prevCount !== null && prevCount !== nextCount) {
-          console.log(`[ErrorMock][build] API count changed: ${prevCount} -> ${nextCount}`);
+        // Only log when API count actually changes after initial build
+        if (this.initialBuildDone && prevCount !== null && prevCount !== nextCount) {
+          console.log(`[ErrorMock] API count changed: ${prevCount} -> ${nextCount}`);
         }
         this.lastParsedApiCount = nextCount;
       } catch (error) {
@@ -169,6 +155,16 @@ export class ErrorMockWebpackPlugin {
         console.warn('[ErrorMock] Failed to generate runtime entry file', error);
       }
       callback();
+    });
+
+    // Log once when dev server is ready
+    compiler.hooks.done.tap(PLUGIN_NAME, (stats) => {
+      if (this.initialBuildDone) return;
+      if (stats.hasErrors()) return;
+
+      this.initialBuildDone = true;
+      const apiCount = this.lastParsedApiCount ?? 0;
+      console.log(`[ErrorMock] Ready - ${apiCount} APIs loaded from ${this.options.apiDir}`);
     });
   }
 
@@ -285,9 +281,6 @@ export class ErrorMockWebpackPlugin {
       fs.mkdirSync(path.dirname(this.runtimeEntryPath), { recursive: true });
       fs.writeFileSync(this.runtimeEntryPath, code, 'utf8');
       this.lastRuntimeCode = code;
-      if (this.debugEnabled) {
-        console.log(`[ErrorMock][debug] Wrote runtime entry: ${this.runtimeEntryPath}`);
-      }
     } catch (error) {
       console.warn('[ErrorMock] Failed to write runtime entry file', error);
     }
@@ -345,9 +338,6 @@ export class ErrorMockWebpackPlugin {
     for (const [name, target] of Object.entries(packageAliases)) {
       if (!options.resolve.alias[name]) {
         options.resolve.alias[name] = target;
-        if (this.debugEnabled) {
-          console.log(`[ErrorMock][build] Added resolve alias: ${name} -> ${target}`);
-        }
       }
     }
   }
