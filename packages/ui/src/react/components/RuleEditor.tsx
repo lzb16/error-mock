@@ -12,7 +12,7 @@ import { MethodBadge } from './MethodBadge';
 
 export function RuleEditor() {
   const { t } = useI18n();
-  const { selectedId, getRuleForApi, updateRule, applyRule, discardDraftRule, apiMetas } =
+  const { selectedId, getRuleForApi, updateRule, applyRule, discardDraftRule, apiMetas, toggleRuleEnabled } =
     useRulesStore();
   const { addToast } = useToastStore();
   const { globalConfig } = useConfigStore();
@@ -117,7 +117,7 @@ export function RuleEditor() {
           <Switch
             id="enable-mocking"
             checked={rule.enabled}
-            onCheckedChange={(checked) => handleFieldChange('enabled', checked)}
+            onCheckedChange={(checked) => toggleRuleEnabled(rule.id, checked)}
             aria-label={t('ruleEditor.enableMocking')}
           />
         </div>

@@ -23,6 +23,9 @@ export const en: Translations = {
   'apiList.search.clear': 'Clear search',
   'apiList.empty.title': 'No APIs found',
   'apiList.empty.subtitle': 'Try adjusting your search terms',
+  'apiList.filter.all': 'All',
+  'apiList.filter.enabled': 'Enabled',
+  'apiList.filter.disabled': 'Disabled',
 
   // Toast
   'toast.regionLabel': 'Notifications',

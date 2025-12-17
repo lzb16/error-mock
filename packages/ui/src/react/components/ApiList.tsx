@@ -2,13 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Search, X, ChevronRight, Inbox } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRulesStore } from '@/stores/useRulesStore';
-import type { ApiMeta } from '@error-mock/core';
 import { useI18n } from '@/i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { MethodBadge } from './MethodBadge';
 import { SettingsModal } from './SettingsModal';
+
+const FILTER_OPTIONS = ['all', 'enabled', 'disabled'] as const;
 
 export const ApiList: React.FC = () => {
   const { t } = useI18n();
@@ -17,15 +18,17 @@ export const ApiList: React.FC = () => {
     setSearchQuery,
     selectedId,
     setSelectedId,
-    mockRules,
     apiMetas,
+    filterStatus,
+    setFilterStatus,
+    isApiEnabled,
   } = useRulesStore();
 
   const [collapsedModules, setCollapsedModules] = useState<Set<string>>(new Set());
 
   const groups = useMemo(() => {
     return useRulesStore.getState().groupedMetas();
-  }, [apiMetas, searchQuery]);
+  }, [apiMetas, searchQuery, filterStatus]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -50,20 +53,20 @@ export const ApiList: React.FC = () => {
     });
   };
 
-  const getStatusColor = (id: string) => {
-    const rule = mockRules.get(id);
-    if (!rule || !rule.enabled) {
-      return 'em:bg-gray-300';
-    }
-    return 'em:bg-green-500';
-  };
-
   const sortedModules = useMemo(() => Array.from(groups.keys()).sort(), [groups]);
+
+  const getFilterLabel = (filter: typeof FILTER_OPTIONS[number]) => {
+    switch (filter) {
+      case 'all': return t('apiList.filter.all');
+      case 'enabled': return t('apiList.filter.enabled');
+      case 'disabled': return t('apiList.filter.disabled');
+    }
+  };
 
   return (
     <div className="em:flex em:h-full em:flex-col em:bg-white em:border-r em:border-gray-200 em:relative">
       {/* Search Header */}
-      <div className="em:p-3 em:border-b em:border-gray-200">
+      <div className="em:p-3 em:border-b em:border-gray-200 em:space-y-2">
         <div className="em:relative">
           <Search className="em:absolute em:left-3 em:top-2.5 em:h-4 em:w-4 em:text-gray-400" />
           <Input
@@ -87,6 +90,24 @@ export const ApiList: React.FC = () => {
               <X className="em:h-4 em:w-4" />
             </Button>
           )}
+        </div>
+
+        {/* Filter Segmented Control */}
+        <div className="em:flex em:p-1 em:bg-gray-100 em:rounded-lg">
+          {FILTER_OPTIONS.map((filter) => (
+            <button
+              key={filter}
+              onClick={() => setFilterStatus(filter)}
+              className={cn(
+                'em:flex-1 em:py-1 em:text-xs em:font-medium em:rounded-md em:transition-all',
+                filterStatus === filter
+                  ? 'em:bg-white em:text-gray-900 em:shadow-sm'
+                  : 'em:text-gray-500 hover:em:text-gray-700'
+              )}
+            >
+              {getFilterLabel(filter)}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -133,16 +154,19 @@ export const ApiList: React.FC = () => {
                       {moduleApis.map((api) => {
                         const id = `${api.module}-${api.name}`;
                         const isSelected = selectedId === id;
+                        const enabled = isApiEnabled(id);
 
                         return (
                           <Button
                             key={id}
                             onClick={() => setSelectedId(id)}
                             className={cn(
-                              'em:group em:relative em:flex em:w-full em:items-center em:gap-3 em:px-4 em:py-2.5 em:transition-colors em:h-auto em:justify-start em:rounded-none',
+                              'em:group em:relative em:flex em:w-full em:items-center em:gap-3 em:px-4 em:py-2.5 em:transition-all em:h-auto em:justify-start em:rounded-none em:border-l-[3px]',
                               isSelected
-                                ? 'em:bg-blue-50 em:ring-1 em:ring-blue-200 em:z-10'
-                                : 'hover:em:bg-gray-50'
+                                ? 'em:bg-blue-50/80 em:border-l-blue-500 em:z-10'
+                                : enabled
+                                  ? 'em:bg-green-50/40 em:border-l-green-500'
+                                  : 'em:border-l-transparent hover:em:bg-gray-50'
                             )}
                             aria-selected={isSelected}
                             variant="ghost"
@@ -159,12 +183,14 @@ export const ApiList: React.FC = () => {
                                 >
                                   {api.name}
                                 </p>
-                                <div
-                                  className={cn(
-                                    'em:h-2 em:w-2 em:flex-shrink-0 em:rounded-full',
-                                    getStatusColor(id)
-                                  )}
-                                />
+                                {enabled && (
+                                  <Badge
+                                    variant="outline"
+                                    className="em:h-4 em:px-1.5 em:text-[9px] em:font-semibold em:bg-green-100 em:text-green-700 em:border-green-200"
+                                  >
+                                    ON
+                                  </Badge>
+                                )}
                               </div>
                               <p className="em:truncate em:text-xs em:text-gray-500 em:text-left">{api.url}</p>
                             </div>

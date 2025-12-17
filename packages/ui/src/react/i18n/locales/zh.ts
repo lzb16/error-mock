@@ -23,6 +23,9 @@ export const zh: Translations = {
   'apiList.search.clear': '清除搜索',
   'apiList.empty.title': '未找到 API',
   'apiList.empty.subtitle': '请尝试调整搜索关键词',
+  'apiList.filter.all': '全部',
+  'apiList.filter.enabled': '已启用',
+  'apiList.filter.disabled': '已禁用',
 
   // Toast
   'toast.regionLabel': '通知',

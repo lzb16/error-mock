@@ -16,21 +16,27 @@ const getStorage = () => {
   return storage;
 };
 
+type FilterStatus = 'all' | 'enabled' | 'disabled';
+
 type RulesState = {
   apiMetas: ApiMeta[];
   mockRules: Map<string, MockRule>;
   appliedRules: Map<string, MockRule>;
   selectedId: string | null;
   searchQuery: string;
+  filterStatus: FilterStatus;
   setApiMetas: (metas: ApiMeta[]) => void;
   setSelectedId: (id: string | null) => void;
   setSearchQuery: (query: string) => void;
+  setFilterStatus: (status: FilterStatus) => void;
   discardDraftRule: (meta: ApiMeta) => void;
   loadRules: () => void;
   createRule: (meta: ApiMeta) => MockRule;
   updateRule: (rule: MockRule) => void;
   applyRule: (rule: MockRule) => void;
+  toggleRuleEnabled: (id: string, enabled: boolean) => void;
   getRuleForApi: (meta: ApiMeta) => MockRule;
+  isApiEnabled: (id: string) => boolean;
   activeMockCount: () => number;
   filteredMetas: () => ApiMeta[];
   groupedMetas: () => Map<string, ApiMeta[]>;
@@ -65,10 +71,12 @@ export const useRulesStore = create<RulesState>()(
     appliedRules: new Map<string, MockRule>(),
     selectedId: null,
     searchQuery: '',
+    filterStatus: 'all' as FilterStatus,
 
     setApiMetas: (metas) => set({ apiMetas: metas }),
     setSelectedId: (id) => set({ selectedId: id }),
     setSearchQuery: (query) => set({ searchQuery: query }),
+    setFilterStatus: (status) => set({ filterStatus: status }),
 
     discardDraftRule: (meta) =>
       set((state) => {
@@ -125,9 +133,35 @@ export const useRulesStore = create<RulesState>()(
       if (store) store.saveRules(allRules);
     },
 
+    toggleRuleEnabled: (id, enabled) => {
+      set((state) => {
+        // Update both mockRules and appliedRules immediately
+        const draft = state.mockRules.get(id);
+        if (draft) {
+          draft.enabled = enabled;
+          // Also update appliedRules to make it take effect immediately
+          const applied = state.appliedRules.get(id);
+          if (applied) {
+            applied.enabled = enabled;
+          } else {
+            // If no applied rule exists, create one from the draft
+            state.appliedRules.set(id, current(draft) as MockRule);
+          }
+        }
+      });
+      // Persist to storage
+      const allRules = Array.from(get().appliedRules.values());
+      const store = getStorage();
+      if (store) store.saveRules(allRules);
+    },
+
     getRuleForApi: (meta) => {
       const id = `${meta.module}-${meta.name}`;
       return get().mockRules.get(id) ?? createDefaultRule(meta);
+    },
+
+    isApiEnabled: (id) => {
+      return get().appliedRules.get(id)?.enabled ?? false;
     },
 
     activeMockCount: () => {
@@ -140,15 +174,30 @@ export const useRulesStore = create<RulesState>()(
     },
 
     filteredMetas: () => {
-      const { apiMetas, searchQuery } = get();
-      if (!searchQuery.trim()) return apiMetas;
-      const q = searchQuery.toLowerCase();
-      return apiMetas.filter(
-        (meta) =>
-          meta.name.toLowerCase().includes(q) ||
-          meta.url.toLowerCase().includes(q) ||
-          meta.module.toLowerCase().includes(q)
-      );
+      const { apiMetas, searchQuery, filterStatus, appliedRules } = get();
+      let result = apiMetas;
+
+      // Filter by status
+      if (filterStatus !== 'all') {
+        result = result.filter((meta) => {
+          const id = `${meta.module}-${meta.name}`;
+          const isEnabled = appliedRules.get(id)?.enabled ?? false;
+          return filterStatus === 'enabled' ? isEnabled : !isEnabled;
+        });
+      }
+
+      // Filter by search query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        result = result.filter(
+          (meta) =>
+            meta.name.toLowerCase().includes(q) ||
+            meta.url.toLowerCase().includes(q) ||
+            meta.module.toLowerCase().includes(q)
+        );
+      }
+
+      return result;
     },
 
     groupedMetas: () => {

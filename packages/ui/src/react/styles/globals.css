@@ -3,6 +3,9 @@
 
 @plugin "tailwindcss-animate";
 
+/* Tell Tailwind v4 where to scan for class names */
+@source "../**/*.{ts,tsx}";
+
 /* Dark mode variant for Shadow DOM - triggers when :host has .dark class */
 @custom-variant dark (:host(.dark) &);
 
