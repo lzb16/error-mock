@@ -41,7 +41,7 @@ export function Modal() {
   return (
     <Dialog open={isModalOpen} onOpenChange={setModalOpen}>
       <DialogContent
-        className="em:w-11/12 em:max-w-5xl em:h-5/6 em:max-h-[90vh] em:p-0 em:gap-0 em:flex em:flex-col em:overflow-hidden em:min-h-0"
+        className="em:w-[96vw] em:max-w-7xl em:h-[75vh] em:max-h-[80vh] em:p-0 em:gap-0 em:flex em:flex-col em:overflow-hidden em:min-h-0"
         aria-describedby={undefined}
         onPointerDownOutside={handleInteractOutside}
         onInteractOutside={handleInteractOutside}
@@ -68,7 +68,7 @@ export function Modal() {
         {/* Body: Sidebar + Content */}
         <div className="em:flex em:flex-1 em:overflow-hidden em:min-h-0">
           {/* Sidebar */}
-          <div className="em:w-64 em:shrink-0 em:flex em:flex-col">
+          <div className="em:w-80 em:shrink-0 em:flex em:flex-col">
             <ApiList />
           </div>
 
