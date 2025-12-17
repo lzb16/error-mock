@@ -26,21 +26,26 @@ export function useInterceptor() {
   // Sync rules and config whenever they change
   useEffect(() => {
     const rules = Array.from(appliedRules.values());
+    const enabledRules = rules.filter((rule) => rule.enabled);
 
-    // Skip installation if no rules and not yet installed
-    if (rules.length === 0 && !isInstalled.current) {
+    // Keep the environment clean: if there are no enabled rules, don't patch fetch/XHR.
+    if (enabledRules.length === 0) {
+      if (isInstalled.current) {
+        uninstall();
+        isInstalled.current = false;
+      }
       return;
     }
 
+    // If already installed, reinstall to update both rules and config
+    // because updateRules() doesn't support config updates.
     if (isInstalled.current) {
-      // If already installed, we need to reinstall to update both rules and config
-      // because updateRules() doesn't support config updates
       uninstall();
       isInstalled.current = false;
     }
 
-    // Install with current rules and globalConfig
-    install(rules, globalConfig);
+    // Install with enabled rules only.
+    install(enabledRules, globalConfig);
     isInstalled.current = true;
 
     // Note: We don't uninstall here because we want interceptors
