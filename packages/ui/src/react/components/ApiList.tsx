@@ -68,7 +68,7 @@ export const ApiList: React.FC = () => {
       {/* Search Header */}
       <div className="em:p-3 em:border-b em:border-gray-200 em:space-y-2">
         <div className="em:relative">
-          <Search className="em:absolute em:left-3 em:top-2.5 em:h-4 em:w-4 em:text-gray-400" />
+          <Search className="em:absolute em:left-3 em:top-0 em:bottom-0 em:my-auto em:h-4 em:w-4 em:text-gray-400" />
           <Input
             id="api-search-input"
             type="text"
@@ -83,7 +83,7 @@ export const ApiList: React.FC = () => {
               onClick={() => setSearchQuery('')}
               variant="ghost"
               size="icon-sm"
-              className="em:absolute em:right-2 em:top-2"
+              className="em:absolute em:right-1 em:top-0 em:bottom-0 em:my-auto"
               aria-label={t('apiList.search.clear')}
               type="button"
             >
@@ -93,7 +93,7 @@ export const ApiList: React.FC = () => {
         </div>
 
         {/* Filter Segmented Control */}
-        <div className="em:flex em:p-1 em:bg-gray-100 em:rounded-lg">
+        <div className="em:flex em:p-[3px] em:bg-muted em:rounded-lg">
           {FILTER_OPTIONS.map((filter) => (
             <button
               key={filter}

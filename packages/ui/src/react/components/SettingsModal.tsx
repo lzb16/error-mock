@@ -31,8 +31,12 @@ export function SettingsModal() {
           <Settings className="em:w-4 em:h-4 em:text-gray-500" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="em:w-80">
-        <DialogHeader>
+      <DialogContent
+        className="em:w-80"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
+        <DialogHeader showCloseButton>
           <DialogTitle>{t('settings.title')}</DialogTitle>
         </DialogHeader>
 
@@ -85,7 +89,7 @@ export function SettingsModal() {
           <div className="em:space-y-2">
             <Label>{t('settings.logLevel')}</Label>
             <Select
-              value={globalConfig.logLevel}
+              value={globalConfig.logLevel ?? 'warn'}
               onValueChange={(value) => {
                 if (value === 'error' || value === 'warn' || value === 'info' || value === 'debug') {
                   updateGlobalConfig({ logLevel: value as LogLevel });
