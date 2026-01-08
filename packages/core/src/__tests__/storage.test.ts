@@ -1,3 +1,8 @@
+// {{RIPER-10 Action}}
+// Role: QA | Task_ID: N/A | Time: 2025-12-21T02:56:15+08:00
+// Principle: SOLID-O (开闭原则)
+// Taste: 保持测试断言与 GlobalConfig 默认字段同步（logLevel）
+
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RuleStorage } from '../storage/local';
 import type { MockRule } from '../types';
@@ -186,6 +191,7 @@ describe('RuleStorage', () => {
       theme: 'dark',
       keyboardShortcuts: false,
       networkProfile: DEFAULT_GLOBAL_CONFIG.networkProfile,
+      logLevel: DEFAULT_GLOBAL_CONFIG.logLevel,
       match: DEFAULT_GLOBAL_CONFIG.match,
     });
   });

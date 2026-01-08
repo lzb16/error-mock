@@ -1,3 +1,8 @@
+// {{RIPER-10 Action}}
+// Role: LD | Task_ID: 7b9ed8c9-2a23-4cfb-af6a-a14da5171dee | Time: 2025-12-21T02:56:15+08:00
+// Principle: SOLID-O (开闭原则)
+// Taste: 以统一的 key 空间支撑模板功能扩展（API 模板 / 全局模板 / 内置模板）
+
 import type { Translations } from '../types';
 
 export const zh: Translations = {
@@ -89,10 +94,42 @@ export const zh: Translations = {
   'responseTab.status.group.clientError': '客户端错误',
   'responseTab.status.group.serverError': '服务端错误',
   'responseTab.templates.title': '业务模板',
+  'responseTab.templates.badge.builtin': '内置',
+  'responseTab.templates.badge.result': 'result',
+  'responseTab.templates.defaultName': '模板',
+  'responseTab.templates.name.placeholder': '模板名称',
+  'responseTab.templates.name.requiredError': '请输入模板名称',
+  'responseTab.templates.saveCurrent': '保存当前为模板',
+  'responseTab.templates.saveDesc': '将当前响应字段保存为可复用的业务模板。',
+  'responseTab.templates.includeResult': '包含 result 字段',
+  'responseTab.templates.includeResultHelp': '关闭后仅更新 errNo / errMsg / detailErrMsg，不覆盖 result。',
+  'responseTab.templates.updateSelected': '覆盖更新选中模板',
+  'responseTab.templates.dirtyHint': '当前配置已偏离模板“{name}”，可覆盖更新或另存为新模板。',
+  'responseTab.templates.copySuffix': '（副本）',
+  'responseTab.templates.action.save': '保存',
+  'responseTab.templates.action.saveAsNew': '另存为',
+  'responseTab.templates.action.rename': '重命名',
+  'responseTab.templates.action.delete': '删除',
+  'responseTab.templates.renameSelected': '重命名选中模板',
+  'responseTab.templates.deleteSelected': '删除选中模板',
+  'responseTab.templates.renamePrompt': '重命名模板',
+  'responseTab.templates.renameDesc': '只会修改模板名称，不会影响当前响应配置。',
+  'responseTab.templates.deleteConfirm': '确认删除模板“{name}”？',
+  'responseTab.templates.deleteDesc': '此操作不可恢复。',
+  'responseTab.templates.toast.created': '已创建模板“{name}”',
+  'responseTab.templates.toast.nameRequired': '模板名称为必填',
+  'responseTab.templates.toast.updated': '已更新模板“{name}”',
+  'responseTab.templates.toast.renamed': '已重命名为“{name}”',
+  'responseTab.templates.toast.deleted': '已删除模板“{name}”',
+  'responseTab.templates.builtin.success': '正常返回',
+  'responseTab.templates.builtin.mockError': '模拟异常',
+  'responseTab.templates.builtin.mockError.errMsg': '模拟异常',
+  'responseTab.templates.builtin.mockError.detailErrMsg': '这是一个模拟的业务异常',
   'responseTab.businessError.title': '业务错误',
   'responseTab.businessError.errNoHelp': '0=成功',
   'responseTab.result.title': '响应数据（result 字段）',
   'responseTab.result.finalReturn': "💡 最终返回：{shape}",
+  'responseTab.json.format': '格式化 JSON',
   'responseTab.json.invalid': 'JSON 格式不正确',
   'responseTab.httpError.title': 'HTTP 错误模式',
   'responseTab.httpError.desc': '将返回 HTTP {status} 错误。前端通常不解析错误响应体，会直接进入 catch 或错误处理。',

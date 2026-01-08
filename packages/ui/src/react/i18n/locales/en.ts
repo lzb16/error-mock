@@ -1,3 +1,8 @@
+// {{RIPER-10 Action}}
+// Role: LD | Task_ID: 7b9ed8c9-2a23-4cfb-af6a-a14da5171dee | Time: 2025-12-21T02:56:15+08:00
+// Principle: SOLID-O (开闭原则)
+// Taste: 以统一的 key 空间支撑模板功能扩展（API 模板 / 全局模板 / 内置模板）
+
 import type { Translations } from '../types';
 
 export const en: Translations = {
@@ -89,10 +94,42 @@ export const en: Translations = {
   'responseTab.status.group.clientError': 'Client Error',
   'responseTab.status.group.serverError': 'Server Error',
   'responseTab.templates.title': 'Templates',
+  'responseTab.templates.badge.builtin': 'Built-in',
+  'responseTab.templates.badge.result': 'result',
+  'responseTab.templates.defaultName': 'Template',
+  'responseTab.templates.name.placeholder': 'Template name',
+  'responseTab.templates.name.requiredError': 'Please enter a template name.',
+  'responseTab.templates.saveCurrent': 'Save current as template',
+  'responseTab.templates.saveDesc': 'Save current response fields as a reusable template.',
+  'responseTab.templates.includeResult': 'Include result field',
+  'responseTab.templates.includeResultHelp': 'When off, only errNo / errMsg / detailErrMsg will be applied (result stays untouched).',
+  'responseTab.templates.updateSelected': 'Update selected template',
+  'responseTab.templates.dirtyHint': 'Current config differs from “{name}”. Update it or save as a new template.',
+  'responseTab.templates.copySuffix': ' (copy)',
+  'responseTab.templates.action.save': 'Save',
+  'responseTab.templates.action.saveAsNew': 'Save as new',
+  'responseTab.templates.action.rename': 'Rename',
+  'responseTab.templates.action.delete': 'Delete',
+  'responseTab.templates.renameSelected': 'Rename selected template',
+  'responseTab.templates.deleteSelected': 'Delete selected template',
+  'responseTab.templates.renamePrompt': 'Rename template',
+  'responseTab.templates.renameDesc': 'Only changes the template name and won’t affect the current response config.',
+  'responseTab.templates.deleteConfirm': 'Delete template “{name}”?',
+  'responseTab.templates.deleteDesc': 'This action cannot be undone.',
+  'responseTab.templates.toast.created': 'Created template “{name}”',
+  'responseTab.templates.toast.nameRequired': 'Template name is required.',
+  'responseTab.templates.toast.updated': 'Updated template “{name}”',
+  'responseTab.templates.toast.renamed': 'Renamed to “{name}”',
+  'responseTab.templates.toast.deleted': 'Deleted template “{name}”',
+  'responseTab.templates.builtin.success': 'Success',
+  'responseTab.templates.builtin.mockError': 'Mock Error',
+  'responseTab.templates.builtin.mockError.errMsg': 'Mock Error',
+  'responseTab.templates.builtin.mockError.detailErrMsg': 'This is a mocked business error',
   'responseTab.businessError.title': 'Business Error',
   'responseTab.businessError.errNoHelp': '0 = success',
   'responseTab.result.title': 'Response Data (result field)',
   'responseTab.result.finalReturn': '💡 Final return: {shape}',
+  'responseTab.json.format': 'Format JSON',
   'responseTab.json.invalid': 'Invalid JSON format',
   'responseTab.httpError.title': 'HTTP Error Mode',
   'responseTab.httpError.desc': 'Will return HTTP {status} error. Frontends often do not parse the error body and will enter catch or error handling directly.',

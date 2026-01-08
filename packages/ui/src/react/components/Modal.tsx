@@ -1,3 +1,8 @@
+// {{RIPER-10 Action}}
+// Role: LD | Task_ID: N/A | Time: 2025-12-21T20:11:03+08:00
+// Principle: SOLID-O (开闭原则)
+// Taste: 用响应式 max-width/max-height 上限替代固定 vw/vh 组合，让弹窗在不同分辨率下更均衡
+
 import { useConfigStore } from '@/stores/useConfigStore';
 import { WandSparkles } from 'lucide-react';
 import { useEffect } from 'react';
@@ -39,7 +44,7 @@ export function Modal() {
   return (
     <Dialog open={isModalOpen} onOpenChange={setModalOpen}>
       <DialogContent
-        className="em:w-[96vw] em:max-w-7xl em:h-[75vh] em:max-h-[80vh] em:p-0 em:gap-0 em:flex em:flex-col em:overflow-hidden em:min-h-0"
+        className="em:w-[92vw] em:max-w-[68rem] em:2xl:max-w-[72rem] em:h-[75vh] em:max-h-[48rem] em:p-0 em:gap-0 em:flex em:flex-col em:overflow-hidden em:min-h-0"
         aria-describedby={undefined}
         onPointerDownOutside={handleInteractOutside}
         onInteractOutside={handleInteractOutside}

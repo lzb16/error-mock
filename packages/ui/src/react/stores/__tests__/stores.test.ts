@@ -1,3 +1,8 @@
+// {{RIPER-10 Action}}
+// Role: QA | Task_ID: 425986b5-fec1-4332-bd06-69798fd54198 | Time: 2025-12-21T03:29:21+08:00
+// Principle: SOLID-O (开闭原则)
+// Taste: 用“首次启用即创建规则”的回归用例锁定行为，避免 UI 选中但未落盘时开关失效
+
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useConfigStore } from '../useConfigStore';
 import { useRulesStore } from '../useRulesStore';
@@ -60,6 +65,23 @@ describe('useRulesStore', () => {
     expect(rule.id).toBe('test-getUser');
     expect(rule.response.status).toBe(200);
     expect(rule.enabled).toBe(false);
+  });
+
+  it('should enable mock for implicit default rule (creates rule on first toggle)', () => {
+    const { setApiMetas, getRuleForApi, toggleRuleEnabled, isApiEnabled } = useRulesStore.getState();
+
+    setApiMetas([mockApiMeta]);
+
+    // The UI can render a default rule without persisting it.
+    const rule = getRuleForApi(mockApiMeta);
+    expect(useRulesStore.getState().mockRules.has(rule.id)).toBe(false);
+    expect(useRulesStore.getState().appliedRules.has(rule.id)).toBe(false);
+
+    // First toggle should create & sync both maps.
+    toggleRuleEnabled(rule.id, true);
+    expect(useRulesStore.getState().mockRules.get(rule.id)?.enabled).toBe(true);
+    expect(useRulesStore.getState().appliedRules.get(rule.id)?.enabled).toBe(true);
+    expect(isApiEnabled(rule.id)).toBe(true);
   });
 
   it('should set selected ID', () => {

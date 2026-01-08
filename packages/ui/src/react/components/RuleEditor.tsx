@@ -94,7 +94,7 @@ export function RuleEditor() {
   return (
     <div className="em:flex em:flex-col em:h-full em:bg-gray-50/30">
       {/* Row 1: API Info + Enable Toggle */}
-      <div className="em:h-12 em:px-4 em:bg-white em:border-b em:border-gray-200 em:flex em:items-center em:justify-between em:shrink-0">
+      <div className="em:h-12 em:pl-4 em:pr-2 em:bg-white em:border-b em:border-gray-200 em:flex em:items-center em:justify-between em:shrink-0">
         <div className="em:flex em:items-center em:gap-3 em:min-w-0">
           <MethodBadge method={selectedMeta.method} />
           <h3
@@ -125,7 +125,7 @@ export function RuleEditor() {
 
       {/* Row 2: Tabs + Actions */}
       <Tabs defaultValue="response" className="em:flex-1 em:flex em:flex-col em:overflow-hidden em:min-h-0">
-        <div className="em:h-11 em:px-4 em:bg-white em:border-b em:border-gray-200 em:flex em:items-center em:justify-between em:shrink-0">
+        <div className="em:h-11 em:pl-4 em:pr-2 em:bg-white em:border-b em:border-gray-200 em:flex em:items-center em:justify-between em:shrink-0">
           <TabsList>
             <TabsTrigger value="response" className="em:gap-1.5">
               <FileJson className="em:w-3.5 em:h-3.5" />
@@ -147,7 +147,7 @@ export function RuleEditor() {
           </div>
         </div>
 
-        <div className="em:flex-1 em:px-4 em:pb-4 em:pt-3 em:min-h-0 em:overflow-hidden">
+        <div className="em:flex-1 em:pl-4 em:pr-2 em:pb-4 em:pt-3 em:min-h-0 em:overflow-hidden">
           <TabsContent value="response" className="em:mt-0 em:h-full em:overflow-y-auto">
             <ResponseTab rule={rule} onChange={handleFieldChange} />
           </TabsContent>

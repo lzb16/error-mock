@@ -1,3 +1,8 @@
+// {{RIPER-10 Action}}
+// Role: LD | Task_ID: 425986b5-fec1-4332-bd06-69798fd54198 | Time: 2025-12-21T03:29:21+08:00
+// Principle: SOLID-O (开闭原则)
+// Taste: 用“按需创建 + 双 Map 同步”的数据结构规则，避免首次启用 Mock 时因缺失 draft 而 no-op
+
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { enableMapSet, current } from 'immer';
@@ -135,18 +140,32 @@ export const useRulesStore = create<RulesState>()(
 
     toggleRuleEnabled: (id, enabled) => {
       set((state) => {
-        // Update both mockRules and appliedRules immediately
         const draft = state.mockRules.get(id);
-        if (draft) {
-          draft.enabled = enabled;
-          // Also update appliedRules to make it take effect immediately
-          const applied = state.appliedRules.get(id);
-          if (applied) {
-            applied.enabled = enabled;
-          } else {
-            // If no applied rule exists, create one from the draft
-            state.appliedRules.set(id, current(draft) as MockRule);
-          }
+        const applied = state.appliedRules.get(id);
+
+        // Keep both maps in sync for the `enabled` flag so the interceptor reacts immediately.
+        if (draft) draft.enabled = enabled;
+        if (applied) applied.enabled = enabled;
+
+        // If we have only one side, hydrate the other side from it.
+        if (draft && !applied) {
+          state.appliedRules.set(id, current(draft) as MockRule);
+          return;
+        }
+        if (!draft && applied) {
+          state.mockRules.set(id, current(applied) as MockRule);
+          return;
+        }
+
+        // First-time toggle: rule might not exist in either map yet (selected but never edited/applied).
+        if (!draft && !applied) {
+          const meta = state.apiMetas.find((m) => `${m.module}-${m.name}` === id);
+          if (!meta) return;
+
+          const rule = createDefaultRule(meta);
+          rule.enabled = enabled;
+          state.mockRules.set(id, rule);
+          state.appliedRules.set(id, rule);
         }
       });
       // Persist to storage

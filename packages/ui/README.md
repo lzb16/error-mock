@@ -1,3 +1,10 @@
+<!--
+// {{RIPER-10 Action}}
+// Role: DW | Task_ID: N/A | Time: 2025-12-21T19:29:41+08:00
+// Principle: SOLID-O (开闭原则)
+// Taste: 明确“实现为准”的工程约束（Tailwind v4 前缀/主题 token），减少文档与代码漂移
+-->
+
 # @error-mock/ui
 
 React 18 UI components for Error Mock plugin.
@@ -74,9 +81,9 @@ Zustand stores:
 
 ## Style System
 
-- **Prefix**: All classes use `em-` prefix to avoid conflicts
-- **Colors**: OKLCH color space for better perceptual uniformity
-- **Theme**: GitHub-inspired design system
+- **Prefix**: Tailwind v4 prefix `em:` (e.g. `em:flex`, `em:hover:bg-blue-600`)
+- **Colors**: OKLCH color space via CSS variables
+- **Theme**: shadcn semantic tokens + theme variables (see `src/react/styles/globals.css`)
 - **Isolation**: Shadow DOM prevents style leakage
 
 ## Development
